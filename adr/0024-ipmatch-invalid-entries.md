@@ -22,11 +22,19 @@ Every entry of an `@ipMatch` list MUST be a valid address or prefix; an entry th
 be parsed is a configuration error. Normative text: `spec/06-operators.md#ipmatch`. The
 corpus case is excluded on import (`tools/import_sts.py` `EXCLUDED_CASES`).
 
+Overlapping and repeated entries are valid and are not an error: the list matches when any
+entry does, so an entry covered by another changes nothing. An engine MAY warn when one
+entry lies entirely inside another, since that can be a mistyped prefix.
+
 ## Options considered
 
 - Skip unparsable entries (Coraza): a typo in a blocklist silently narrows it; rejected.
 - Configuration error (chosen): two engines agree, and a list that is partly unusable
   fails loudly where the operator is written.
+- Overlapping entries as configuration errors: an overlap is only sometimes a typo, so
+  correct lists (broad range plus a host inside it, merged feeds, generated lists with
+  duplicates) would be rejected, and the typos that narrow a list overlap nothing; rejected
+  in favour of an optional warning. Coraza 3.8.1 loads and matches such a list.
 
 ## Consequences
 
@@ -38,6 +46,7 @@ corpus case is excluded on import (`tools/import_sts.py` `EXCLUDED_CASES`).
 ## Tests
 
 - `tests/engine/operators/ipmatch-invalid-entry.yaml`
+- `tests/engine/operators/ipmatch-overlap.yaml`
 - `tests/unit/operators/ipMatch.json`
 
 ## References
