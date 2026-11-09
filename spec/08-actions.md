@@ -382,7 +382,8 @@ smaller than its current value.
 **Syntax.** `skipAfter:LABEL`
 
 **Semantics.** On match, skip to the `SecMarker LABEL` in the current phase; a rule id is
-not a label (`03-processing-model.md#flow-control`, ADR-0016, ADR-0028).
+not a label (`03-processing-model.md#flow-control`, ADR-0016, ADR-0028). An engine SHOULD
+warn at load time when no `SecMarker LABEL` follows the rule.
 
 **Divergence notes.** See ADR-0016 and ADR-0028.
 

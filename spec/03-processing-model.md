@@ -157,7 +157,10 @@ follows it in configuration order, and resumes with the rule after it. A rule wh
 equals `LABEL` MUST NOT end the skip (ADR-0028). A `SecMarker` is a phase-less placeholder:
 it never evaluates anything and exists in every phase. If the marker is not found before
 the end of the current phase, the skip ends with the phase: rules of later phases MUST run
-normally (ADR-0016).
+normally (ADR-0016). Because markers exist in every phase, that happens exactly when no
+`SecMarker LABEL` follows the rule in configuration order; an engine SHOULD warn when it
+loads such a rule, naming the rule and the label, and MUST still load the configuration.
+The warning's wording and destination are engine-specific (`10-logging.md`).
 `skipAfter` and `skip` MUST NOT appear on chain members.
 
 **Divergence notes.** ModSecurity v2 (`apache2/re.c`, `skip_after` is local to the

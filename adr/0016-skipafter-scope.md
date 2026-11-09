@@ -31,17 +31,33 @@ An unreached `skipAfter` ends with the current phase. Rules of later phases MUST
 normally. `SecMarker` is phase-less and satisfies a `skipAfter` in any phase in which it
 is encountered. Normative text: `spec/03-processing-model.md#flow-control`.
 
+Since every marker is evaluated in every phase, a skip goes unreached exactly when no
+`SecMarker LABEL` follows the rule in configuration order, which is known when the
+configuration is loaded. An engine SHOULD then warn at load time, naming the rule and the
+label, and MUST still load the configuration. The warning's wording and destination are
+engine-specific. (Added 2026-11-09; no surveyed engine warns today: v2 ends the skip
+silently, logging it only at debug level 9 in `msre_ruleset_process_phase`, and v3 and
+Coraza carry it into later phases.)
+
 ## Options considered
 
 - Transaction-wide skip (v3, Coraza): two engines agree, but the effect of a missing
   marker is to silently disable the WAF for the rest of the transaction; rejected.
 - Per-phase skip (chosen): documented behaviour, v2 behaviour, and fail-safe.
+- For the missing marker: a load error would break configurations that load in all three
+  engines today; a runtime warning each time a phase ends with a skip pending reports the
+  same cases on every matching transaction; a load-time warning (chosen) reports each
+  once. SHOULD rather than MUST, because no engine warns yet and warning text is outside
+  the logging contract (ADR-0021), so no test can observe it.
 
 ## Consequences
 
 - For libmodsecurity v3 and Coraza: clear the pending marker when a phase ends.
+- For all three engines: warn at load time about a `skipAfter` with no `SecMarker` of
+  that label after it.
 - For rule authors: a `SecMarker` for a `skipAfter` should be placed in the same phase;
-  the spec no longer depends on it.
+  the spec no longer depends on it. The load-time warning points at the ones that are
+  missing.
 
 ## Tests
 
