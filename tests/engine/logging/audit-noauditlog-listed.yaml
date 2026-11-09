@@ -1,0 +1,17 @@
+meta:
+  name: audit-noauditlog-listed
+  description: A matched log,noauditlog rule is listed in part H of a record written for another reason (ADR-0035)
+spec: 08-actions.md#noauditlog
+rules: |
+  SecRuleEngine On
+  SecRule ARGS_GET:a "@streq 1" "id:8120,phase:1,pass,log,noauditlog,msg:'seclang audit listed noauditlog'"
+  SecRule ARGS_GET:b "@streq 1" "id:8121,phase:1,deny,status:403,log,auditlog,msg:'seclang audit deny'"
+tests:
+  - test_title: log,noauditlog rule appears in the record of a denied request
+    stages:
+      - stage:
+          input: {uri: '/?a=1&b=1'}
+          output:
+            triggered_rules: [8120, 8121]
+            interruption: {rule_id: 8121, action: deny, status: 403}
+            audit_log_contains: seclang audit listed noauditlog

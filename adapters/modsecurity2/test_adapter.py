@@ -195,6 +195,15 @@ class EngineTests(unittest.TestCase):
         with httpd.Backend() as b:
             self.assertEqual(v2_engine.run_profile(p, b), [])
 
+    def test_audit_log_per_stage(self):
+        rules = 'SecRuleEngine On\nSecRule ARGS:a "@streq 1" "id:5,phase:1,pass,log"'
+        stages = [Stage(Input(uri="/?a=1", headers={"X-Probe": "first-probe"}), None, Output(audit_log_contains="first-probe")),
+                  Stage(Input(uri="/?a=1", headers={"X-Probe": "second-probe"}), None,
+                        Output(audit_log_contains="second-probe", no_audit_log_contains="first-probe"))]
+        p = Profile("tests/engine/x.yaml", [], {}, rules, [Test("t", stages)])
+        with httpd.Backend() as b:
+            self.assertEqual(v2_engine.run_profile(p, b), [])
+
     def test_apache_rejection_reported(self):
         p = self.profile("SecRuleEngine On", "/%", Output(no_interruption=True))
         with httpd.Backend() as b:

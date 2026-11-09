@@ -1,0 +1,23 @@
+meta:
+  name: audit-record-listing
+  description: Part H lists a matched nolog,auditlog rule and leaves out a matched nolog rule (ADR-0035)
+spec: 10-logging.md#audit-log-parts
+rules: |
+  SecRuleEngine On
+  SecRule ARGS_GET:a "@streq 1" "id:8122,phase:1,pass,nolog,auditlog,msg:'seclang audit listed nolog auditlog'"
+  SecRule ARGS_GET:a "@streq 1" "id:8123,phase:1,pass,nolog,msg:'seclang audit unlisted nolog'"
+tests:
+  - test_title: nolog,auditlog rule is listed
+    stages:
+      - stage:
+          input: {uri: '/?a=1'}
+          output:
+            triggered_rules: [8122, 8123]
+            audit_log_contains: seclang audit listed nolog auditlog
+  - test_title: nolog rule is not listed
+    stages:
+      - stage:
+          input: {uri: '/?a=1'}
+          output:
+            triggered_rules: [8122, 8123]
+            no_audit_log_contains: seclang audit unlisted nolog

@@ -14,7 +14,7 @@ from pathlib import Path
 
 import httpd
 from data import Input, Interruption, Profile
-from engine_tier import Observed, check_stage
+from engine_tier import AUDIT_LOG, Observed, audit_directives, check_stage, uses_audit_log
 
 _MESSAGE = re.compile(rb"\]\[\d\] (.*)$", re.M)
 _ID = re.compile(rb'\[id "(\d+)"\]')
@@ -35,6 +35,8 @@ _LOG_WAIT = 2.0
 _NO_TRANSACTION_GRACE = 0.2
 # An error-log message v2 wrote that is not a rule's ("Warning. ..." / "Access ...").
 _ENGINE_ERROR = re.compile(rb"ModSecurity: (?!Warning\. |Access )")
+# A Native audit entry ends with its part Z marker.
+_AUDIT_END = re.compile(rb"^--[0-9a-f]+-Z--$", re.M)
 
 
 def parse_debug_log(data: bytes) -> tuple[set[int], tuple[int, str, int | None] | None]:
@@ -130,12 +132,22 @@ def stage_logs(root: Path, start: tuple[int, int]) -> tuple[bytes, bytes]:
     return _segment(debug, start[0]), _segment(root / "error.log", start[1])
 
 
+def audit_entry(path: Path, start: int) -> bytes:
+    """The audit entry written since start, once its part Z marker is there."""
+    t0 = time.monotonic()
+    while not _AUDIT_END.search(seg := _segment(path, start)) and time.monotonic() - t0 < _LOG_WAIT:
+        time.sleep(0.01)
+    return seg
+
+
 def run_profile(p: Profile, backend: httpd.Backend) -> list[str]:
     """Every failure of the profile in words; empty when it passes."""
     expect_error = any(st.output.expect_error for t in p.tests for st in t.stages)
     with tempfile.TemporaryDirectory() as d:
         root = Path(d)
-        conf, port = httpd.write_root(root, p.rules, p.files, backend.port)
+        audit = root / AUDIT_LOG if uses_audit_log(p) else None
+        rules = p.rules + audit_directives(audit) if audit else p.rules
+        conf, port = httpd.write_root(root, rules, p.files, backend.port)
         err = httpd.configtest(conf)
         if expect_error:
             return [] if err else ["configuration loaded but expect_error was set"]
@@ -147,8 +159,10 @@ def run_profile(p: Profile, backend: httpd.Backend) -> list[str]:
                 for n, st in enumerate(t.stages, 1):
                     backend.respond(st.response)
                     start = log_sizes(root)
+                    audit_start = _size(audit) if audit else 0
                     status, _ = send(port, request_bytes(st.input))
                     segment, log = stage_logs(root, start)
+                    entry = audit_entry(audit, audit_start) if audit else b""
                     triggered, disruptive = parse_debug_log(segment)
                     backend_status = st.response.status if st.response else 200
                     it = interruption(status, disruptive, log)
@@ -157,6 +171,6 @@ def run_profile(p: Profile, backend: httpd.Backend) -> list[str]:
                         failures.append(f"{where}: Apache answered {status} without ModSecurity "
                                         f"(rejected request or backend failure)")
                         continue
-                    o = Observed(triggered, it, log.decode("utf-8", "replace"))
+                    o = Observed(triggered, it, log.decode("utf-8", "replace"), entry.decode("utf-8", "replace"))
                     failures += [f"{where}: {m}" for m in check_stage(o, st.output)]
         return failures

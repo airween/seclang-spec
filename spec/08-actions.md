@@ -284,11 +284,16 @@ value. The rule matches if any evaluation matches.
 
 **Syntax.** `noauditlog`
 
-**Semantics.** The match does not mark the transaction as relevant for audit logging.
+**Semantics.** The match does not mark the transaction as relevant for audit logging. It
+does not remove the rule from a record that is written for another reason: a matched rule
+with `log` or `auditlog` is listed in part H whether or not it carries `noauditlog`
+(`10-logging.md#audit-log-parts`, ADR-0035).
 
-**Divergence notes.** None known.
+**Divergence notes.** libmodsecurity v3 and Coraza also leave a `log,noauditlog` rule out
+of part H (`compat/known-gaps.md`).
 
-**Tests.** `tests/engine/actions/metadata-and-log-actions.yaml`
+**Tests.** `tests/engine/actions/metadata-and-log-actions.yaml`,
+`tests/engine/logging/audit-noauditlog-listed.yaml`
 
 ### nolog
 

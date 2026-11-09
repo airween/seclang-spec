@@ -10,10 +10,10 @@ engine: a mismatch is a defect to fix before merge, never a known gap.
 |---|---|---|
 | `seclang-check` | `tests/unit/transformations` | 39 files: 362 cases passed, 0 failed |
 | `seclang-check` | `tests/unit/operators` | 25 files: 3907 cases passed, 0 failed, 2 skipped (regex outside the Core subset, ADR-0018); not formalized: `detectSQLi.json`, `detectXSS.json` |
-| `seclang-parse` | `tests/engine` | 116 profiles, 0 mismatches |
-| `seclang-eval` | `tests/engine` | 201 stages, 0 mismatches, 6 unsupported profiles |
+| `seclang-parse` | `tests/engine` | 119 profiles, 0 mismatches |
+| `seclang-eval` | `tests/engine` | 203 stages, 0 mismatches, 8 unsupported profiles |
 | `seclang-parse` | OWASP CRS (`crs_setup_version` 4252) | 29 profiles, 0 mismatches |
-| `seclang-eval` | generated requests, what Coraza did (`adapters/coraza/cmd/differential`, seed 1, 30 per profile) | 2520 stages, 0 mismatches |
+| `seclang-eval` | generated requests, what Coraza did (`adapters/coraza/cmd/differential`, seed 1, 30 per profile) | 2550 stages, 0 mismatches |
 | `seclang-eval` | OWASP CRS with generated requests, what Coraza did (`tools/crs_profile.py`, seed 1) | 20 stages, 0 mismatches |
 
 ## Profiles outside the model
@@ -24,6 +24,8 @@ Reported as unsupported with the reason; the list is the model's boundary, not a
 |---|---|
 | `tests/engine/actions/sanitize.yaml` | log assertions |
 | `tests/engine/body/xml-no-xxe.yaml` | variable XML |
+| `tests/engine/logging/audit-noauditlog-listed.yaml` | log assertions |
+| `tests/engine/logging/audit-record-listing.yaml` | log assertions |
 | `tests/engine/logging/error-log-fields.yaml` | log assertions |
 | `tests/engine/logging/logdata.yaml` | log assertions |
 | `tests/engine/operators/detect-sqli-xss.yaml` | operator @detectSQLi |
@@ -47,6 +49,7 @@ Proved over the model: `formal/SecLang/Regex.lean` (ADR-0027) and
 | `body_limit_reject_quiet` | A body limit with `Reject` (`04#secrequestbodylimitaction`): when the boundary hook sets the interruption at a phase other than 5, no rule of that phase is evaluated. |
 | `skipAfter_ignores_chain` | ADR-0028: while a `skipAfter` label is pending, a chain is passed over whatever its id; only a marker can end the skip. |
 | `removed_by_tag_exact` | ADR-0029: a `ctl:ruleRemoveByTag` parameter removes a chain exactly when it equals one of the chain's tags (no substring or regular-expression match). |
+| `off_is_final` | ADR-0034: once the mode is `Off`, no further rule of the phase runs (and `phaseRuns` keeps every later phase from starting). |
 | `logging_phase_runs` | Phase 5 runs whenever the engine is not off at its boundary, interrupted or not. |
 
 ## Compile-time checks
@@ -60,7 +63,7 @@ Proved over the model: `formal/SecLang/Regex.lean` (ADR-0027) and
 | `formal/SecLang/Operators.lean` | 30 |
 | `formal/SecLang/Regex.lean` | 41 |
 | `formal/SecLang/Request.lean` | 47 |
-| `formal/SecLang/Semantics.lean` | 46 |
+| `formal/SecLang/Semantics.lean` | 47 |
 | `formal/SecLang/Syntax.lean` | 74 |
 | `formal/SecLang/Transformations.lean` | 79 |
-| **Total** | **342** |
+| **Total** | **343** |

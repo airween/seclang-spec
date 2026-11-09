@@ -56,3 +56,4 @@ promoted into the spec (Extension).
 | [0032](0032-status-transitions.md) | When a feature changes status | Clarification | accepted |
 | [0033](0033-sanitize-actions-extended.md) | The `sanitize*` actions are Extended and mask with a fixed string | Divergence | proposed |
 | [0034](0034-ruleengine-off-is-final.md) | `ctl:ruleEngine=Off` is final for the transaction | Divergence | proposed |
+| [0035](0035-noauditlog-relevance-only.md) | `noauditlog` affects relevance only; the audit record lists every logged match | Divergence | proposed |

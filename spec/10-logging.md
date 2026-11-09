@@ -91,12 +91,17 @@ of an entry. The parts and what they MUST contain when requested and available:
 
 `A` and `Z` are mandatory. An engine MAY leave a requested part empty when it does not
 implement it (Coraza: `D`, `E`, `G`), but MUST still emit the part markers for `A`, `B`,
-`F`, `H` and `Z`, and part `H` (or `K`) MUST name the id of every matched rule.
+`F`, `H` and `Z`. Part `H` MUST list every matched rule that carries `log` or `auditlog`,
+explicitly or through `SecDefaultAction`, whether or not it carries `noauditlog`; a rule
+with `nolog` and no explicit `auditlog` is not listed (ADR-0035).
 
 **Divergence notes.** The wording inside every part is engine-specific; ModSecurity's
-stopwatch and producer lines in `H` have no exact Coraza equivalent.
+stopwatch and producer lines in `H` have no exact Coraza equivalent. libmodsecurity v3
+and Coraza leave a `log,noauditlog` rule out of `H` (`compat/known-gaps.md`).
 
-**Tests.** `tests/engine/logging/audit-relevance-load.yaml`
+**Tests.** `tests/engine/logging/audit-relevance-load.yaml`,
+`tests/engine/logging/audit-record-listing.yaml`,
+`tests/engine/logging/audit-noauditlog-listed.yaml`
 
 ### Native format
 

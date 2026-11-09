@@ -15,6 +15,19 @@ from mscapi import ModSecurity, RulesSet
 # The URI field may contain "] [N] "; the greedy match takes the LAST "] [level] " of the
 # line, which only a message text of that exact shape could spoof.
 AUDIT_LOG = "audit.log"
+
+
+def uses_audit_log(profile: Profile) -> bool:
+    return any(st.output.audit_log_contains or st.output.no_audit_log_contains
+               for t in profile.tests for st in t.stages)
+
+
+def audit_directives(path: Path) -> str:
+    """Appended after a profile's rules when it asserts on the audit log (tests/README.md)."""
+    return ("\nSecAuditEngine On\nSecAuditLogParts ABCFHZ\nSecAuditLogType Serial\n"
+            f"SecAuditLogFormat Native\nSecAuditLog {path}\n")
+
+
 _LINE = re.compile(rb"^\[[^\]]*\] \[.*\] \[(\d+)\] (.*)$")
 _BLOCK = re.compile(rb"^\(Rule: (\d+)\) ")
 # Disruptive action names as v3 prints them (lower-cased; v3.0.17 misspells redirect).
@@ -79,9 +92,8 @@ def build_rules(ms: ModSecurity, profile: Profile, workdir: Path) -> tuple[Rules
     debug = workdir / "debug.log"
     conf = workdir / "rules.conf"
     extra = f"\nSecDebugLog {debug}\nSecDebugLogLevel 4\n"
-    if any(st.output.audit_log_contains or st.output.no_audit_log_contains for t in profile.tests for st in t.stages):
-        extra += (f"SecAuditEngine On\nSecAuditLogParts ABCFHZ\nSecAuditLogType Serial\n"
-                  f"SecAuditLogFormat Native\nSecAuditLog {workdir / AUDIT_LOG}\n")
+    if uses_audit_log(profile):
+        extra += audit_directives(workdir / AUDIT_LOG)
     conf.write_text(profile.rules + extra)
     return ms.rules_from_file(str(conf)), debug
 
