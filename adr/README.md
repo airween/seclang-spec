@@ -29,7 +29,7 @@ promoted into the spec (Extension).
 | [0005](0005-unknown-and-unsupported-directives.md) | Unknown versus unsupported directives | Divergence | accepted |
 | [0006](0006-core-ctl-options.md) | Core `ctl:` options | Divergence | proposed |
 | [0007](0007-persistent-collections.md) | Persistent collections are Extended | Divergence | accepted |
-| [0008](0008-collection-key-case.md) | Collection keys match case-insensitively | Divergence | proposed |
+| [0008](0008-collection-key-case.md) | Collection keys match case-insensitively | Divergence | accepted |
 | [0009](0009-phase-evaluation-model.md) | Strict per-phase evaluation is normative; early evaluation must be invisible | Clarification | accepted |
 | [0010](0010-engine-specific-names-reserved.md) | Engine-specific names are reserved | Clarification | proposed |
 | [0011](0011-v2-legacy-deprecated.md) | ModSecurity v2 legacy features are Deprecated | Deprecation | accepted |
