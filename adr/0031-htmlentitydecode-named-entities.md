@@ -1,8 +1,9 @@
 # ADR-0031: `htmlEntityDecode` decodes the ASCII named entities of the WHATWG table
 
-- **Status:** proposed
+- **Status:** accepted
 - **Date:** 2026-11-09
-- **Deciders:** @fzipi
+- **Accepted:** 2026-11-09
+- **Deciders:** @fzipi, @xanadu, @M4tteoP, @airween
 - **Category:** Divergence
 
 ## Context

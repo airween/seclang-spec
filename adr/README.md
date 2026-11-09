@@ -51,7 +51,7 @@ promoted into the spec (Extension).
 | [0027](0027-rx-compile-mode.md) | `@rx` is compiled dot-all; line anchors need `(?m)` | Divergence | accepted |
 | [0028](0028-skipafter-label-is-a-marker.md) | `skipAfter` resolves to a `SecMarker`, never to a rule id | Divergence | accepted |
 | [0029](0029-tag-exceptions-exact.md) | Tag and message rule exceptions select by exact string | Divergence | proposed |
-| [0030](0030-negation-per-value.md) | A negated operator applies per value | Clarification | proposed |
-| [0031](0031-htmlentitydecode-named-entities.md) | `htmlEntityDecode` decodes the ASCII named entities of the WHATWG table | Divergence | proposed |
-| [0032](0032-status-transitions.md) | When a feature changes status | Clarification | proposed |
+| [0030](0030-negation-per-value.md) | A negated operator applies per value | Clarification | accepted |
+| [0031](0031-htmlentitydecode-named-entities.md) | `htmlEntityDecode` decodes the ASCII named entities of the WHATWG table | Divergence | accepted |
+| [0032](0032-status-transitions.md) | When a feature changes status | Clarification | accepted |
 | [0033](0033-sanitize-actions-extended.md) | The `sanitize*` actions are Extended and mask with a fixed string | Divergence | proposed |

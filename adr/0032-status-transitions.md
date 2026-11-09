@@ -1,8 +1,9 @@
 # ADR-0032: When a feature changes status
 
-- **Status:** proposed
+- **Status:** accepted
 - **Date:** 2026-11-09
-- **Deciders:** @fzipi
+- **Accepted:** 2026-11-09
+- **Deciders:** @fzipi, @xanadu, @M4tteoP, @airween
 - **Category:** Clarification
 
 ## Context

@@ -1,8 +1,9 @@
 # ADR-0030: A negated operator applies per value
 
-- **Status:** proposed
+- **Status:** accepted
 - **Date:** 2026-10-09
-- **Deciders:** @fzipi
+- **Accepted:** 2026-11-09
+- **Deciders:** @fzipi, @xanadu, @M4tteoP, @airween
 - **Category:** Clarification
 
 ## Context
