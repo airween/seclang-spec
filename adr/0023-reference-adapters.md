@@ -1,8 +1,9 @@
 # ADR-0023: Reference adapters live in this repository
 
-- **Status:** proposed
+- **Status:** accepted
 - **Date:** 2026-10-07
-- **Deciders:** @fzipi
+- **Accepted:** 2026-11-09
+- **Deciders:** @fzipi, @xanadu, @M4tteoP, @airween
 - **Category:** Clarification
 
 ## Context

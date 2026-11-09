@@ -1,8 +1,9 @@
 # ADR-0022: `REQUEST_BODY` without a body processor
 
-- **Status:** proposed
+- **Status:** accepted
 - **Date:** 2026-10-07
-- **Deciders:** @fzipi
+- **Accepted:** 2026-11-09
+- **Deciders:** @fzipi, @xanadu, @M4tteoP, @airween
 - **Category:** Divergence
 
 ## Context

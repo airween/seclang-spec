@@ -10,7 +10,8 @@ promoted into the spec (Extension).
 
 1. Copy `0000-template.md` to `NNNN-short-slug.md` with the next free number.
 2. Fill every header field. `Status` is `proposed` until maintainers of at least two
-   implementing engines agree, then `accepted`. `superseded` and `rejected` are terminal.
+   implementing engines agree, then `accepted`, with an `Accepted` date line under `Date`.
+   `superseded` and `rejected` are terminal.
 3. A `Divergence` ADR must list at least one test under `## Tests` that encodes the
    outcome. The validator checks the paths exist.
 4. Add a row to the index below. `uv run python tools/validate.py` fails if a file and the
@@ -21,29 +22,29 @@ promoted into the spec (Extension).
 
 | ADR | Title | Category | Status |
 |---|---|---|---|
-| [0001](0001-status-labels-and-core.md) | Status labels and the meaning of Core | Clarification | proposed |
-| [0002](0002-case-insensitive-names.md) | Directive, operator, action and transformation names match case-insensitively | Divergence | proposed |
-| [0003](0003-test-formats.md) | Test formats: SecRules Test Set JSON for units, go-ftw-derived YAML for engine profiles | Clarification | proposed |
+| [0001](0001-status-labels-and-core.md) | Status labels and the meaning of Core | Clarification | accepted |
+| [0002](0002-case-insensitive-names.md) | Directive, operator, action and transformation names match case-insensitively | Divergence | accepted |
+| [0003](0003-test-formats.md) | Test formats: SecRules Test Set JSON for units, go-ftw-derived YAML for engine profiles | Clarification | accepted |
 | [0004](0004-canonical-names-and-aliases.md) | Canonical names and required aliases | Divergence | proposed |
-| [0005](0005-unknown-and-unsupported-directives.md) | Unknown versus unsupported directives | Divergence | proposed |
+| [0005](0005-unknown-and-unsupported-directives.md) | Unknown versus unsupported directives | Divergence | accepted |
 | [0006](0006-core-ctl-options.md) | Core `ctl:` options | Divergence | proposed |
-| [0007](0007-persistent-collections.md) | Persistent collections are Extended | Divergence | proposed |
+| [0007](0007-persistent-collections.md) | Persistent collections are Extended | Divergence | accepted |
 | [0008](0008-collection-key-case.md) | Collection keys match case-insensitively | Divergence | proposed |
-| [0009](0009-phase-evaluation-model.md) | Strict per-phase evaluation is normative; early evaluation must be invisible | Clarification | proposed |
+| [0009](0009-phase-evaluation-model.md) | Strict per-phase evaluation is normative; early evaluation must be invisible | Clarification | accepted |
 | [0010](0010-engine-specific-names-reserved.md) | Engine-specific names are reserved | Clarification | proposed |
-| [0011](0011-v2-legacy-deprecated.md) | ModSecurity v2 legacy features are Deprecated | Deprecation | proposed |
-| [0012](0012-uppercase-transformation.md) | `uppercase` is promoted to Core | Extension | proposed |
-| [0013](0013-comment-line-continuation.md) | Comment lines ending in a backslash | Divergence | proposed |
+| [0011](0011-v2-legacy-deprecated.md) | ModSecurity v2 legacy features are Deprecated | Deprecation | accepted |
+| [0012](0012-uppercase-transformation.md) | `uppercase` is promoted to Core | Extension | accepted |
+| [0013](0013-comment-line-continuation.md) | Comment lines ending in a backslash | Divergence | accepted |
 | [0014](0014-secdefaultaction-constraints.md) | `SecDefaultAction` constraints | Divergence | proposed |
 | [0015](0015-mandatory-rule-id.md) | Every rule carries an id | Divergence | proposed |
 | [0016](0016-skipafter-scope.md) | `skipAfter` scope ends with the phase | Divergence | proposed |
-| [0017](0017-default-phase.md) | The default phase is 2 and is never inherited | Divergence | proposed |
-| [0018](0018-regex-dialect.md) | Core regular-expression syntax is the RE2-compatible subset | Divergence | proposed |
+| [0017](0017-default-phase.md) | The default phase is 2 and is never inherited | Divergence | accepted |
+| [0018](0018-regex-dialect.md) | Core regular-expression syntax is the RE2-compatible subset | Divergence | accepted |
 | [0019](0019-duration-units.md) | `DURATION` is Extended with unspecified units | Clarification | proposed |
 | [0020](0020-json-argument-names.md) | JSON argument names are unspecified | Clarification | proposed |
 | [0021](0021-logging-contract.md) | The portable logging contract is rule ids and messages | Clarification | proposed |
-| [0022](0022-request-body-without-processor.md) | `REQUEST_BODY` without a body processor | Divergence | proposed |
-| [0023](0023-reference-adapters.md) | Reference adapters live in this repository | Clarification | proposed |
+| [0022](0022-request-body-without-processor.md) | `REQUEST_BODY` without a body processor | Divergence | accepted |
+| [0023](0023-reference-adapters.md) | Reference adapters live in this repository | Clarification | accepted |
 | [0024](0024-ipmatch-invalid-entries.md) | Unparsable `@ipMatch` entries are configuration errors | Divergence | proposed |
 | [0025](0025-secrequestbodyinmemorylimit-extended.md) | `SecRequestBodyInMemoryLimit` is Extended, not Core | Divergence | proposed |
 | [0026](0026-compresswhitespace-nbsp.md) | `compressWhitespace` treats the byte 0xA0 as whitespace | Divergence | proposed |

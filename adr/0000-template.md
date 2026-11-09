@@ -2,6 +2,7 @@
 
 - **Status:** proposed
 - **Date:** YYYY-MM-DD
+- **Accepted:** YYYY-MM-DD (add when the status becomes accepted)
 - **Deciders:** @handle, @handle
 - **Category:** Divergence | Clarification | Deprecation | Extension
 

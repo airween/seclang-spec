@@ -1,8 +1,9 @@
 # ADR-0003: Test formats: SecRules Test Set JSON for units, go-ftw-derived YAML for engine profiles
 
-- **Status:** proposed
+- **Status:** accepted
 - **Date:** 2026-10-06
-- **Deciders:** @fzipi
+- **Accepted:** 2026-11-09
+- **Deciders:** @fzipi, @xanadu, @M4tteoP, @airween
 - **Category:** Clarification
 
 ## Context

@@ -1,8 +1,9 @@
 # ADR-0018: Core regular-expression syntax is the RE2-compatible subset
 
-- **Status:** proposed
+- **Status:** accepted
 - **Date:** 2026-10-06
-- **Deciders:** @fzipi
+- **Accepted:** 2026-11-09
+- **Deciders:** @fzipi, @xanadu, @M4tteoP, @airween
 - **Category:** Divergence
 
 ## Context

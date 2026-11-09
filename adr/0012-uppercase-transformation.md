@@ -1,8 +1,9 @@
 # ADR-0012: `uppercase` is promoted to Core
 
-- **Status:** proposed
+- **Status:** accepted
 - **Date:** 2026-10-06
-- **Deciders:** @fzipi
+- **Accepted:** 2026-11-09
+- **Deciders:** @fzipi, @xanadu, @M4tteoP, @airween
 - **Category:** Extension
 
 ## Context
