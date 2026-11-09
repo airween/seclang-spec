@@ -5,6 +5,7 @@
 - **Accepted:** 2026-11-09
 - **Deciders:** @fzipi, @xanadu, @M4tteoP, @airween
 - **Category:** Deprecation
+- **Superseded in part by:** ADR-0033 (proposed), for the `sanitize*` actions
 
 ## Context
 
