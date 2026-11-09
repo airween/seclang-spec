@@ -1,8 +1,9 @@
 # ADR-0016: `skipAfter` scope ends with the phase
 
-- **Status:** proposed
+- **Status:** accepted
 - **Date:** 2026-10-06
-- **Deciders:** @fzipi
+- **Accepted:** 2026-11-09
+- **Deciders:** @fzipi, @xanadu, @M4tteoP, @airween
 - **Category:** Divergence
 
 ## Context

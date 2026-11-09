@@ -37,7 +37,7 @@ promoted into the spec (Extension).
 | [0013](0013-comment-line-continuation.md) | Comment lines ending in a backslash | Divergence | accepted |
 | [0014](0014-secdefaultaction-constraints.md) | `SecDefaultAction` constraints | Divergence | proposed |
 | [0015](0015-mandatory-rule-id.md) | Every rule carries an id | Divergence | accepted |
-| [0016](0016-skipafter-scope.md) | `skipAfter` scope ends with the phase | Divergence | proposed |
+| [0016](0016-skipafter-scope.md) | `skipAfter` scope ends with the phase | Divergence | accepted |
 | [0017](0017-default-phase.md) | The default phase is 2 and is never inherited | Divergence | accepted |
 | [0018](0018-regex-dialect.md) | Core regular-expression syntax is the RE2-compatible subset | Divergence | accepted |
 | [0019](0019-duration-units.md) | `DURATION` is Extended with unspecified units | Clarification | proposed |
