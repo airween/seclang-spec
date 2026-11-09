@@ -157,18 +157,30 @@ class RequestTests(unittest.TestCase):
         self.assertEqual(raw.lower().count(b"host:"), 1)
 
 
+LIMIT = b'[client 127.0.0.1:1] ModSecurity: Request body (Content-Length) is larger than the configured limit (10).'
+RULE = b'[client 127.0.0.1:1] ModSecurity: Warning. String match "x" at ARGS:a. [id "1"]'
+
+
 class InterruptionTests(unittest.TestCase):
     def test_body_limit_without_rule(self):
-        self.assertEqual(v2_engine.interruption(413, None, 200), Interruption(0, "deny", 413))
+        self.assertEqual(v2_engine.interruption(413, None, LIMIT), Interruption(0, "deny", 413))
 
-    def test_backend_status_is_not_an_interruption(self):
-        self.assertIsNone(v2_engine.interruption(200, None, 200))
-        self.assertIsNone(v2_engine.interruption(404, None, 404))
+    def test_body_limit_with_status_the_backend_would_also_send(self):
+        # keyed on v2's own message, not on the status differing from the backend's
+        self.assertEqual(v2_engine.interruption(500, None, LIMIT), Interruption(0, "deny", 500))
+
+    def test_no_engine_message_is_not_an_interruption(self):
+        self.assertIsNone(v2_engine.interruption(200, None, b""))
+        self.assertIsNone(v2_engine.interruption(404, None, b""))
+
+    def test_rule_message_alone_is_not_an_engine_interruption(self):
+        # a logged phase-1 rule followed by an Apache 400 (AH10244, `..` in the URI)
+        self.assertIsNone(v2_engine.interruption(400, None, RULE))
 
     def test_rule_interruptions(self):
-        self.assertEqual(v2_engine.interruption(None, (12, "drop", None), 200), Interruption(12, "drop", 0))
-        self.assertEqual(v2_engine.interruption(302, (13, "redirect", 302), 200), Interruption(13, "redirect", 302))
-        self.assertEqual(v2_engine.interruption(500, (7050, "deny", 418), 200), Interruption(7050, "deny", 418))
+        self.assertEqual(v2_engine.interruption(None, (12, "drop", None), b""), Interruption(12, "drop", 0))
+        self.assertEqual(v2_engine.interruption(302, (13, "redirect", 302), b""), Interruption(13, "redirect", 302))
+        self.assertEqual(v2_engine.interruption(500, (7050, "deny", 418), b""), Interruption(7050, "deny", 418))
 
 
 @needs_httpd
@@ -187,7 +199,15 @@ class EngineTests(unittest.TestCase):
         with httpd.Backend() as b:
             failures = v2_engine.run_profile(p, b)
         self.assertEqual(len(failures), 1)
-        self.assertIn("apache rejected the request (status 400)", failures[0])
+        self.assertIn("Apache answered 400 without ModSecurity", failures[0])
+
+    def test_apache_rejection_after_logged_phase1_rule(self):
+        p = self.profile('SecRuleEngine On\nSecRule REQUEST_URI "@contains x" "id:1,phase:1,pass,log"',
+                         "/x/../../b", Output(triggered_rules=[1], no_interruption=True))
+        with httpd.Backend() as b:
+            failures = v2_engine.run_profile(p, b)
+        self.assertEqual(len(failures), 1)
+        self.assertIn("Apache answered 400 without ModSecurity", failures[0])
 
     def test_expect_error(self):
         p = self.profile("SecFoo bar", "/", Output(expect_error=True))

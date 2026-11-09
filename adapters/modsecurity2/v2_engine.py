@@ -32,6 +32,8 @@ _STATUS = re.compile(rb"^Access denied with code (\d+)|^Access denied with redir
 # modsecurity_process_phase_logging); phase 5 runs after the response has been sent.
 _DONE = re.compile(rb"Starting phase LOGGING\.[\s\S]*Audit log: ")
 _LOG_WAIT = 2.0
+# An error-log message v2 wrote that is not a rule's ("Warning. ..." / "Access ...").
+_ENGINE_ERROR = re.compile(rb"ModSecurity: (?!Warning\. |Access )")
 
 
 def parse_debug_log(data: bytes) -> tuple[set[int], tuple[int, str, int | None] | None]:
@@ -90,13 +92,14 @@ def send(port: int, raw: bytes) -> tuple[int | None, dict[str, str]]:
 
 
 def interruption(status: int | None, disruptive: tuple[int, str, int | None] | None,
-                 backend_status: int) -> Interruption | None:
-    """The transaction's interruption; a status the backend was not asked for, with no rule
-    behind it, is a body-limit interruption (rule_id 0)."""
+                 error_log: bytes) -> Interruption | None:
+    """The transaction's interruption. An error status with no rule behind it is v2's only when
+    v2 wrote a message of its own (a body limit or body-processor error: rule_id 0); rule
+    messages alone do not count, since Apache may reject the request after phase 1 ran."""
     if disruptive is not None:
         rid, action, logged = disruptive
         return Interruption(rid, action, logged or status or 0)
-    if status is not None and status != backend_status:
+    if status is not None and status >= 400 and _ENGINE_ERROR.search(error_log):
         return Interruption(0, "deny", status)
     return None
 
@@ -143,10 +146,11 @@ def run_profile(p: Profile, backend: httpd.Backend) -> list[str]:
                     segment, log = stage_logs(root, start)
                     triggered, disruptive = parse_debug_log(segment)
                     backend_status = st.response.status if st.response else 200
-                    it = interruption(status, disruptive, backend_status)
+                    it = interruption(status, disruptive, log)
                     where = f"{t.title} / stage {n}"
-                    if it and it.rule_id == 0 and b"ModSecurity:" not in log:
-                        failures.append(f"{where}: apache rejected the request (status {status})")
+                    if it is None and status != backend_status:
+                        failures.append(f"{where}: Apache answered {status} without ModSecurity "
+                                        f"(rejected request or backend failure)")
                         continue
                     o = Observed(triggered, it, log.decode("utf-8", "replace"))
                     failures += [f"{where}: {m}" for m in check_stage(o, st.output)]

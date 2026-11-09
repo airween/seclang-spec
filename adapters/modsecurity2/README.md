@@ -55,9 +55,11 @@ Extended features v2 does not implement are skipped, not failed: profiles throug
   - *Interruption*: `Access denied with code N` (deny), `with connection close` (drop),
     `with redirection to URL using status N` (redirect), `using proxy to` (proxy). The
     status is v2's own from that line: Apache answers 500 for a code it has no reason
-    phrase for (418). A status the backend was not asked for with no such line is a
-    body-limit interruption (`rule_id: 0`); one with no `ModSecurity:` error-log line is
-    reported as `apache rejected the request`, not as an engine result.
+    phrase for (418). An error status with no such line is v2's (`rule_id: 0`) only when
+    v2 wrote a non-rule `ModSecurity:` message to the error log (a body limit, a body
+    processor error); any other status the backend was not asked for is reported as
+    `Apache answered N without ModSecurity`, not as an engine result. Rule messages alone
+    do not count: Apache rejects `..` in a URI after phase 1 has run.
   - *Client address*: a `remote_addr` other than `127.0.0.1` is sent in
     `X-Seclang-Remote-Addr`, which `mod_remoteip` turns into `REMOTE_ADDR` (IPv4 and IPv6)
     and removes before rules see `REQUEST_HEADERS`.
@@ -77,6 +79,7 @@ Extended features v2 does not implement are skipped, not failed: profiles throug
 
 - The debug-log formats are those of v2.9.15; `test_adapter.ParseDebugLogTests` pins them.
 - Apache sits in front of the engine: a request it rejects (malformed request line, `%`
-  not followed by two hex digits) never reaches v2. Such a failure says so and is never a
-  known-gaps row.
+  not followed by two hex digits, `..` above the root) never completes in v2. Such a
+  failure says so and is never a known-gaps row; it waits the full 2 s for a logging
+  phase that does not come.
 - Each profile starts its own httpd (about 0.1 s); the whole run takes about 25 s.
