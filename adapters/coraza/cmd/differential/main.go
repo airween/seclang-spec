@@ -372,6 +372,10 @@ func genInput(r *rand.Rand, args, headers, cookies, values []string, kind string
 		case 1:
 			q = append(q, "="+url.QueryEscape(val)) // empty name
 		case 2:
+			if numeric { // `1=x` is digits then text, unspecified for 06#eq
+				q = append(q, name+"="+url.QueryEscape(val))
+				break
+			}
 			q = append(q, name+"="+url.QueryEscape(val)+"=x") // `=` inside the value
 		case 3:
 			q = append(q, name+"="+strings.ReplaceAll(url.QueryEscape(val), "+", "%20"))
