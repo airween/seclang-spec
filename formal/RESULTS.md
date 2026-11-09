@@ -10,8 +10,8 @@ engine: a mismatch is a defect to fix before merge, never a known gap.
 |---|---|---|
 | `seclang-check` | `tests/unit/transformations` | 39 files: 362 cases passed, 0 failed |
 | `seclang-check` | `tests/unit/operators` | 25 files: 3907 cases passed, 0 failed, 2 skipped (regex outside the Core subset, ADR-0018); not formalized: `detectSQLi.json`, `detectXSS.json` |
-| `seclang-parse` | `tests/engine` | 115 profiles, 0 mismatches |
-| `seclang-eval` | `tests/engine` | 201 stages, 0 mismatches, 5 unsupported profiles |
+| `seclang-parse` | `tests/engine` | 116 profiles, 0 mismatches |
+| `seclang-eval` | `tests/engine` | 201 stages, 0 mismatches, 6 unsupported profiles |
 | `seclang-parse` | OWASP CRS (`crs_setup_version` 4252) | 29 profiles, 0 mismatches |
 | `seclang-eval` | generated requests, what Coraza did (`adapters/coraza/cmd/differential`, seed 1, 30 per profile) | 2520 stages, 0 mismatches |
 | `seclang-eval` | OWASP CRS with generated requests, what Coraza did (`tools/crs_profile.py`, seed 1) | 20 stages, 0 mismatches |
@@ -25,6 +25,7 @@ Reported as unsupported with the reason; the list is the model's boundary, not a
 | `tests/engine/actions/sanitize.yaml` | log assertions |
 | `tests/engine/body/xml-no-xxe.yaml` | variable XML |
 | `tests/engine/logging/error-log-fields.yaml` | log assertions |
+| `tests/engine/logging/logdata.yaml` | log assertions |
 | `tests/engine/operators/detect-sqli-xss.yaml` | operator @detectSQLi |
 | `tests/engine/variables/xml.yaml` | variable XML |
 

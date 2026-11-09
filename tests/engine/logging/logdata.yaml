@@ -1,0 +1,18 @@
+meta:
+  name: logdata
+  description: logdata expands its macros and is written as [data "TEXT"] on the logged match's error-log line
+spec: 10-logging.md#error-log
+rules: |
+  SecRuleEngine On
+  SecRule ARGS_GET:a "@streq attack" "id:8102,phase:1,pass,log,msg:'seclang logdata probe',logdata:'value=%{MATCHED_VAR}'"
+  SecRule ARGS_GET:a "@streq attack" "id:8103,phase:1,pass,nolog,msg:'seclang logdata hidden',logdata:'hidden=%{MATCHED_VAR}'"
+tests:
+  - test_title: logdata appears as [data] with its macro expanded; nolog suppresses it
+    stages:
+      - stage:
+          input: {uri: '/?a=attack'}
+          output:
+            triggered_rules: [8102, 8103]
+            log_contains: '[data "value=attack"]'
+            no_log_contains: 'hidden=attack'
+            no_interruption: true

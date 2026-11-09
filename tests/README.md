@@ -41,8 +41,10 @@ substrings.
 
 `log_contains` and `no_log_contains` are substring checks against the engine's error log
 for the transaction (or its matched-rule messages, which is what the log is built from).
-Profiles use them only with a rule's `msg` text (`spec/10-logging.md#error-log`,
-ADR-0021); never with the engine prefix, file, line or any other field. The one exception
+Profiles use them only with a rule's `msg` text or its `logdata` field written as
+`[data "TEXT"]` (`spec/10-logging.md#error-log`, ADR-0021), keeping that text short,
+printable and free of quotes and backslashes; never with the engine prefix, file, line or
+any other field. The one exception
 is `no_log_contains` with a value a `sanitize*` action masks (ADR-0033), which must not
 appear anywhere in the log.
 

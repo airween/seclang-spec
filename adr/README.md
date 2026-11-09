@@ -42,7 +42,7 @@ promoted into the spec (Extension).
 | [0018](0018-regex-dialect.md) | Core regular-expression syntax is the RE2-compatible subset | Divergence | accepted |
 | [0019](0019-duration-units.md) | `DURATION` is Extended with unspecified units | Clarification | proposed |
 | [0020](0020-json-argument-names.md) | JSON argument names are unspecified | Clarification | proposed |
-| [0021](0021-logging-contract.md) | The portable logging contract is rule ids and messages | Clarification | proposed |
+| [0021](0021-logging-contract.md) | The portable logging contract is rule ids, messages and logdata | Clarification | accepted |
 | [0022](0022-request-body-without-processor.md) | `REQUEST_BODY` without a body processor | Divergence | accepted |
 | [0023](0023-reference-adapters.md) | Reference adapters live in this repository | Clarification | accepted |
 | [0024](0024-ipmatch-invalid-entries.md) | Unparsable `@ipMatch` entries are configuration errors | Divergence | accepted |

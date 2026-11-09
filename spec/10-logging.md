@@ -6,7 +6,7 @@ and layout are where the three engines differ most, and no ruleset depends on th
 this file specifies the minimum that rules and operators need to agree on (ADR-0021) and
 leaves the rest to each engine's documentation. Conformance tests never assert on log
 layout; they assert on which rules matched, for the error log that a rule's `msg` text
-appears, and, for both logs, that a value a `sanitize*` action masks does not
+and `[data "…"]` field appear, and, for both logs, that a value a `sanitize*` action masks does not
 (`tests/README.md`). A value marked by a `sanitize*` action
 (`08-actions.md#sanitizearg`) never appears in clear in the error or audit log; the debug
 log is not masked (ADR-0033).
@@ -18,21 +18,31 @@ log is not masked (ADR-0033).
 **Semantics.** For every rule that matches and does not carry `nolog`, the engine MUST
 write one line to its error log (the host's error log, or the engine's own) containing
 the fields `[id "N"]`, with the rule's id, and, when the rule has one, `[msg "TEXT"]`, with
-the `msg` after macro expansion. When a disruptive action interrupts the transaction the
-line MUST say so. A rule carrying `nolog` MUST NOT produce this line.
+the `msg` after macro expansion, and, when the rule has `logdata`, `[data "TEXT"]`, with
+the `logdata` after macro expansion (`08-actions.md#logdata`). When a disruptive action
+interrupts the transaction the line MUST say so. A rule carrying `nolog` MUST NOT produce
+this line.
 
 Everything else about the line is engine-specific: the prefix (`ModSecurity: Warning.`,
 `ModSecurity: Access denied with code N`, `Coraza: Warning.`, `Coraza: Access denied
-(phase N).`), the order of fields, and the presence of `[file]`, `[line]`, `[data]`,
-`[severity]`, `[ver]`, `[tag]`, `[hostname]`, `[uri]`, `[unique_id]`. How a `"` inside
-`msg` is escaped is engine-specific; portable tests keep quotes out of `msg`.
+(phase N).`), the order of fields, the presence of `[data]` when the rule has no
+`logdata`, and the presence of `[file]`, `[line]`, `[severity]`, `[ver]`, `[tag]`,
+`[hostname]`, `[uri]`, `[unique_id]`. How a `"`, a `\` or a non-printable byte inside
+`msg` or `logdata` is escaped, and how long `[data]` text may be before it is truncated,
+are engine-specific; portable tests keep such text short, printable and free of quotes
+and backslashes.
 
 **Divergence notes.** ModSecurity v2 (`apache2/re.c`, `apache2/mod_security2.c`) and
 libmodsecurity v3 (`src/rule_message.cc`) emit `ModSecurity: …`; Coraza
 (`internal/corazarules/rule_match.go`) emits `Coraza: …` with the phase in the denial
-message. All three write `[id "…"]` and `[msg "…"]`.
+message. All three write `[id "…"]` and `[msg "…"]`, and `[data "…"]` for `logdata`
+(checked 2026-11-09 through the three reference adapters). They differ beyond that:
+ModSecurity v2 truncates `[data]` at 512 bytes with an ellipsis (`apache2/re.c`,
+`msre_format_metadata`), libmodsecurity v3 at 200 bytes, hex-escaping bytes that are not
+printable (`src/rule_message.cc`, `toHexIfNeeded`), and Coraza writes `[data ""]` on every
+line and escapes with Go's `%q` (`internal/corazarules/rule_match.go`).
 
-**Tests.** `tests/engine/logging/error-log-fields.yaml`
+**Tests.** `tests/engine/logging/error-log-fields.yaml`, `tests/engine/logging/logdata.yaml`
 
 ### Audit log relevance
 

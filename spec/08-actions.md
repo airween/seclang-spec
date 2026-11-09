@@ -242,11 +242,15 @@ sets `log` in its default actions, so this is rarely visible. Recorded in
 **Syntax.** `logdata:'TEXT'` (macros expand).
 
 **Semantics.** Additional text written with the log message, typically the matched
-value (`%{MATCHED_VAR}`). No effect on evaluation.
+value (`%{MATCHED_VAR}`): macros are expanded when the rule matches and the result is
+written as the `[data "TEXT"]` field of the rule's error-log line
+(`10-logging.md#error-log`); a rule with `nolog` writes nothing. No effect on evaluation.
 
-**Divergence notes.** None known.
+**Divergence notes.** Truncation and escaping of the text differ
+(`10-logging.md#error-log`): v2 cuts at 512 bytes, v3 at 200 bytes and hex-escapes
+non-printable bytes, Coraza escapes with Go's `%q`.
 
-**Tests.** `tests/engine/actions/metadata-and-log-actions.yaml`
+**Tests.** `tests/engine/actions/metadata-and-log-actions.yaml`, `tests/engine/logging/logdata.yaml`
 
 ### msg
 
