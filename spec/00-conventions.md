@@ -1,8 +1,9 @@
 # 00. Conventions
 
 **Document status.** Draft 0.1 (2026-10-07). Files 00–10 cover the whole language as
-implemented by the three surveyed engines. Every ADR is `proposed`; acceptance requires
-agreement from the maintainers of at least two implementing engines (`adr/README.md`).
+implemented by the three surveyed engines. An ADR is `proposed` until the maintainers of
+at least two implementing engines agree, then `accepted` (`adr/README.md` lists each one's
+status).
 `compat/known-gaps.md` lists the Core tests each engine fails today.
 
 This specification describes SecLang, the rule language shared by ModSecurity v2,
@@ -31,6 +32,7 @@ as the first non-blank line after its `###` heading, `**Status:** <value>`:
 The initial Core set is the intersection of the three surveyed engines, restricted to
 features used by OWASP CRS v4 or by the engines' recommended configuration files.
 Promoting a feature to Core needs an ADR (see ADR-0001).
+
 
 ## Spec versioning
 

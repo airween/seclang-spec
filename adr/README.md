@@ -36,7 +36,7 @@ promoted into the spec (Extension).
 | [0012](0012-uppercase-transformation.md) | `uppercase` is promoted to Core | Extension | accepted |
 | [0013](0013-comment-line-continuation.md) | Comment lines ending in a backslash | Divergence | accepted |
 | [0014](0014-secdefaultaction-constraints.md) | `SecDefaultAction` constraints | Divergence | proposed |
-| [0015](0015-mandatory-rule-id.md) | Every rule carries an id | Divergence | proposed |
+| [0015](0015-mandatory-rule-id.md) | Every rule carries an id | Divergence | accepted |
 | [0016](0016-skipafter-scope.md) | `skipAfter` scope ends with the phase | Divergence | proposed |
 | [0017](0017-default-phase.md) | The default phase is 2 and is never inherited | Divergence | accepted |
 | [0018](0018-regex-dialect.md) | Core regular-expression syntax is the RE2-compatible subset | Divergence | accepted |
@@ -45,11 +45,11 @@ promoted into the spec (Extension).
 | [0021](0021-logging-contract.md) | The portable logging contract is rule ids and messages | Clarification | proposed |
 | [0022](0022-request-body-without-processor.md) | `REQUEST_BODY` without a body processor | Divergence | accepted |
 | [0023](0023-reference-adapters.md) | Reference adapters live in this repository | Clarification | accepted |
-| [0024](0024-ipmatch-invalid-entries.md) | Unparsable `@ipMatch` entries are configuration errors | Divergence | proposed |
+| [0024](0024-ipmatch-invalid-entries.md) | Unparsable `@ipMatch` entries are configuration errors | Divergence | accepted |
 | [0025](0025-secrequestbodyinmemorylimit-extended.md) | `SecRequestBodyInMemoryLimit` is Extended, not Core | Divergence | proposed |
-| [0026](0026-compresswhitespace-nbsp.md) | `compressWhitespace` treats the byte 0xA0 as whitespace | Divergence | proposed |
-| [0027](0027-rx-compile-mode.md) | `@rx` is compiled dot-all; line anchors need `(?m)` | Divergence | proposed |
-| [0028](0028-skipafter-label-is-a-marker.md) | `skipAfter` resolves to a `SecMarker`, never to a rule id | Divergence | proposed |
+| [0026](0026-compresswhitespace-nbsp.md) | `compressWhitespace` treats the byte 0xA0 as whitespace | Divergence | accepted |
+| [0027](0027-rx-compile-mode.md) | `@rx` is compiled dot-all; line anchors need `(?m)` | Divergence | accepted |
+| [0028](0028-skipafter-label-is-a-marker.md) | `skipAfter` resolves to a `SecMarker`, never to a rule id | Divergence | accepted |
 | [0029](0029-tag-exceptions-exact.md) | Tag and message rule exceptions select by exact string | Divergence | proposed |
 | [0030](0030-negation-per-value.md) | A negated operator applies per value | Clarification | proposed |
 | [0031](0031-htmlentitydecode-named-entities.md) | `htmlEntityDecode` decodes the ASCII named entities of the WHATWG table | Divergence | proposed |

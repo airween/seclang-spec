@@ -1,8 +1,9 @@
 # ADR-0026: `compressWhitespace` treats the byte 0xA0 as whitespace
 
-- **Status:** proposed
+- **Status:** accepted
 - **Date:** 2026-10-08
-- **Deciders:** @fzipi
+- **Accepted:** 2026-11-09
+- **Deciders:** @fzipi, @xanadu, @M4tteoP, @airween
 - **Category:** Divergence
 
 ## Context

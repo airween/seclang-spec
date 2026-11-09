@@ -1,8 +1,9 @@
 # ADR-0027: `@rx` is compiled dot-all; line anchors need `(?m)`
 
-- **Status:** proposed
+- **Status:** accepted
 - **Date:** 2026-10-08
-- **Deciders:** @fzipi
+- **Accepted:** 2026-11-09
+- **Deciders:** @fzipi, @xanadu, @M4tteoP, @airween
 - **Category:** Divergence
 
 ## Context
