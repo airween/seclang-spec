@@ -7,7 +7,8 @@ import unittest
 from pathlib import Path
 
 import httpd  # first: puts adapters/libmodsecurity on sys.path
-from data import Response
+import v2_engine
+from data import Input, Interruption, Output, Profile, Response, Stage, Test
 
 needs_httpd = unittest.skipUnless(os.environ.get(httpd.ENV_HTTPD), f"{httpd.ENV_HTTPD} not set")
 
@@ -72,6 +73,124 @@ class HttpdTests(unittest.TestCase):
             with self.assertRaises(httpd.StartError):
                 with httpd.Httpd(conf, port):
                     pass
+
+
+def debug_line(level: int, msg: str) -> bytes:
+    """One v2.9.15 debug-log line as written by Apache (copied from a probe run)."""
+    return (b"[09/Nov/2026:14:39:29.182013 +0000] [localhost/sid#ffff865494a0][rid#ffff863e40a0]"
+            b"[/index.html][%d] " % level) + msg.encode()
+
+
+R = ' [file "/tmp/root/rules.conf"] [line "4"]'
+
+
+class ParseDebugLogTests(unittest.TestCase):
+    def parse(self, *lines: bytes):
+        return v2_engine.parse_debug_log(b"\n".join(lines) + b"\n")
+
+    def test_parse_pass_nolog_chain(self):
+        self.assertEqual(self.parse(
+            debug_line(4, f'Warning. Unconditional match in SecAction.{R} [id "1"]'),
+            debug_line(2, f'Warning. String match "y" at ARGS:b.{R} [id "4"] [msg "two"]'),
+            debug_line(4, f'Warning. String match "x" at ARGS:a.{R} [id "5"]'),
+            debug_line(4, 'Continuing execution after rule id="END".'),
+        ), ({1, 4, 5}, None))
+
+    def test_parse_deny(self):
+        triggered, disruptive = self.parse(
+            debug_line(4, f'Warning. Unconditional match in SecAction.{R} [id "1"]'),
+            debug_line(1, f'Access denied with code 403 (phase 2). String match "x" at ARGS:a.{R} [id "7"] [msg "d"]'))
+        self.assertEqual((triggered, disruptive), ({1, 7}, (7, "deny", 403)))
+
+    def test_parse_drop_redirect_allow(self):
+        self.assertEqual(self.parse(debug_line(
+            4, f'Access denied with connection close (phase 1). String match "drop" at ARGS:k.{R} [id "12"]')),
+            ({12}, (12, "drop", None)))
+        self.assertEqual(self.parse(debug_line(
+            4, 'Access denied with redirection to http://example.com/ using status 302 (phase 1). '
+               f'String match "redir" at ARGS:k.{R} [id "13"]')),
+            ({13}, (13, "redirect", 302)))
+        self.assertEqual(self.parse(debug_line(
+            4, f'Access allowed (phase 1). String match "allow" at ARGS:k.{R} [id "11"]')),
+            ({11}, None))
+
+    def test_parse_allow_phase_and_request(self):
+        self.assertEqual(self.parse(
+            debug_line(1, f'Access to phase allowed (phase 1). String match "phase" at ARGS_GET:mode.{R} [id "7071"]'),
+            debug_line(1, f'Access to request allowed (phase 1). String match "r" at ARGS_GET:mode.{R} [id "7075"]'),
+        ), ({7071, 7075}, None))
+
+    def test_parse_status_from_log_line(self):
+        # Apache answers 500 for a status it has no reason phrase for (418); v2's line has the code.
+        self.assertEqual(self.parse(debug_line(
+            1, f'Access denied with code 418 (phase 1). String match "teapot" at ARGS_GET:a.{R} [id "7050"]'))[1],
+            (7050, "deny", 418))
+        self.assertEqual(self.parse(debug_line(
+            1, 'Access denied with redirection to https://example.org/ using status 307 (phase 1). '
+               f'String match "go" at ARGS_GET:a.{R} [id "7051"]'))[1],
+            (7051, "redirect", 307))
+
+    def test_parse_ignores_recipe_lines(self):
+        self.assertEqual(self.parse(
+            debug_line(4, f'Recipe: Invoking rule ffff8644ad48;{R} [id "3"].'),
+            debug_line(4, "Rule returned 0."),
+        ), (set(), None))
+
+
+class RequestTests(unittest.TestCase):
+    def test_request_bytes(self):
+        raw = v2_engine.request_bytes(Input(method="POST", uri="/a?b=1", headers={"Content-Type": "x"}, data="é"))
+        self.assertTrue(raw.startswith(b"POST /a?b=1 HTTP/1.1\r\n"))
+        for h in (b"Host: localhost\r\n", b"Content-Length: 2\r\n", b"Connection: close\r\n", b"Content-Type: x\r\n"):
+            self.assertIn(h, raw)
+        self.assertTrue(raw.endswith(b"\r\n\r\n\xc3\xa9"))
+        self.assertNotIn(httpd.REMOTE_ADDR_HEADER.encode(), raw)
+
+    def test_request_bytes_remote_addr(self):
+        raw = v2_engine.request_bytes(Input(remote_addr="2001:db8:1::5"))
+        self.assertIn(b"X-Seclang-Remote-Addr: 2001:db8:1::5\r\n", raw)
+
+    def test_request_bytes_no_duplicate_host(self):
+        raw = v2_engine.request_bytes(Input(headers={"host": "example.com"}))
+        self.assertEqual(raw.lower().count(b"host:"), 1)
+
+
+class InterruptionTests(unittest.TestCase):
+    def test_body_limit_without_rule(self):
+        self.assertEqual(v2_engine.interruption(413, None, 200), Interruption(0, "deny", 413))
+
+    def test_backend_status_is_not_an_interruption(self):
+        self.assertIsNone(v2_engine.interruption(200, None, 200))
+        self.assertIsNone(v2_engine.interruption(404, None, 404))
+
+    def test_rule_interruptions(self):
+        self.assertEqual(v2_engine.interruption(None, (12, "drop", None), 200), Interruption(12, "drop", 0))
+        self.assertEqual(v2_engine.interruption(302, (13, "redirect", 302), 200), Interruption(13, "redirect", 302))
+        self.assertEqual(v2_engine.interruption(500, (7050, "deny", 418), 200), Interruption(7050, "deny", 418))
+
+
+@needs_httpd
+class EngineTests(unittest.TestCase):
+    def profile(self, rules: str, uri: str, output: Output) -> Profile:
+        return Profile("tests/engine/x.yaml", [], {}, rules, [Test("t", [Stage(Input(uri=uri), None, output)])])
+
+    def test_disruptive_profile_passes(self):
+        p = self.profile('SecRuleEngine On\nSecRule ARGS:a "@streq x" "id:7,phase:1,deny,status:403"',
+                         "/?a=x", Output(triggered_rules=[7], interruption=Interruption(7, "deny", 403)))
+        with httpd.Backend() as b:
+            self.assertEqual(v2_engine.run_profile(p, b), [])
+
+    def test_apache_rejection_reported(self):
+        p = self.profile("SecRuleEngine On", "/%", Output(no_interruption=True))
+        with httpd.Backend() as b:
+            failures = v2_engine.run_profile(p, b)
+        self.assertEqual(len(failures), 1)
+        self.assertIn("apache rejected the request (status 400)", failures[0])
+
+    def test_expect_error(self):
+        p = self.profile("SecFoo bar", "/", Output(expect_error=True))
+        with httpd.Backend() as b:
+            self.assertEqual(v2_engine.run_profile(p, b), [])
 
 
 if __name__ == "__main__":
