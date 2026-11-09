@@ -1,0 +1,33 @@
+meta:
+  name: ipmatch-overlap
+  description: "@ipMatch loads and matches a list with nested ranges and a repeated address"
+spec: 06-operators.md#ipmatch
+rules: |
+  SecRuleEngine On
+  SecRule REMOTE_ADDR "@ipMatch 10.0.0.0/8,10.1.0.0/16,10.1.2.3,10.1.2.3,2001:db8::/32,2001:db8:1::/48" "id:6221,phase:1,deny,status:403"
+tests:
+  - test_title: address inside every nested IPv4 entry
+    stages:
+      - stage:
+          input: {uri: /, remote_addr: 10.1.2.3}
+          output:
+            interruption: {rule_id: 6221, action: deny, status: 403}
+  - test_title: address inside the outer IPv4 range only
+    stages:
+      - stage:
+          input: {uri: /, remote_addr: 10.9.9.9}
+          output:
+            interruption: {rule_id: 6221, action: deny, status: 403}
+  - test_title: address inside nested IPv6 ranges
+    stages:
+      - stage:
+          input: {uri: /, remote_addr: "2001:db8:1::5"}
+          output:
+            interruption: {rule_id: 6221, action: deny, status: 403}
+  - test_title: address outside every entry
+    stages:
+      - stage:
+          input: {uri: /, remote_addr: 11.0.0.1}
+          output:
+            non_triggered_rules: [6221]
+            no_interruption: true

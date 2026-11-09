@@ -195,7 +195,10 @@ each optionally with a `/prefix` CIDR suffix.
 addresses or falls inside one of the networks. A value that is not an address does not
 match. Mixed IPv4 and IPv6 entries are allowed in one list. Every entry of `LIST` MUST
 be a valid address or prefix; an entry that cannot be parsed (for example
-`10.0.0.0/100`) is a configuration error (ADR-0024).
+`10.0.0.0/100`) is a configuration error (ADR-0024). Entries MAY overlap or repeat:
+the list matches when any entry does, so an entry covered by another changes nothing and
+is not an error. An engine MAY warn when one entry lies entirely inside another, since
+that can be a mistyped prefix.
 
 **Divergence notes.** One corpus case differs: the IPv4-mapped address
 `::ffff:ffff:ffff` against `0:0::/80` matches in ModSecurity and not in Coraza
@@ -206,7 +209,7 @@ be a valid address or prefix; an entry that cannot be parsed (for example
 non-match for `10.0.0.0/100` is excluded on import (ADR-0024).
 
 **Tests.** `tests/unit/operators/ipMatch.json`, `tests/engine/operators/ipmatch.yaml`,
-`tests/engine/operators/ipmatch-invalid-entry.yaml`
+`tests/engine/operators/ipmatch-invalid-entry.yaml`, `tests/engine/operators/ipmatch-overlap.yaml`
 
 ### le
 
