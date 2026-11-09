@@ -44,6 +44,7 @@ A feature moves between statuses as engines adopt it (ADR-0032):
 | `Extended` | `Core` | All three surveyed engines implement it, and OWASP CRS v4 or an engine's recommended configuration uses it. An engine that fails its tests gets a `compat/known-gaps.md` row. | ADR; MAJOR change. |
 | `Core` | `Extended` | An engine cannot reasonably implement it, or nothing portable relies on it (ADR-0025). | ADR; MAJOR change. |
 | any | `Deprecated` | The feature is legacy and a replacement exists, or no ruleset should use it (ADR-0011). | ADR. |
+| `Deprecated` | `Extended` | The feature is needed again: the entry gets full Syntax and Semantics and tests with `requires:`, which engines skip until they implement it (ADR-0033). | ADR; MINOR change. |
 
 A new feature that two engines already implement compatibly enters as `Extended`. A feature
 whose engines drop to fewer than two moves back to `Engine-specific`.

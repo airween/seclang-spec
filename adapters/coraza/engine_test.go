@@ -73,3 +73,26 @@ func TestRunStageRecoversFromEnginePanic(t *testing.T) {
 		t.Fatal("a panic must be reported as exactly one mismatch")
 	}
 }
+
+func TestRunStageCapturesAuditLog(t *testing.T) {
+	out := Output{AuditLogContains: "x", NoAuditLogContains: "y"}
+	p := Profile{
+		Rules: "SecRuleEngine On\nSecRule ARGS_GET:a \"@streq 1\" \"id:5,phase:1,pass,log\"\n",
+		Tests: []Test{{Stages: []struct {
+			Stage Stage `yaml:"stage"`
+		}{{Stage: Stage{Output: out}}}}},
+	}
+	waf, log, err := BuildWAF(p, t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, v := range []string{"first-probe", "second-probe"} {
+		o := RunStage(waf, log, Stage{Input: Input{URI: "/?a=1", Headers: map[string]string{"X-Probe": v}}})
+		if !strings.Contains(o.Audit, v) || (v == "second-probe" && strings.Contains(o.Audit, "first-probe")) {
+			t.Fatalf("audit for %s = %q", v, o.Audit)
+		}
+		if msgs := CheckStage(o, Output{AuditLogContains: v, NoAuditLogContains: "absent-value"}); len(msgs) != 0 {
+			t.Fatal(msgs)
+		}
+	}
+}

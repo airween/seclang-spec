@@ -85,7 +85,8 @@ def unsupportedReason (cfg : Config) (stages : List Stage) : Option String :=
   else if let some v := vars.find? unsupportedVariables.contains then some s!"variable {v}"
   else if let some a := acts.find? (fun a => ["setsid", "setuid", "setrsc"].contains a.name) then some s!"action {a.name}"
   else if acts.any (fun a => a.name == "ctl" && (a.value.getD "").toLower.startsWith "requestbodyprocessor=xml") then some "body processor XML"
-  else if stages.any (fun s => (s.output.getObjVal? "log_contains").toOption.isSome || (s.output.getObjVal? "no_log_contains").toOption.isSome) then some "log assertions"
+  else if stages.any (fun s => ["log_contains", "no_log_contains", "audit_log_contains", "no_audit_log_contains"].any
+      fun k => (s.output.getObjVal? k).toOption.isSome) then some "log assertions"
   else if stages.any (fun s => s.input.body.isSome && (headerValue s.input.headers "Content-Type").any fun ct =>
             ct.toLower.endsWith "xml") then some "body processor XML"
   else none

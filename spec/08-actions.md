@@ -4,7 +4,7 @@ Actions say what a rule does when it matches: metadata, logging, flow control, v
 changes, engine control (`ctl`) and exactly one disruptive action
 (`02-grammar.md#action-list`, `03-processing-model.md`). The two indexes list every action
 and every `ctl:` option known to any surveyed engine with its status (`00-conventions.md`,
-ADR-0006). The `sanitize*` spellings are aliases of `sanitise*` (ADR-0004).
+ADR-0006). The `sanitise*` spellings are aliases of `sanitize*` (ADR-0004).
 
 ## Index of actions
 
@@ -40,11 +40,11 @@ ADR-0006). The `sanitize*` spellings are aliases of `sanitise*` (ADR-0004).
 | [proxy](#proxy) | Deprecated | yes | - | - | Proxy the request elsewhere |
 | [redirect](#redirect) | Core | yes | yes | yes | Interrupt with a redirect |
 | [rev](#rev) | Extended | yes | yes | yes | Rule revision metadata |
-| [sanitiseArg](#sanitisearg) | Deprecated | yes | - | - | Mask an argument in the audit log (alias sanitizeArg) |
-| [sanitiseMatched](#sanitisematched) | Deprecated | yes | - | - | Mask the matched variable in the audit log (alias sanitizeMatched) |
-| [sanitiseMatchedBytes](#sanitisematchedbytes) | Deprecated | yes | - | - | Mask matched bytes in the audit log (alias sanitizeMatchedBytes) |
-| [sanitiseRequestHeader](#sanitiserequestheader) | Deprecated | yes | - | - | Mask a request header in the audit log (alias sanitizeRequestHeader) |
-| [sanitiseResponseHeader](#sanitiseresponseheader) | Deprecated | yes | - | - | Mask a response header in the audit log (alias sanitizeResponseHeader) |
+| [sanitizeArg](#sanitizearg) | Extended | yes | - | - | Mask an argument in the logs (alias sanitiseArg) |
+| [sanitizeMatched](#sanitizematched) | Extended | yes | - | - | Mask the matched variable in the logs (alias sanitiseMatched) |
+| [sanitizeMatchedBytes](#sanitizematchedbytes) | Extended | yes | - | - | Mask matched bytes in the logs (alias sanitiseMatchedBytes) |
+| [sanitizeRequestHeader](#sanitizerequestheader) | Extended | yes | - | - | Mask a request header in the logs (alias sanitiseRequestHeader) |
+| [sanitizeResponseHeader](#sanitizeresponseheader) | Extended | yes | - | - | Mask a response header in the logs (alias sanitiseResponseHeader) |
 | [setenv](#setenv) | Extended | yes | yes | yes | Set a process environment variable |
 | [setrsc](#setrsc) | Extended | yes | yes | - | Initialise the RESOURCE collection |
 | [setsid](#setsid) | Extended | yes | yes | - | Initialise the SESSION collection |
@@ -602,6 +602,104 @@ values equals `TAG` (ADR-0029).
 
 **Implemented by.** v2, v3, Coraza.
 
+### sanitizeArg
+
+**Status:** Extended
+
+**Syntax.** `sanitizeArg:NAME`; alias `sanitiseArg`.
+
+**Semantics.** When the rule matches, marks every argument of the transaction (query string
+or request body) whose name equals `NAME`, compared case-insensitively, so that its value
+is written to the logs as the mask `[sanitized]`, whatever its length. Wherever the engine
+writes a marked argument or header, or text derived from it, to the transaction's audit log
+entry (request line and URI, headers, bodies, matched-rule messages) or to an error-log
+line written by this rule or a later rule of the same transaction (the URI or query string
+in the line, a macro in `msg` or `logdata`, the matched-data description), the value MUST
+NOT appear in clear. The same bytes arriving in another field are not marked. In the audit
+log the mask takes the value's place; where the
+mask appears in the error log is engine-specific. An engine that cannot locate a marked
+value inside a body it writes MUST write the whole body as the mask. Error-log lines
+written before the action ran are not retracted, the debug log is not masked, and the
+variables keep their values for later rules. Non-disruptive (ADR-0033).
+
+**Divergence notes.** ModSecurity v2 (`apache2/re_actions.c`, `apache2/msc_logging.c`
+`sanitize_request_line`) masks the audit log only and writes one `*` per byte, which shows
+the length. libmodsecurity v3.0.17 rejects the action (`ACTION_NOT_SUPPORTED` in
+`src/parser/seclang-parser.yy`); Coraza v3.8.1 does not know it.
+
+**Tests.** `tests/engine/actions/sanitize.yaml`
+
+**Implemented by.** v2 (same-length mask, audit log only).
+
+### sanitizeMatched
+
+**Status:** Extended
+
+**Syntax.** `sanitizeMatched`; alias `sanitiseMatched`.
+
+**Semantics.** Marks, as `08-actions.md#sanitizearg` describes, the value the rule matched
+when the matched variable is `ARGS:x`, `ARGS_GET:x`, `ARGS_POST:x` or `ARGS_NAMES:x` (the
+value of argument `x`),
+`REQUEST_HEADERS:x` or `REQUEST_HEADERS_NAMES:x` (request header `x`), or
+`RESPONSE_HEADERS:x` or `RESPONSE_HEADERS_NAMES:x` (response header `x`). For any other
+variable it does nothing (ADR-0033).
+
+**Divergence notes.** As for `sanitizeArg`; v2 (`msre_action_sanitizeMatched_execute`)
+handles `ARGS`, `ARGS_NAMES` and the header collections but not `ARGS_GET` or `ARGS_POST`.
+
+**Tests.** `tests/engine/actions/sanitize.yaml`
+
+**Implemented by.** v2 (same-length mask, audit log only).
+
+### sanitizeMatchedBytes
+
+**Status:** Extended
+
+**Syntax.** `sanitizeMatchedBytes` or `sanitizeMatchedBytes:N/M`, with `N` and `M` single
+digits; alias `sanitiseMatchedBytes`.
+
+**Semantics.** As `sanitizeMatched`, but marks only the bytes the operator matched inside
+the value; the rest of the value stays in clear. With `N/M` the first `N` and the last `M`
+matched bytes stay in clear and the bytes between them are written as one `[sanitized]`
+(ADR-0033).
+
+**Divergence notes.** As for `sanitizeArg`; v2 parses `N/M` in
+`msre_action_sanitizeMatchedBytes_init`.
+
+**Tests.** `tests/engine/actions/sanitize.yaml`
+
+**Implemented by.** v2 (same-length mask, audit log only).
+
+### sanitizeRequestHeader
+
+**Status:** Extended
+
+**Syntax.** `sanitizeRequestHeader:NAME`; alias `sanitiseRequestHeader`.
+
+**Semantics.** Marks, as `08-actions.md#sanitizearg` describes, the value of every request
+header whose name equals `NAME`, compared case-insensitively (ADR-0033).
+
+**Divergence notes.** As for `sanitizeArg`.
+
+**Tests.** `tests/engine/actions/sanitize.yaml`
+
+**Implemented by.** v2 (same-length mask, audit log only).
+
+### sanitizeResponseHeader
+
+**Status:** Extended
+
+**Syntax.** `sanitizeResponseHeader:NAME`; alias `sanitiseResponseHeader`.
+
+**Semantics.** Marks, as `08-actions.md#sanitizearg` describes, the value of every response
+header whose name equals `NAME`, compared case-insensitively (ADR-0033).
+
+**Divergence notes.** As for `sanitizeArg`.
+
+**Tests.** `tests/engine/actions/sanitize.yaml`
+
+**Implemented by.** v2 (same-length mask, audit log only).
+
 ### setenv
 
 **Status:** Extended
@@ -700,47 +798,6 @@ values equals `TAG` (ADR-0029).
 **Semantics.** Proxies the request to another URL (Apache `mod_proxy`).
 
 **Implemented by.** v2.
-
-### sanitiseArg
-
-**Status:** Deprecated
-
-**Semantics.** Masks an argument's value in the audit log; alias `sanitizeArg`.
-
-**Implemented by.** v2.
-
-### sanitiseMatched
-
-**Status:** Deprecated
-
-**Semantics.** Masks the matched variable in the audit log; alias `sanitizeMatched`.
-
-**Implemented by.** v2.
-
-### sanitiseMatchedBytes
-
-**Status:** Deprecated
-
-**Semantics.** Masks the matched bytes in the audit log; alias `sanitizeMatchedBytes`.
-
-**Implemented by.** v2.
-
-### sanitiseRequestHeader
-
-**Status:** Deprecated
-
-**Semantics.** Masks a request header in the audit log; alias `sanitizeRequestHeader`.
-
-**Implemented by.** v2.
-
-### sanitiseResponseHeader
-
-**Status:** Deprecated
-
-**Semantics.** Masks a response header in the audit log; alias `sanitizeResponseHeader`.
-
-**Implemented by.** v2.
-
 
 ## Extended ctl options
 

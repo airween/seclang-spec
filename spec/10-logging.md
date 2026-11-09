@@ -5,8 +5,11 @@ Engines produce three kinds of log output: an **error log** line per rule match,
 and layout are where the three engines differ most, and no ruleset depends on them, so
 this file specifies the minimum that rules and operators need to agree on (ADR-0021) and
 leaves the rest to each engine's documentation. Conformance tests never assert on log
-layout; they assert on which rules matched and, for the error log, that a rule's `msg`
-text appears (`tests/README.md`).
+layout; they assert on which rules matched, for the error log that a rule's `msg` text
+appears, and, for both logs, that a value a `sanitize*` action masks does not
+(`tests/README.md`). A value marked by a `sanitize*` action
+(`08-actions.md#sanitizearg`) never appears in clear in the error or audit log; the debug
+log is not masked (ADR-0033).
 
 ### Error log
 
@@ -48,8 +51,9 @@ libmodsecurity v3 (`src/audit_log/audit_log.cc`, saves unless every message carr
 `noauditlog`) treat a match as relevant unless `noauditlog` is set; Coraza 3.8.1
 (`transaction.go`) requires `auditlog` explicitly or via `SecDefaultAction`, and when
 `SecAuditLogRelevantStatus` is configured it additionally requires the status to match
-(AND, not OR; Coraza issue 1576). The audit entry is not observable through the test
-schema, so this is recorded in `compat/known-gaps.md` only.
+(AND, not OR; Coraza issue 1576). Relevance is not observable through the test schema,
+because adapters force `SecAuditEngine On` for a profile that asserts on the audit log, so
+this is recorded in `compat/known-gaps.md` only.
 
 **Tests.** `tests/engine/logging/audit-relevance-load.yaml`
 

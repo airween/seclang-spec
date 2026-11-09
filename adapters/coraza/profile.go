@@ -69,13 +69,15 @@ type Interruption struct {
 }
 
 type Output struct {
-	TriggeredRules    []int         `yaml:"triggered_rules"`
-	NonTriggeredRules []int         `yaml:"non_triggered_rules"`
-	Interruption      *Interruption `yaml:"interruption"`
-	NoInterruption    bool          `yaml:"no_interruption"`
-	LogContains       string        `yaml:"log_contains"`
-	NoLogContains     string        `yaml:"no_log_contains"`
-	ExpectError       bool          `yaml:"expect_error"`
+	TriggeredRules     []int         `yaml:"triggered_rules"`
+	NonTriggeredRules  []int         `yaml:"non_triggered_rules"`
+	Interruption       *Interruption `yaml:"interruption"`
+	NoInterruption     bool          `yaml:"no_interruption"`
+	LogContains        string        `yaml:"log_contains"`
+	NoLogContains      string        `yaml:"no_log_contains"`
+	AuditLogContains   string        `yaml:"audit_log_contains"`
+	NoAuditLogContains string        `yaml:"no_audit_log_contains"`
+	ExpectError        bool          `yaml:"expect_error"`
 }
 
 // UnitCase mirrors tests/schema/unit.schema.json. Strings are byte strings (one code

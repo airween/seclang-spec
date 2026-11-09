@@ -16,12 +16,34 @@ type Observed struct {
 	Triggered    map[int]bool
 	Interruption *types.Interruption
 	Log          []string
+	Audit        string // the transaction's audit log entry, when the profile asserts on it
 	Panic        string // non-empty when the engine panicked while processing the stage
 }
 
+// Logs collects what a WAF built by BuildWAF writes: error log lines, and the serial audit
+// log file when the profile asserts on the audit log.
+type Logs struct {
+	Error     []string
+	auditPath string
+}
+
+// auditDirectives turn the audit log on for profiles that assert on it (tests/README.md).
+const auditDirectives = "\nSecAuditEngine On\nSecAuditLogParts ABCFHZ\nSecAuditLogType Serial\nSecAuditLogFormat Native\nSecAuditLog %s\n"
+
+func usesAuditLog(p Profile) bool {
+	for _, t := range p.Tests {
+		for _, s := range t.Stages {
+			if s.Stage.Output.AuditLogContains != "" || s.Stage.Output.NoAuditLogContains != "" {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // BuildWAF writes the profile's auxiliary files under dir, then builds a WAF whose
-// configuration root is dir and whose error log lines are appended to the returned slice.
-func BuildWAF(p Profile, dir string) (coraza.WAF, *[]string, error) {
+// configuration root is dir and whose logs are collected in the returned Logs.
+func BuildWAF(p Profile, dir string) (coraza.WAF, *Logs, error) {
 	for rel, content := range p.Files {
 		path := filepath.Join(dir, filepath.FromSlash(rel))
 		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
@@ -31,11 +53,16 @@ func BuildWAF(p Profile, dir string) (coraza.WAF, *[]string, error) {
 			return nil, nil, err
 		}
 	}
-	log := &[]string{}
+	log := &Logs{}
+	rules := p.Rules
+	if usesAuditLog(p) {
+		log.auditPath = filepath.Join(dir, "audit.log")
+		rules += fmt.Sprintf(auditDirectives, log.auditPath)
+	}
 	cfg := coraza.NewWAFConfig().
 		WithRootFS(os.DirFS(dir)).
-		WithDirectives(p.Rules).
-		WithErrorCallback(func(mr types.MatchedRule) { *log = append(*log, mr.ErrorLog()) })
+		WithDirectives(rules).
+		WithErrorCallback(func(mr types.MatchedRule) { log.Error = append(log.Error, mr.ErrorLog()) })
 	waf, err := coraza.NewWAF(cfg)
 	if err != nil {
 		return nil, nil, err
@@ -45,7 +72,7 @@ func BuildWAF(p Profile, dir string) (coraza.WAF, *[]string, error) {
 
 // RunStage drives one transaction through the phases the stage needs. An engine panic
 // is caught and reported in Observed.Panic so one engine bug cannot abort the whole run.
-func RunStage(waf coraza.WAF, log *[]string, s Stage) (o Observed) {
+func RunStage(waf coraza.WAF, log *Logs, s Stage) (o Observed) {
 	defer func() {
 		if r := recover(); r != nil {
 			o = Observed{Triggered: map[int]bool{}, Panic: fmt.Sprint(r)}
@@ -54,8 +81,12 @@ func RunStage(waf coraza.WAF, log *[]string, s Stage) (o Observed) {
 	return runStage(waf, log, s)
 }
 
-func runStage(waf coraza.WAF, log *[]string, s Stage) Observed {
-	*log = nil
+func runStage(waf coraza.WAF, log *Logs, s Stage) Observed {
+	log.Error = nil
+	var auditStart int64
+	if fi, err := os.Stat(log.auditPath); err == nil {
+		auditStart = fi.Size()
+	}
 	tx := waf.NewTransaction()
 	defer tx.Close()
 	addr := s.Input.RemoteAddr
@@ -120,7 +151,12 @@ func runStage(waf coraza.WAF, log *[]string, s Stage) Observed {
 	for _, mr := range tx.MatchedRules() {
 		o.Triggered[mr.Rule().ID()] = true
 	}
-	o.Log = append(o.Log, *log...)
+	o.Log = append(o.Log, log.Error...)
+	if log.auditPath != "" {
+		if b, err := os.ReadFile(log.auditPath); err == nil && int64(len(b)) >= auditStart {
+			o.Audit = string(b[auditStart:])
+		}
+	}
 	return o
 }
 
@@ -166,6 +202,12 @@ func CheckStage(o Observed, want Output) []string {
 	}
 	if want.NoLogContains != "" && strings.Contains(logText, want.NoLogContains) {
 		msgs = append(msgs, fmt.Sprintf("log contains %q", want.NoLogContains))
+	}
+	if want.AuditLogContains != "" && !strings.Contains(o.Audit, want.AuditLogContains) {
+		msgs = append(msgs, fmt.Sprintf("audit log does not contain %q", want.AuditLogContains))
+	}
+	if want.NoAuditLogContains != "" && strings.Contains(o.Audit, want.NoAuditLogContains) {
+		msgs = append(msgs, fmt.Sprintf("audit log contains %q", want.NoAuditLogContains))
 	}
 	return msgs
 }

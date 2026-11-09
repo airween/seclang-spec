@@ -204,6 +204,21 @@ class EngineSmokeTests(unittest.TestCase):
                 rules.close()
             self.assertEqual(o.interruption, want)
 
+    def test_audit_log_per_stage(self):
+        ms = mscapi.ModSecurity()
+        audit = Output(audit_log_contains="x")
+        text = 'SecRuleEngine On\nSecRule ARGS_GET:a "@streq 1" "id:5,phase:1,pass,log"\n'
+        profile = data.Profile("x", [], {}, text, [data.Test("t", [data.Stage(data.Input(), None, audit)])])
+        with tempfile.TemporaryDirectory() as d:
+            rules, debug = engine_tier.build_rules(ms, profile, Path(d))
+            seen = [engine_tier.run_stage(ms, rules, debug, data.Stage(data.Input(uri="/?a=1", headers={"X-Probe": v}), None, audit))
+                    for v in ("first-probe", "second-probe")]
+            rules.close()
+        self.assertIn("first-probe", seen[0].audit)
+        self.assertIn("second-probe", seen[1].audit)
+        self.assertNotIn("first-probe", seen[1].audit)
+        self.assertEqual(engine_tier.check_stage(seen[1], Output(audit_log_contains="second-probe", no_audit_log_contains="first-probe")), [])
+
 
 def case(**kw):
     base = dict(type="op", name="rx", param=None, input="", output="", ret=0, spec="", re_groups=[])

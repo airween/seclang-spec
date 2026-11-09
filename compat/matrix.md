@@ -136,11 +136,11 @@ Generated from `compat/matrix.json` by `tools/matrix.py` on 2026-10-06. Do not e
 | [`proxy`](../spec/08-actions.md#proxy) | yes | - | - | Deprecated |
 | [`redirect`](../spec/08-actions.md#redirect) | yes | yes | yes | Core |
 | [`rev`](../spec/08-actions.md#rev) | yes | yes | yes | Extended |
-| [`sanitiseArg`](../spec/08-actions.md#sanitisearg) | yes | - | - | Deprecated |
-| [`sanitiseMatched`](../spec/08-actions.md#sanitisematched) | yes | - | - | Deprecated |
-| [`sanitiseMatchedBytes`](../spec/08-actions.md#sanitisematchedbytes) | yes | - | - | Deprecated |
-| [`sanitiseRequestHeader`](../spec/08-actions.md#sanitiserequestheader) | yes | - | - | Deprecated |
-| [`sanitiseResponseHeader`](../spec/08-actions.md#sanitiseresponseheader) | yes | - | - | Deprecated |
+| [`sanitizeArg`](../spec/08-actions.md#sanitizearg) | yes | - | - | Extended |
+| [`sanitizeMatched`](../spec/08-actions.md#sanitizematched) | yes | - | - | Extended |
+| [`sanitizeMatchedBytes`](../spec/08-actions.md#sanitizematchedbytes) | yes | - | - | Extended |
+| [`sanitizeRequestHeader`](../spec/08-actions.md#sanitizerequestheader) | yes | - | - | Extended |
+| [`sanitizeResponseHeader`](../spec/08-actions.md#sanitizeresponseheader) | yes | - | - | Extended |
 | [`setenv`](../spec/08-actions.md#setenv) | yes | yes | yes | Extended |
 | [`setrsc`](../spec/08-actions.md#setrsc) | yes | yes | - | Extended |
 | [`setsid`](../spec/08-actions.md#setsid) | yes | yes | - | Extended |

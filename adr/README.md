@@ -54,3 +54,4 @@ promoted into the spec (Extension).
 | [0030](0030-negation-per-value.md) | A negated operator applies per value | Clarification | proposed |
 | [0031](0031-htmlentitydecode-named-entities.md) | `htmlEntityDecode` decodes the ASCII named entities of the WHATWG table | Divergence | proposed |
 | [0032](0032-status-transitions.md) | When a feature changes status | Clarification | proposed |
+| [0033](0033-sanitize-actions-extended.md) | The `sanitize*` actions are Extended and mask with a fixed string | Divergence | proposed |

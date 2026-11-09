@@ -256,6 +256,9 @@ def operators : List (String × Status) := [
 def operatorAliases : List (String × String) := [("pmf", "pmFromFile"), ("ipmatchf", "ipMatchFromFile")]
 def transformationAliases : List (String × String) :=
   [("normalizepath", "normalisePath"), ("normalizepathwin", "normalisePathWin")]
+def actionAliases : List (String × String) :=
+  ["Arg", "Matched", "MatchedBytes", "RequestHeader", "ResponseHeader"].map
+    fun n => (("sanitise" ++ n).toLower, "sanitize" ++ n)
 
 /-- `spec/08-actions.md`: value kind and class (`03#disruptive-actions`, `03#chains`). -/
 def actions : List (String × Status × ValueKind × ActionClass) := [
@@ -274,9 +277,9 @@ def actions : List (String × Status × ValueKind × ActionClass) := [
   ("setuid", .extended, .text, .other), ("skip", .extended, .nat, .flow), ("xmlns", .extended, .text, .other),
   ("append", .deprecated, .text, .other), ("deprecatevar", .deprecated, .text, .other), ("marker", .deprecated, .text, .other),
   ("pause", .deprecated, .text, .other), ("prepend", .deprecated, .text, .other), ("proxy", .deprecated, .text, .other),
-  ("sanitiseArg", .deprecated, .text, .other), ("sanitiseMatched", .deprecated, .none, .other),
-  ("sanitiseMatchedBytes", .deprecated, .text, .other), ("sanitiseRequestHeader", .deprecated, .text, .other),
-  ("sanitiseResponseHeader", .deprecated, .text, .other)]
+  ("sanitizeArg", .extended, .text, .other), ("sanitizeMatched", .extended, .none, .other),
+  ("sanitizeMatchedBytes", .extended, .text, .other), ("sanitizeRequestHeader", .extended, .text, .other),
+  ("sanitizeResponseHeader", .extended, .text, .other)]
 
 /-- `spec/08-actions.md`, index of ctl options. -/
 def ctlOptions : List (String × Status × CtlKind) := [
@@ -320,7 +323,8 @@ def findNamed (rows : List (String × Status)) (aliases : List (String × String
 
 def findOperator : String → Option String := findNamed operators operatorAliases
 def findTransformation : String → Option String := findNamed transformations transformationAliases
-def findAction (s : String) : Option (String × ValueKind × ActionClass) := findRow actions s
+def findAction (s : String) : Option (String × ValueKind × ActionClass) :=
+  findRow actions ((actionAliases.lookup s.toLower).getD s)
 def findCtl (s : String) : Option (String × CtlKind) := findRow ctlOptions s
 
 #guard (findDirective "secrule").map (·.1) == some "SecRule"
@@ -336,6 +340,7 @@ def findCtl (s : String) : Option (String × CtlKind) := findRow ctlOptions s
 #guard (findAction "DENY").map (·.1) == some "deny"
 #guard (findAction "deny").map (·.2.2) == some ActionClass.disruptive
 #guard (findAction "msg").map (·.2.2) == some ActionClass.metadata
+#guard (findAction "SanitiseResponseHeader").map (·.1) == some "sanitizeResponseHeader"
 #guard (findCtl "RULEENGINE").map (·.1) == some "ruleEngine"
 #guard (findCtl "responseBodyProcessor").isNone
 #guard findTransformation "normalizePath" == some "normalisePath"

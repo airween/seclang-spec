@@ -99,6 +99,8 @@
                         "no_interruption": {"type": "boolean"},
                         "log_contains": {"type": "string"},
                         "no_log_contains": {"type": "string"},
+                        "audit_log_contains": {"type": "string", "description": "Substring of the transaction's audit log entry; the adapter forces SecAuditEngine On for the profile"},
+                        "no_audit_log_contains": {"type": "string"},
                         "expect_error": {"type": "boolean", "description": "Configuration must fail to load"}
                       }
                     }

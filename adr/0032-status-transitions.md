@@ -35,6 +35,9 @@ Status transitions are defined in `spec/00-conventions.md#status-transitions`:
 - Demotions from Core, and moves to `Deprecated`, need an ADR (precedents ADR-0025 and
   ADR-0011). A feature left with fewer than two implementations returns to
   `Engine-specific`.
+- `Deprecated` back to `Extended` through an ADR that gives the entry full Syntax and
+  Semantics and tests with `requires:`; the two-engine rule does not apply, since the tests
+  are skipped until engines implement the feature (ADR-0033).
 
 ## Options considered
 
@@ -62,5 +65,5 @@ None; this records process. `tools/validate.py` already enforces that `requires:
 
 ## References
 
-- ADR-0001, ADR-0011, ADR-0025
+- ADR-0001, ADR-0011, ADR-0025, ADR-0033
 - `spec/00-conventions.md#status-transitions`

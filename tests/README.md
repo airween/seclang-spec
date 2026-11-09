@@ -27,7 +27,8 @@ in `headers` are field values as a server delivers them to the engine: without t
 optional whitespace around the value (RFC 9110), which adapters pass on verbatim. When a
 stage has a `response`, the adapter must feed it as the backend response so phases 3–5
 run. `output` asserts on rule IDs and interruption only; log wording is never asserted
-beyond `log_contains`/`no_log_contains` substrings.
+beyond `log_contains`/`no_log_contains` and `audit_log_contains`/`no_audit_log_contains`
+substrings.
 
 ## Interruptions
 
@@ -41,7 +42,16 @@ beyond `log_contains`/`no_log_contains` substrings.
 `log_contains` and `no_log_contains` are substring checks against the engine's error log
 for the transaction (or its matched-rule messages, which is what the log is built from).
 Profiles use them only with a rule's `msg` text (`spec/10-logging.md#error-log`,
-ADR-0021); never with the engine prefix, file, line or any other field.
+ADR-0021); never with the engine prefix, file, line or any other field. The one exception
+is `no_log_contains` with a value a `sanitize*` action masks (ADR-0033), which must not
+appear anywhere in the log.
+
+`audit_log_contains` and `no_audit_log_contains` are substring checks against the
+transaction's audit log entry, whatever its format. A profile that uses either gets
+`SecAuditEngine On`, `SecAuditLogParts ABCFHZ` and a serial audit log in the adapter's
+work directory, appended after its `rules` so they override the profile's own audit
+directives. Profiles use them only with a request or response value and with the mask
+`[sanitized]` (`spec/08-actions.md#sanitizearg`), never with the audit layout.
 
 ## What "triggered" means
 

@@ -14,6 +14,7 @@ from mscapi import ModSecurity, RulesSet
 
 # The URI field may contain "] [N] "; the greedy match takes the LAST "] [level] " of the
 # line, which only a message text of that exact shape could spoof.
+AUDIT_LOG = "audit.log"
 _LINE = re.compile(rb"^\[[^\]]*\] \[.*\] \[(\d+)\] (.*)$")
 _BLOCK = re.compile(rb"^\(Rule: (\d+)\) ")
 # Disruptive action names as v3 prints them (lower-cased; v3.0.17 misspells redirect).
@@ -62,12 +63,14 @@ class Observed:
     triggered: set[int]
     interruption: Interruption | None
     log: str
+    audit: str = ""  # the transaction's audit log entry, when the profile asserts on it
 
 
 def build_rules(ms: ModSecurity, profile: Profile, workdir: Path) -> tuple[RulesSet, Path]:
     """Write files: and rules.conf under workdir and load it; raises LoadError.
 
-    The debug-log directives are appended so they override any the profile sets.
+    The debug-log directives are appended so they override any the profile sets, and the
+    audit-log ones when a stage asserts on the audit log (tests/README.md).
     """
     for name, content in profile.files.items():
         p = workdir / name
@@ -75,12 +78,18 @@ def build_rules(ms: ModSecurity, profile: Profile, workdir: Path) -> tuple[Rules
         p.write_text(content)
     debug = workdir / "debug.log"
     conf = workdir / "rules.conf"
-    conf.write_text(profile.rules + f"\nSecDebugLog {debug}\nSecDebugLogLevel 4\n")
+    extra = f"\nSecDebugLog {debug}\nSecDebugLogLevel 4\n"
+    if any(st.output.audit_log_contains or st.output.no_audit_log_contains for t in profile.tests for st in t.stages):
+        extra += (f"SecAuditEngine On\nSecAuditLogParts ABCFHZ\nSecAuditLogType Serial\n"
+                  f"SecAuditLogFormat Native\nSecAuditLog {workdir / AUDIT_LOG}\n")
+    conf.write_text(profile.rules + extra)
     return ms.rules_from_file(str(conf)), debug
 
 
 def run_stage(ms: ModSecurity, rules: RulesSet, debug_path: Path, stage: Stage) -> Observed:
     start = debug_path.stat().st_size if debug_path.exists() else 0
+    audit_path = debug_path.parent / AUDIT_LOG
+    audit_start = audit_path.stat().st_size if audit_path.exists() else 0
     tx = ms.transaction(rules)
     it = None
     try:
@@ -124,7 +133,9 @@ def run_stage(ms: ModSecurity, rules: RulesSet, debug_path: Path, stage: Stage) 
         interruption = Interruption(rule_id, action, it["status"])
         if it["log"]:
             log.append(it["log"])  # v3 puts a denying rule's message here, not in the callback
-    return Observed(triggered, interruption, b"\n".join(log).decode("utf-8", "replace"))
+    audit = audit_path.read_bytes()[audit_start:] if audit_path.exists() else b""
+    return Observed(triggered, interruption, b"\n".join(log).decode("utf-8", "replace"),
+                    audit.decode("utf-8", "replace"))
 
 
 def check_stage(o: Observed, want: Output) -> list[str]:
@@ -153,4 +164,8 @@ def check_stage(o: Observed, want: Output) -> list[str]:
         msgs.append(f"log does not contain {want.log_contains!r}")
     if want.no_log_contains and want.no_log_contains in o.log:
         msgs.append(f"log contains {want.no_log_contains!r}")
+    if want.audit_log_contains and want.audit_log_contains not in o.audit:
+        msgs.append(f"audit log does not contain {want.audit_log_contains!r}")
+    if want.no_audit_log_contains and want.no_audit_log_contains in o.audit:
+        msgs.append(f"audit log contains {want.no_audit_log_contains!r}")
     return msgs

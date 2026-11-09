@@ -857,39 +857,39 @@
     "status": "Extended"
    },
    {
-    "name": "sanitiseArg",
+    "name": "sanitizeArg",
     "v2": true,
     "v3": false,
     "coraza": false,
-    "status": "Deprecated"
+    "status": "Extended"
    },
    {
-    "name": "sanitiseMatched",
+    "name": "sanitizeMatched",
     "v2": true,
     "v3": false,
     "coraza": false,
-    "status": "Deprecated"
+    "status": "Extended"
    },
    {
-    "name": "sanitiseMatchedBytes",
+    "name": "sanitizeMatchedBytes",
     "v2": true,
     "v3": false,
     "coraza": false,
-    "status": "Deprecated"
+    "status": "Extended"
    },
    {
-    "name": "sanitiseRequestHeader",
+    "name": "sanitizeRequestHeader",
     "v2": true,
     "v3": false,
     "coraza": false,
-    "status": "Deprecated"
+    "status": "Extended"
    },
    {
-    "name": "sanitiseResponseHeader",
+    "name": "sanitizeResponseHeader",
     "v2": true,
     "v3": false,
     "coraza": false,
-    "status": "Deprecated"
+    "status": "Extended"
    },
    {
     "name": "setenv",

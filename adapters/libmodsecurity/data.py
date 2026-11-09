@@ -44,6 +44,8 @@ class Output:
     no_interruption: bool = False
     log_contains: str = ""
     no_log_contains: str = ""
+    audit_log_contains: str = ""
+    no_audit_log_contains: str = ""
     expect_error: bool = False
 
 
@@ -111,6 +113,8 @@ def _output(d: dict) -> Output:
         no_interruption=bool(d.get("no_interruption", False)),
         log_contains=d.get("log_contains") or "",
         no_log_contains=d.get("no_log_contains") or "",
+        audit_log_contains=d.get("audit_log_contains") or "",
+        no_audit_log_contains=d.get("no_audit_log_contains") or "",
         expect_error=bool(d.get("expect_error", False)),
     )
 
