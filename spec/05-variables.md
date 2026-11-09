@@ -169,24 +169,36 @@ any surveyed engine with its status (`00-conventions.md`).
 engine sets it (`REQBODY_PROCESSOR` before a body is processed, `RESPONSE_BODY` when the
 response is not inspected), so a negated operator on an unset scalar matches and `&` counts
 1. Member names are matched against a
-`key` selector **case-insensitively** (ADR-0008); a regex selector is applied to the name
-unanchored and case-sensitively unless the expression says otherwise. Members keep the
-order in which the engine parsed them; a repeated name yields repeated members, so
-`&ARGS:a` can be greater than 1.
+`key` selector **case-insensitively** in every collection, `TX` included (ADR-0008); a
+regex selector is applied to the name unanchored and **case-insensitively** too, so
+`TX:/^SCORE$/` selects a member written as `tx.score`. Names that differ only in case
+denote the same member wherever a name is written (`setvar`, macros, selectors). Members
+keep the order in which the engine parsed them; a repeated name yields repeated members,
+so `&ARGS:a` can be greater than 1. The case in which an engine reports a member's name
+(`MATCHED_VAR_NAME`, `*_NAMES` collections, macros expanding them) is **not specified**.
 
 **Divergence notes.** ModSecurity v2 (`apache2/re_variables.c`, `strcasecmp`) and
 libmodsecurity v3 (`headers/modsecurity/anchored_set_variable.h`, `MyEqual`/`MyHash` lower
 case) match keys case-insensitively. Coraza 3.8.1 does too by default
 (`internal/collections/map.go`, `strings.ToLower`) but a build with
 `coraza.rule.case_sensitive_args_keys` (Coraza ADR-0016) is case-sensitive and therefore
-non-conforming. See ADR-0008. ModSecurity v2 yields **no** value for an unset scalar
+non-conforming. Regex selectors: v2 compiles them with `PCRE2_CASELESS`
+(`apache2/re_variables.c`, `var_generic_list_validate`), libmodsecurity v3 with
+`ignoreCase` (`src/variables/variable.h`, `VariableRegex` builds `m_r(regex, true)`), and Coraza lower-cases both the pattern and the stored names
+(`internal/corazawaf/rule.go`, `AddVariable`), which also turns escapes such as `\D`, `\S`
+and `\W` into `\d`, `\s` and `\w`; a portable selector does not use upper-case escapes.
+For the `ARGS` family Coraza keeps the pattern as written (`caseSensitiveVariable`) while
+storing the names lower-cased, so an upper-case pattern never matches an argument
+(`key-case-args-regex.yaml` fails on Coraza, `compat/known-gaps.md`).
+Reported names: v2 and v3 keep the first spelling written (`TX:Foo`), Coraza the
+lower-cased one (`TX:foo`). See ADR-0008. ModSecurity v2 yields **no** value for an unset scalar
 (`apache2/re_variables.c`, the generators `return 0` when the datum is `NULL`), so a
 negated operator does not match and `&` counts 0 there; libmodsecurity v3
 (`src/anchored_variable.cc`, `AnchoredVariable::evaluate` always pushes its value) and
 Coraza (`collections.Single`) yield the empty string. `scalar-unset.yaml` fails on v2
 (`compat/known-gaps.md`).
 
-**Tests.** `tests/engine/variables/key-case.yaml`, `tests/engine/variables/scalar-unset.yaml`
+**Tests.** `tests/engine/variables/key-case.yaml`, `tests/engine/variables/key-case-args-regex.yaml`, `tests/engine/variables/scalar-unset.yaml`
 
 ### Persistent collections
 

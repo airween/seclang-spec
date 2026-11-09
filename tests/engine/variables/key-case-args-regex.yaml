@@ -1,0 +1,25 @@
+meta:
+  name: key-case-args-regex
+  description: A regex selector on ARGS matches argument names case-insensitively (ADR-0008)
+spec: 05-variables.md#collection-keys
+rules: |
+  SecRuleEngine On
+  SecRule ARGS:/^FOO$/ "@streq 1" "id:6069,phase:1,pass"
+  SecRule ARGS_NAMES:/^foo$/ "@unconditionalMatch" "id:6074,phase:1,pass"
+tests:
+  - test_title: upper-case regex selector, lower-case argument
+    stages:
+      - stage:
+          input:
+            uri: /?foo=1
+          output:
+            triggered_rules: [6069]
+            no_interruption: true
+  - test_title: lower-case regex selector, upper-case argument
+    stages:
+      - stage:
+          input:
+            uri: /?FOO=1
+          output:
+            triggered_rules: [6074]
+            no_interruption: true

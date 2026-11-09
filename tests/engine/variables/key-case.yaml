@@ -6,7 +6,21 @@ rules: |
   SecRuleEngine On
   SecRule ARGS:Foo "@streq 1" "id:6097,phase:1,pass"
   SecRule REQUEST_HEADERS:x-test "@streq y" "id:6098,phase:1,pass"
+  SecAction "id:6063,phase:1,pass,nolog,setvar:tx.Score=5"
+  SecRule TX:SCORE "@eq 5" "id:6064,phase:1,pass"
+  SecRule TX:/^SCORE$/ "@eq 5" "id:6065,phase:1,pass"
+  SecAction "id:6066,phase:1,pass,nolog,setvar:tx.score=+1"
+  SecRule TX:sCoRe "@eq 6" "id:6067,phase:1,pass"
+  SecRule &TX:score "@eq 1" "id:6068,phase:1,pass"
 tests:
+  - test_title: TX names and regex selectors ignore case
+    stages:
+      - stage:
+          input:
+            uri: /?foo=1
+          output:
+            triggered_rules: [6063, 6064, 6065, 6066, 6067, 6068]
+            no_interruption: true
   - test_title: lowercase argument matches a mixed-case selector
     stages:
       - stage:

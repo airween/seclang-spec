@@ -80,7 +80,8 @@ def updateActions (c : Chain) (acts : List Action) : Chain :=
 def inRanges (ranges : List (Nat × Nat)) (id : Nat) : Bool := ranges.any fun (a, z) => a ≤ id && id ≤ z
 def tagsOf (c : Chain) : List String := (c.starter.actions.filter (·.name == "tag")).filterMap (·.value)
 def msgOf (c : Chain) : String := (actionValue c.starter.actions "msg").getD ""
-def rxName (o : Oracle) (re s : String) : Bool := (o.rx re (text s)).isSome
+/-- A regex selector against a member name: case-insensitive, like key selectors (ADR-0008). -/
+def rxName (o : Oracle) (re s : String) : Bool := (o.rx ("(?i)" ++ re) (text s)).isSome
 def addTargets (c : Chain) (ts : List Variable) : Chain :=
   { c with starter := { c.starter with variables := c.starter.variables ++ ts } }
 
@@ -536,6 +537,8 @@ def demoStore (args : List (String × String)) : Store :=
 #guard tri (run "SecRule ARGS_GET:a \"@rx ^(\\w+)-(\\w+)$\" \"id:1,phase:1,pass,capture,setvar:tx.first=%{TX.1}\"\nSecRule TX:first \"@streq foo\" \"id:2,phase:1,pass\"\nSecRule TX:0 \"@streq foo-bar\" \"id:3,phase:1,pass\"\nSecRule TX:2 \"@streq bar\" \"id:4,phase:1,pass\"" (demoStore [("a", "foo-bar")])) == [1, 2, 3, 4]
 #guard tri (run "SecRule ARGS_GET:a \"@streq abc\" \"id:1,phase:1,pass,t:lowercase,t:hexEncode,multiMatch\"\nSecRule ARGS_GET:a \"@streq abc\" \"id:2,phase:1,pass,t:lowercase,t:hexEncode\"\nSecRule ARGS_GET:a \"@streq ABC\" \"id:3,phase:1,pass,t:lowercase,t:none\"" (demoStore [("a", "ABC")])) == [1, 3]
 #guard tri (run "SecRule ARGS_GET:a \"@streq 1\" \"id:1,phase:1,pass,tag:'drop-me'\"\nSecRule ARGS_GET:a \"@streq 1\" \"id:2,phase:1,pass\"\nSecRule ARGS_GET:a|ARGS_GET:b \"@streq 1\" \"id:3,phase:1,pass\"\nSecRule ARGS_GET:a \"@streq 1\" \"id:4,phase:1,deny\"\nSecRuleRemoveByTag drop-me\nSecRuleRemoveById 2\nSecRuleUpdateTargetById 3 \"!ARGS_GET:a\"\nSecRuleUpdateActionById 4 \"pass\"" (demoStore [("a", "1")])) == [4]
+-- regex selectors ignore case, like key selectors (ADR-0008)
+#guard tri (run "SecAction \"id:1,phase:1,pass,nolog,setvar:tx.Score=5\"\nSecRule TX:/^SCORE$/ \"@eq 5\" \"id:2,phase:1,pass\"\nSecRule ARGS_GET:/^A$/ \"@streq x\" \"id:3,phase:1,pass\"" (demoStore [("a", "x")])) == [1, 2, 3]
 #guard tri (run "SecRule &ARGS_GET \"@eq 2\" \"id:1,phase:1,pass\"\nSecRule ARGS_GET|!ARGS_GET:skip \"@streq x\" \"id:2,phase:1,pass\"" (demoStore [("skip", "x"), ("b", "2")])) == [1]
 #guard tri (run "SecRule ARGS_GET:a \"@streq %{tx.expected}\" \"id:2,phase:1,pass\"\nSecAction \"id:1,phase:1,pass,nolog,setvar:tx.expected=secret\"\nSecRule ARGS_GET:a \"@streq %{TX.EXPECTED}\" \"id:3,phase:1,pass\"" (demoStore [("a", "secret")])) == [1, 3]
 #guard tri (run "SecRule ARGS_GET:a \"@streq hello\" \"id:1,phase:1,pass,t:lowercase,chain\"\n  SecRule MATCHED_VAR \"@streq hello\" \"t:none\"\nSecRule ARGS_GET:a \"@streq hello\" \"id:2,phase:1,pass,t:lowercase,chain\"\n  SecRule MATCHED_VAR_NAME \"@streq ARGS_GET:a\" \"t:none\"\nSecRule ARGS_GET:b|ARGS_GET:c \"@rx ^v\" \"id:3,phase:1,pass,chain\"\n  SecRule &MATCHED_VARS \"@eq 2\" \"t:none\"" (demoStore [("a", "HeLLo"), ("b", "v1"), ("c", "v2")])) == [1, 2, 3]
