@@ -507,11 +507,16 @@ the three values above), so it is Extended.
 
 **Semantics.** Overrides `SecRuleEngine` for the later phases and, at once, for the
 interruption decision of the current phase: after `DetectionOnly` or `Off` no later rule
-of the phase interrupts (`03-processing-model.md#ctl-timing`); whether the remaining
-rules are still evaluated after `Off` is not specified.
+of the phase interrupts (`03-processing-model.md#ctl-timing`). After `Off` no further
+rule of the transaction is evaluated, so the mode cannot be switched back (ADR-0034).
+
+**Divergence notes.** libmodsecurity v3 and Coraza read the mode only when a phase starts:
+they evaluate the rest of the phase after `Off`, and a later `ctl:ruleEngine` in it
+overwrites `Off` (`compat/known-gaps.md`).
 
 **Tests.** `tests/engine/actions/ctl-options.yaml`,
-`tests/engine/processing/ctl-timing.yaml`
+`tests/engine/processing/ctl-timing.yaml`,
+`tests/engine/processing/ctl-ruleengine-off-final.yaml`
 
 ### ctl:ruleRemoveById
 

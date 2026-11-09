@@ -55,3 +55,4 @@ promoted into the spec (Extension).
 | [0031](0031-htmlentitydecode-named-entities.md) | `htmlEntityDecode` decodes the ASCII named entities of the WHATWG table | Divergence | accepted |
 | [0032](0032-status-transitions.md) | When a feature changes status | Clarification | accepted |
 | [0033](0033-sanitize-actions-extended.md) | The `sanitize*` actions are Extended and mask with a fixed string | Divergence | proposed |
+| [0034](0034-ruleengine-off-is-final.md) | `ctl:ruleEngine=Off` is final for the transaction | Divergence | proposed |

@@ -10,6 +10,8 @@ namespace SecLang
 inductive Mode | on | off | detectionOnly
   deriving Repr, BEq, DecidableEq
 
+def Mode.isOff : Mode → Bool | .off => true | _ => false
+
 def modeOf (s : String) : Mode :=
   match s.toLower with | "off" => .off | "detectiononly" => .detectionOnly | _ => .on
 
@@ -261,8 +263,7 @@ def applyInitcol (tx : Tx) (v : String) : Tx :=
 
 /-- `ctl` (`03#ctl-timing`): rule edits are immediate; `ruleEngine` applies at once to the
 interruption decision (after `Off` or `DetectionOnly` no later rule of the phase interrupts)
-and to every later phase; the remaining rules of the phase are still evaluated after `Off`
-(the v3/Coraza reading of a point the spec leaves open). -/
+and to every later phase; after `Off` no further rule runs at all (ADR-0034, `runItems`). -/
 def applyCtl (tx : Tx) (v : String) : Tx :=
   let (opt, val) := match v.splitOn "=" with | [o] => (o, "") | o :: rest => (o, "=".intercalate rest) | [] => ("", "")
   let ranges (r : String) : List (Nat × Nat) := (parseRanges 0 [r]).toOption.getD []
@@ -372,7 +373,7 @@ phase. -/
 def runItems (o : Oracle) (phase : Nat) : List Item → PhaseState → Tx → Tx
   | [], _, tx => tx
   | item :: rest, ps, tx =>
-    if tx.ended then tx else
+    if tx.ended || tx.mode.isOff then tx else
     match item with
     | .marker l => runItems o phase rest (if ps.skipAfter == some l then { ps with skipAfter := none } else ps) tx
     | .chain c =>
@@ -492,13 +493,23 @@ only a marker can end the skip. -/
 theorem skipAfter_ignores_chain (o : Oracle) (p k : Nat) (l : String) (c : Chain) (rest : List Item)
     (tx : Tx) (h : tx.ended = false) :
     runItems o p (.chain c :: rest) ⟨k, some l⟩ tx = runItems o p rest ⟨k, some l⟩ tx := by
-  simp [runItems, h]
+  cases hm : tx.mode with
+  | off => cases rest <;> simp [runItems, hm, Mode.isOff]
+  | on | detectionOnly => simp [runItems, h, hm, Mode.isOff]
 
 /-- ADR-0029: a `ctl:ruleRemoveByTag` parameter removes a chain exactly when it equals one of
 the chain's tags (no substring or regular-expression match). -/
 theorem removed_by_tag_exact (tx : Tx) (c : Chain) (hid : c.id ∉ tx.removedIds) :
     removed tx c = tx.removedTags.any (tagsOf c).contains := by
   simp [removed, hid]
+
+/-- ADR-0034: once the mode is `Off`, no further rule of the phase runs (and `phaseRuns` keeps
+every later phase from starting). -/
+theorem off_is_final (o : Oracle) (p : Nat) (items : List Item) (ps : PhaseState) (tx : Tx)
+    (h : tx.mode = .off) : runItems o p items ps tx = tx := by
+  cases items with
+  | nil => rfl
+  | cons i rest => simp [runItems, h, Mode.isOff]
 
 /-- Phase 5 runs whenever the engine is not off at its boundary, interrupted or not. -/
 theorem logging_phase_runs (tx : Tx) (h : tx.nextMode ≠ .off) : phaseRuns (startPhase tx) 5 = true := by
@@ -531,7 +542,9 @@ def demoStore (args : List (String × String)) : Store :=
 #guard (let tx := run "SecRule ARGS_GET:a \"@streq 1\" \"id:1,phase:1,deny,status:401\"\nSecRule ARGS_GET:a \"@streq 1\" \"id:2,phase:1,deny\"\nSecRule ARGS_GET:a \"@streq 1\" \"id:3,phase:2,deny\"\nSecRule ARGS_GET:a \"@streq 1\" \"id:4,phase:5,pass\"" (demoStore [("a", "1")])
         (tx.triggered, tx.interruption)) == ([1, 4], some ⟨1, "deny", 401⟩)
 #guard tri (run "SecRule ARGS_GET:a \"@streq 1\" \"id:1,phase:1,allow:request\"\nSecRule ARGS_GET:a \"@streq 1\" \"id:2,phase:1,pass\"\nSecRule ARGS_GET:a \"@streq 1\" \"id:3,phase:2,pass\"\nSecRule ARGS_GET:a \"@streq 1\" \"id:4,phase:3,pass\"\nSecRule ARGS_GET:a \"@streq 1\" \"id:5,phase:5,pass\"" (demoStore [("a", "1")])) == [1, 4, 5]
-#guard tri (run "SecRule ARGS_GET:a \"@streq 1\" \"id:1,phase:1,pass,nolog,ctl:ruleEngine=Off\"\nSecRule ARGS_GET:a \"@streq 1\" \"id:2,phase:1,pass\"\nSecRule ARGS_GET:a \"@streq 1\" \"id:3,phase:2,pass\"" (demoStore [("a", "1")])) == [1, 2]
+#guard tri (run "SecRule ARGS_GET:a \"@streq 1\" \"id:1,phase:1,pass,nolog,ctl:ruleEngine=Off\"\nSecRule ARGS_GET:a \"@streq 1\" \"id:2,phase:1,pass\"\nSecRule ARGS_GET:a \"@streq 1\" \"id:3,phase:2,pass\"" (demoStore [("a", "1")])) == [1]
+-- ADR-0034: a later ctl:ruleEngine=On cannot switch inspection back on
+#guard tri (run "SecRule ARGS_GET:a \"@streq 1\" \"id:1,phase:1,pass,nolog,ctl:ruleEngine=Off\"\nSecRule ARGS_GET:a \"@streq 1\" \"id:2,phase:1,pass,nolog,ctl:ruleEngine=On\"\nSecRule ARGS_GET:a \"@streq 1\" \"id:3,phase:2,deny\"" (demoStore [("a", "1")])) == [1]
 #guard tri (run "SecRule ARGS_GET:a \"@streq 1\" \"id:1,phase:1,pass,nolog,ctl:ruleRemoveById=2\"\nSecRule ARGS_GET:a \"@streq 1\" \"id:2,phase:1,pass\"" (demoStore [("a", "1")])) == [1]
 #guard tri (run "SecAction \"id:1,phase:1,pass,nolog,setvar:tx.a=5,setvar:tx.a=+3,setvar:tx.b=%{tx.a},setvar:tx.c=x,setvar:!tx.c,setvar:tx.d\"\nSecRule TX:a \"@eq 8\" \"id:2,phase:1,pass\"\nSecRule TX:b \"@streq 8\" \"id:3,phase:1,pass\"\nSecRule &TX:c \"@eq 0\" \"id:4,phase:1,pass\"\nSecRule TX:d \"@eq 1\" \"id:5,phase:1,pass\"" (demoStore [])) == [1, 2, 3, 4, 5]
 #guard tri (run "SecRule ARGS_GET:a \"@rx ^(\\w+)-(\\w+)$\" \"id:1,phase:1,pass,capture,setvar:tx.first=%{TX.1}\"\nSecRule TX:first \"@streq foo\" \"id:2,phase:1,pass\"\nSecRule TX:0 \"@streq foo-bar\" \"id:3,phase:1,pass\"\nSecRule TX:2 \"@streq bar\" \"id:4,phase:1,pass\"" (demoStore [("a", "foo-bar")])) == [1, 2, 3, 4]
@@ -553,7 +566,7 @@ def demoStore (args : List (String × String)) : Store :=
         (tx.triggered, tx.interruption)) == ([1, 2, 3, 4], some ⟨1, "deny", 401⟩)
 #guard (run "SecRule ARGS_GET:a \"@streq 1\" \"id:1,phase:5,deny\"" (demoStore [("a", "1")])).interruption == none
 #guard (let tx := run "SecRule ARGS_GET:a \"@streq 1\" \"id:1,phase:1,pass,nolog,ctl:ruleEngine=Off\"\nSecRule ARGS_GET:a \"@streq 1\" \"id:2,phase:1,deny\"\nSecRule ARGS_GET:a \"@streq 1\" \"id:3,phase:2,pass\"" (demoStore [("a", "1")])
-        (tx.triggered, tx.interruption)) == ([1, 2], none)
+        (tx.triggered, tx.interruption)) == ([1], none)
 #guard tri (run "SecRule ARGS_GET:a \"@streq 1\" \"id:1,phase:1,pass,skipAfter:5\"\nSecRule ARGS_GET:a \"@streq 1\" \"id:5,phase:2,pass\"\nSecRule ARGS_GET:a \"@streq 1\" \"id:6,phase:1,pass\"" (demoStore [("a", "1")])) == [1, 5]
 #guard tri (run "SecRule ARGS_GET:a \"@streq 1\" \"id:1,phase:1,pass,nolog,ctl:ruleRemoveByTag=attack\"\nSecRule ARGS_GET:a \"@streq 1\" \"id:2,phase:1,pass,tag:'attack-sqli'\"\nSecRule ARGS_GET:a \"@streq 1\" \"id:3,phase:1,pass\"" (demoStore [("a", "1")])) == [1, 2, 3]   -- `attack` is not the tag `attack-sqli` (ADR-0029)
 #guard tri (run "SecRule ARGS_GET:a \"@streq abc\" \"id:1,phase:1,pass\"\nSecRule ARGS_GET:a \"@streq 1\" \"id:2,phase:1,pass\"\nSecRuleUpdateActionById 1 \"t:lowercase\"\nSecRuleUpdateActionById 2 \"tag:'gone'\"\nSecRuleRemoveByTag gone" (demoStore [("a", "ABC")])) == [1]

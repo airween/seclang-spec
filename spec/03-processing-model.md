@@ -253,10 +253,10 @@ interruption decision of the current phase: after `On` a later matching rule of 
 phase interrupts, after `DetectionOnly` or `Off` none does (all three engines read the
 mode when they interrupt: ModSecurity v2 `apache2/re.c` `msre_perform_disruptive_actions`,
 libmodsecurity v3 `src/rule_with_actions.cc` `executeAction`, Coraza
-`internal/corazawaf/transaction.go` `Interrupt`). Whether the remaining rules of the
-current phase are still evaluated after `Off` is **not specified** (v2 stops, v3 and
-Coraza evaluate them), so a rule that disables the engine SHOULD be the last rule of its
-phase that matters. The other state options
+`internal/corazawaf/transaction.go` `Interrupt`). After `Off` the engine MUST NOT evaluate
+any further rule of the transaction, in the current phase or a later one, so no later
+`ctl:ruleEngine` can switch inspection back on (ADR-0034; v3 and Coraza still evaluate the
+rest of the phase, `compat/known-gaps.md`). The other state options
 (`auditEngine`, `auditLogParts`, `requestBodyAccess`, `requestBodyProcessor`,
 `forceRequestBodyVariable`) apply to whatever the engine does after the rule matched. Options that
 control request body handling (`requestBodyAccess`, `requestBodyProcessor`,
@@ -272,4 +272,5 @@ Rule-removal options are immediate in all three (v2 same loop, v3 `rules_set.cc`
 `m_exceptions`, Coraza `rulegroup.go` `ruleRemoveByID`).
 
 **Tests.** `tests/engine/processing/ctl-timing.yaml`,
+`tests/engine/processing/ctl-ruleengine-off-final.yaml`,
 `tests/engine/processing/ctl-core-options-load.yaml`

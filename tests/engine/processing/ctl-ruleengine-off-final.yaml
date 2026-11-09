@@ -1,0 +1,29 @@
+meta:
+  name: ctl-ruleengine-off-final
+  description: After ctl:ruleEngine=Off no later rule runs, so a later ctl:ruleEngine cannot switch inspection back on (ADR-0034)
+spec: 03-processing-model.md#ctl-timing
+rules: |
+  SecRuleEngine On
+  SecRule ARGS_GET:a "@streq 1" "id:4094,phase:1,pass,nolog,ctl:ruleEngine=Off"
+  SecRule ARGS_GET:a "@streq 1" "id:4095,phase:1,pass,nolog"
+  SecRule ARGS_GET:m "@streq on" "id:4096,phase:1,pass,nolog,ctl:ruleEngine=On"
+  SecRule ARGS_GET:m "@streq detect" "id:4097,phase:1,pass,nolog,ctl:ruleEngine=DetectionOnly"
+  SecRule ARGS_GET:a "@streq 1" "id:4098,phase:2,deny,status:403,nolog"
+tests:
+  - test_title: a later ctl:ruleEngine=On in the same phase does not run
+    stages:
+      - stage:
+          input: {uri: '/?a=1&m=on'}
+          output:
+            triggered_rules: [4094]
+            non_triggered_rules: [4095, 4096, 4098]
+            no_interruption: true
+  - test_title: a later ctl:ruleEngine=DetectionOnly in the same phase does not run
+    spec: 08-actions.md#ctlruleengine
+    stages:
+      - stage:
+          input: {uri: '/?a=1&m=detect'}
+          output:
+            triggered_rules: [4094]
+            non_triggered_rules: [4095, 4097, 4098]
+            no_interruption: true

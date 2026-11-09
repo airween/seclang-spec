@@ -58,6 +58,7 @@ whenever a Divergence ADR or a divergence note picks against an engine.
 | `tests/engine/variables/persistent-collections.yaml` | libmodsecurity v3 | `setvar` runs before `initcol` within one rule (`rule_with_actions.cc` `executeActionsIndependentOfChainedRuleResult` evaluates the setvars first), so a member written by the initialising rule is lost when the collection did not exist yet | `05-variables.md#persistent-collections` |
 | `tests/unit/operators/rx.json` | libmodsecurity v3 | an empty `@rx` parameter is a parser syntax error (one case) | `06-operators.md#rx` |
 | `tests/unit/operators/containsWord.json` | libmodsecurity v3 | an empty parameter is a parser syntax error (one case) | `06-operators.md#containsword` |
+| `tests/engine/processing/ctl-ruleengine-off-final.yaml` | libmodsecurity v3, Coraza | after `ctl:ruleEngine=Off` the rest of the phase is still evaluated and a later `ctl:ruleEngine` overwrites `Off`; the mode is read only when a phase starts (v3 `src/transaction.cc` "Rule engine disabled, returning...", Coraza `internal/corazawaf/transaction.go` `IsRuleEngineOff` at the start of each `Process*`) | ADR-0034 |
 | `tests/engine/operators/ipmatch-invalid-entry.yaml` | Coraza | an unparsable `@ipMatch` entry is skipped instead of rejecting the configuration (`internal/operators/ip_match.go`) | ADR-0024 |
 
 ## Divergences no test can observe
