@@ -3,6 +3,7 @@ MODSECURITY2_HTTPD / MODSECURITY2_MSC_TEST are set (the Docker image sets both).
 import http.client
 import os
 import tempfile
+import time
 import unittest
 from pathlib import Path
 
@@ -200,6 +201,15 @@ class EngineTests(unittest.TestCase):
             failures = v2_engine.run_profile(p, b)
         self.assertEqual(len(failures), 1)
         self.assertIn("Apache answered 400 without ModSecurity", failures[0])
+
+    def test_apache_rejection_before_modsecurity_does_not_wait(self):
+        # a bad protocol version never reaches v2: no transaction, no logging phase to wait for
+        p = Profile("tests/engine/x.yaml", [], {}, "SecRuleEngine On",
+                    [Test("t", [Stage(Input(version="HTTP/9"), None, Output(no_interruption=True))])])
+        with httpd.Backend() as b:
+            t0 = time.monotonic()
+            v2_engine.run_profile(p, b)
+            self.assertLess(time.monotonic() - t0, 1.5)
 
     def test_apache_rejection_after_logged_phase1_rule(self):
         p = self.profile('SecRuleEngine On\nSecRule REQUEST_URI "@contains x" "id:1,phase:1,pass,log"',

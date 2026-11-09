@@ -6,7 +6,7 @@ inside the container image `Dockerfile` builds: Debian bookworm, Apache httpd 2.
 `mod_security2.so` and v2's own unit tester `msc_test`, both built from the `v2.9.15` tag.
 
 ```sh
-docker build -t seclang-modsecurity2 adapters/modsecurity2
+docker build -t seclang-modsecurity2 -f adapters/modsecurity2/Dockerfile .
 docker run --rm -v "$PWD":/repo seclang-modsecurity2 \
   uv run python -m unittest discover -s adapters/modsecurity2                       # everything
 docker run --rm -v "$PWD":/repo seclang-modsecurity2 \
@@ -15,7 +15,12 @@ docker run --rm -v "$PWD":/repo seclang-modsecurity2 \
 
 The image sets `MODSECURITY2_HTTPD`, `MODSECURITY2_MODULE` and `MODSECURITY2_MSC_TEST`;
 without them (on the host) the conformance tests and the engine smoke tests are skipped.
-Its virtual environment lives in `/opt/venv`, so the host's `.venv` is left alone.
+The image is built from the repository root so it can install the locked Python
+dependencies (`pyproject.toml`, `uv.lock`) into `/opt/venv`; `Dockerfile.dockerignore`
+narrows the build context to those two files. A run therefore needs no network, leaves the
+host's `.venv` alone and writes no bytecode into the checkout. The Debian base is pinned by
+digest; apt resolves bookworm's current packages when the image is built (Apache 2.4.68 on
+2026-11-09), and CI keeps the built image cached until the Dockerfile or the lock changes.
 
 v2 has no library API to drive in-process: `standalone/` does not link on `v2/master`
 (the fix is unmerged on `v2/issue-3451-standalone-link`), so the adapter runs the module

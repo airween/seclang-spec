@@ -11,7 +11,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 # data, gaps, engine_tier and unit_tier are engine-neutral and shared with the v3 adapter.
-sys.path.append(str(Path(__file__).resolve().parents[1] / "libmodsecurity"))
+# Inserted right after this directory so no installed module of the same name can shadow them.
+sys.path.insert(1, str(Path(__file__).resolve().parents[1] / "libmodsecurity"))
 
 from data import Response  # noqa: E402
 

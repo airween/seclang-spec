@@ -76,12 +76,12 @@ jobs:
         id: image
         with:
           path: /tmp/seclang-modsecurity2.tar
-          key: modsecurity2-image-${{ hashFiles('adapters/modsecurity2/Dockerfile') }}-${{ runner.arch }}
+          key: modsecurity2-image-${{ hashFiles('adapters/modsecurity2/Dockerfile', 'pyproject.toml', 'uv.lock') }}-${{ runner.arch }}
       - if: steps.image.outputs.cache-hit == 'true'
         run: docker load -i /tmp/seclang-modsecurity2.tar
       - if: steps.image.outputs.cache-hit != 'true'
         run: |
-          docker build -t seclang-modsecurity2 adapters/modsecurity2
+          docker build -t seclang-modsecurity2 -f adapters/modsecurity2/Dockerfile .
           docker save -o /tmp/seclang-modsecurity2.tar seclang-modsecurity2
       - run: docker run --rm -v "$PWD":/repo seclang-modsecurity2 uv run python -m unittest discover -s adapters/modsecurity2 -v
   lean:

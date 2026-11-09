@@ -1,6 +1,10 @@
 # ModSecurity v2 + Apache httpd + msc_test, for adapters/modsecurity2.
-# Package list from v2's own .github/workflows/ci.yml (PCRE2 is the default).
-FROM debian:bookworm-slim
+# Build from the repository root (the context is narrowed by Dockerfile.dockerignore):
+#   docker build -t seclang-modsecurity2 -f adapters/modsecurity2/Dockerfile .
+# Package list from v2's own .github/workflows/ci.yml (PCRE2 is the default). The base is
+# pinned by digest; apt still resolves bookworm's current packages at build time (Apache
+# 2.4.68 on 2026-11-09), and CI keeps the built image cached.
+FROM debian:bookworm-slim@sha256:734a72b3d6142a71993b4bc580ca01d8ca687f77a2c422d96a961d3376b179bc
 
 ARG MODSECURITY2_REF=v2.9.15
 
@@ -21,5 +25,12 @@ COPY --from=ghcr.io/astral-sh/uv:0.12.15 /uv /usr/local/bin/uv
 ENV MODSECURITY2_HTTPD=/usr/sbin/apache2 \
     MODSECURITY2_MODULE=/usr/lib/apache2/modules/mod_security2.so \
     MODSECURITY2_MSC_TEST=/usr/local/bin/msc_test \
-    UV_PROJECT_ENVIRONMENT=/opt/venv
+    UV_PROJECT_ENVIRONMENT=/opt/venv \
+    PYTHONDONTWRITEBYTECODE=1
+
+# The repository's locked dependencies, so a run needs no network and writes nothing but
+# test temp files (the checkout is mounted at /repo and may be owned by another user).
+COPY pyproject.toml uv.lock /opt/seclang/
+RUN cd /opt/seclang && uv sync --frozen
+
 WORKDIR /repo

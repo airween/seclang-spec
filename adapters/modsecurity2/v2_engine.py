@@ -32,6 +32,7 @@ _STATUS = re.compile(rb"^Access denied with code (\d+)|^Access denied with redir
 # modsecurity_process_phase_logging); phase 5 runs after the response has been sent.
 _DONE = re.compile(rb"Starting phase LOGGING\.[\s\S]*Audit log: ")
 _LOG_WAIT = 2.0
+_NO_TRANSACTION_GRACE = 0.2
 # An error-log message v2 wrote that is not a rule's ("Warning. ..." / "Access ...").
 _ENGINE_ERROR = re.compile(rb"ModSecurity: (?!Warning\. |Access )")
 
@@ -119,8 +120,12 @@ def log_sizes(root: Path) -> tuple[int, int]:
 def stage_logs(root: Path, start: tuple[int, int]) -> tuple[bytes, bytes]:
     """Debug- and error-log segments written since start, once the logging phase has finished."""
     debug = root / "debug.log"
-    deadline = time.monotonic() + _LOG_WAIT
-    while not _DONE.search(_segment(debug, start[0])) and time.monotonic() < deadline:
+    t0 = time.monotonic()
+    while not _DONE.search(seg := _segment(debug, start[0])) and time.monotonic() - t0 < _LOG_WAIT:
+        # Phases 1-4 are logged before the response is sent: nothing after the grace period
+        # means v2 never saw the request (Apache rejected it, or SecRuleEngine Off).
+        if not seg and time.monotonic() - t0 > _NO_TRANSACTION_GRACE:
+            break
         time.sleep(0.01)
     return _segment(debug, start[0]), _segment(root / "error.log", start[1])
 
