@@ -43,7 +43,9 @@ def _run_msc_test(c: UnitCase) -> list[str]:
 
 def _run_re_groups(c: UnitCase, backend: httpd.Backend) -> list[str]:
     if c.param and any(ord(ch) < 0x20 for ch in c.param):
-        return []  # a control character cannot be written inside a directive argument
+        # a control character cannot be written inside a directive argument: the match
+        # result is still checked through msc_test, the groups are not observed
+        return _run_msc_test(c)
     body = latin1(c.input)
     raw = (b"POST / HTTP/1.1\r\nHost: localhost\r\nContent-Type: application/octet-stream\r\n"
            b"Content-Length: %d\r\nConnection: close\r\n\r\n" % len(body)) + body

@@ -238,11 +238,16 @@ class ReGroupsTests(unittest.TestCase):
         self.assertEqual(len(failures), 1)
         self.assertIn("rule failed to load", failures[0])
 
-    def test_re_groups_control_char_param_skipped(self):
-        # a control character cannot be written inside a directive argument (as in the v3 adapter)
-        case = UnitCase("op", "rx", "abc\ndef", "abc\ndef", "", 1, "", ["abc\ndef"])
+    @needs_msc_test
+    def test_re_groups_control_char_param_uses_msc_test(self):
+        # a control character cannot be written inside a directive argument: match result only
         with httpd.Backend() as b:
-            self.assertEqual(v2_unit.run_unit_file([case], b), [])
+            self.assertEqual(v2_unit.run_unit_file(
+                [UnitCase("op", "rx", "abc\ndef", "abc\ndef", "", 1, "", ["abc\ndef"])], b), [])
+            failures = v2_unit.run_unit_file(
+                [UnitCase("op", "rx", "abc\ndef", "xyz", "", 1, "", ["abc\ndef"])], b)
+        self.assertEqual(len(failures), 1)
+        self.assertIn("msc_test exit 1", failures[0])
 
 
 if __name__ == "__main__":
