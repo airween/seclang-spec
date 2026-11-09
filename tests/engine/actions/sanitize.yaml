@@ -16,7 +16,7 @@ rules: |
   SecRule ARGS:card "@rx ^4[0-9]+$" "id:6331,phase:2,pass,log,msg:'card %{MATCHED_VAR}',sanitizeMatched"
   SecRule ARGS:note "@rx s[0-9]cr[0-9]tw[0-9]rd" "id:6332,phase:2,pass,log,msg:'note %{MATCHED_VAR}',sanitizeMatchedBytes"
   SecRule REQUEST_HEADERS:X-Token "@rx ." "id:6333,phase:1,pass,log,msg:'token %{REQUEST_HEADERS.x-token}',sanitizeRequestHeader:x-token"
-  SecRule RESPONSE_HEADERS:X-Session "@rx ." "id:6334,phase:3,pass,log,msg:'session %{RESPONSE_HEADERS.x-session}',sanitiseResponseHeader:X-Session"
+  SecRule RESPONSE_HEADERS:X-Session "@rx ." "id:6334,phase:3,pass,log,msg:'session %{RESPONSE_HEADERS.x-session}',sanitizeResponseHeader:X-Session"
 tests:
   - test_title: sanitizeArg masks a query-string argument, name compared case-insensitively
     spec: 08-actions.md#sanitizearg
@@ -62,7 +62,7 @@ tests:
             no_log_contains: tok-abcdef123456
             no_audit_log_contains: tok-abcdef123456
             audit_log_contains: '[sanitized]'
-  - test_title: sanitiseResponseHeader (alias) masks a response header
+  - test_title: sanitizeResponseHeader masks a response header
     spec: 08-actions.md#sanitizeresponseheader
     stages:
       - stage:

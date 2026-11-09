@@ -34,9 +34,9 @@ Canonical names and the aliases every engine MUST accept:
 | `normalisePathWin` | `normalizePathWin` | transformation |
 | `pmFromFile` | `pmf` | operator |
 | `ipMatchFromFile` | `ipMatchF` | operator |
-| `sanitizeArg`, `sanitizeMatched`, `sanitizeMatchedBytes`, `sanitizeRequestHeader`, `sanitizeResponseHeader` | `sanitiseArg`, `sanitiseMatched`, `sanitiseMatchedBytes`, `sanitiseRequestHeader`, `sanitiseResponseHeader` | action (Extended, ADR-0033) |
 
 Spellings that differ only in case are not aliases; they are the same name (ADR-0002).
+v2's `sanitise*` spellings are not aliases: only `sanitize*` is specified (ADR-0033).
 `Parallel`, `https` and
 `Syslog`/`HTTPS` for `SecAuditLogType` are Engine-specific values. No new alias may be
 introduced without amending this ADR; engines SHOULD log the canonical spelling.

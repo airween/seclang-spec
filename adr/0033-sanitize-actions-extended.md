@@ -27,8 +27,8 @@ turning off audit logging or request-body parts altogether. The engines today:
 ## Decision
 
 The five actions move from `Deprecated` to `Extended` (`08-actions.md#sanitizearg` and the
-four entries after it). The American spelling `sanitize*` is canonical and `sanitise*` is a
-required alias (ADR-0004):
+four entries after it), spelled `sanitize*` only: v2's `sanitise*` spellings are not aliases
+(ADR-0004):
 
 - `sanitizeArg:NAME` marks every argument (query string or request body) whose name equals
   `NAME`, compared case-insensitively. `sanitizeRequestHeader:NAME` and
@@ -60,9 +60,10 @@ required alias (ADR-0004):
   the logs; rejected.
 - `ARGS_GET` and `ARGS_POST` added to v2's variable list for `sanitizeMatched`: a rule
   matching `ARGS_POST:password` is as likely as one matching `ARGS:password`.
-- `sanitise*` canonical, as ADR-0011 and the earlier spec entries wrote it: v2 registers both
-  spellings alike and names its own functions `msre_action_sanitize*`; rejected in favour of
-  the American spelling, with the British one kept as an alias so no ruleset breaks.
+- `sanitise*` canonical, as ADR-0011 and the earlier spec entries wrote it, or kept as an
+  alias: v2 registers both spellings alike and names its own functions
+  `msre_action_sanitize*`; one spelling is enough for actions no other engine has yet, and
+  no current ruleset uses either. Rejected in favour of `sanitize*` alone.
 - Specify v2's behaviour as is: a same-length mask leaks the length, which is enough to tell
   a PIN from a password and to confirm a guessed value, and v2 leaves the error log in clear;
   rejected.
@@ -86,7 +87,8 @@ required alias (ADR-0004):
   ADR-0021 that log assertions use only `msg` text gains one exception: `no_log_contains`
   and `no_audit_log_contains` with a marked value, and `audit_log_contains` with the mask.
 - For rule authors: `sanitizeArg:password` and its siblings are portable once two engines
-  ship them; until then they load only in v2, and v2 output still shows the length.
+  ship them; until then they load only in v2, and v2 output still shows the length. A rule
+  written with `sanitise*` loads only in v2 and must be renamed.
 
 ## Tests
 

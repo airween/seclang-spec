@@ -55,11 +55,11 @@ Proved over the model: `formal/SecLang/Regex.lean` (ADR-0027) and
 | Module | Checks |
 |---|---|
 | `formal/SecLang/Digest.lean` | 6 |
-| `formal/SecLang/Names.lean` | 18 |
+| `formal/SecLang/Names.lean` | 19 |
 | `formal/SecLang/Operators.lean` | 30 |
 | `formal/SecLang/Regex.lean` | 41 |
 | `formal/SecLang/Request.lean` | 47 |
 | `formal/SecLang/Semantics.lean` | 45 |
 | `formal/SecLang/Syntax.lean` | 74 |
 | `formal/SecLang/Transformations.lean` | 79 |
-| **Total** | **340** |
+| **Total** | **341** |

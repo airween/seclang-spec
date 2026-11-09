@@ -4,7 +4,8 @@ Actions say what a rule does when it matches: metadata, logging, flow control, v
 changes, engine control (`ctl`) and exactly one disruptive action
 (`02-grammar.md#action-list`, `03-processing-model.md`). The two indexes list every action
 and every `ctl:` option known to any surveyed engine with its status (`00-conventions.md`,
-ADR-0006). The `sanitise*` spellings are aliases of `sanitize*` (ADR-0004).
+ADR-0006). Only the `sanitize*` spellings are specified; v2's `sanitise*` spellings are not
+aliases (ADR-0033).
 
 ## Index of actions
 
@@ -40,11 +41,11 @@ ADR-0006). The `sanitise*` spellings are aliases of `sanitize*` (ADR-0004).
 | [proxy](#proxy) | Deprecated | yes | - | - | Proxy the request elsewhere |
 | [redirect](#redirect) | Core | yes | yes | yes | Interrupt with a redirect |
 | [rev](#rev) | Extended | yes | yes | yes | Rule revision metadata |
-| [sanitizeArg](#sanitizearg) | Extended | yes | - | - | Mask an argument in the logs (alias sanitiseArg) |
-| [sanitizeMatched](#sanitizematched) | Extended | yes | - | - | Mask the matched variable in the logs (alias sanitiseMatched) |
-| [sanitizeMatchedBytes](#sanitizematchedbytes) | Extended | yes | - | - | Mask matched bytes in the logs (alias sanitiseMatchedBytes) |
-| [sanitizeRequestHeader](#sanitizerequestheader) | Extended | yes | - | - | Mask a request header in the logs (alias sanitiseRequestHeader) |
-| [sanitizeResponseHeader](#sanitizeresponseheader) | Extended | yes | - | - | Mask a response header in the logs (alias sanitiseResponseHeader) |
+| [sanitizeArg](#sanitizearg) | Extended | yes | - | - | Mask an argument in the logs |
+| [sanitizeMatched](#sanitizematched) | Extended | yes | - | - | Mask the matched variable in the logs |
+| [sanitizeMatchedBytes](#sanitizematchedbytes) | Extended | yes | - | - | Mask matched bytes in the logs |
+| [sanitizeRequestHeader](#sanitizerequestheader) | Extended | yes | - | - | Mask a request header in the logs |
+| [sanitizeResponseHeader](#sanitizeresponseheader) | Extended | yes | - | - | Mask a response header in the logs |
 | [setenv](#setenv) | Extended | yes | yes | yes | Set a process environment variable |
 | [setrsc](#setrsc) | Extended | yes | yes | - | Initialise the RESOURCE collection |
 | [setsid](#setsid) | Extended | yes | yes | - | Initialise the SESSION collection |
@@ -606,7 +607,7 @@ values equals `TAG` (ADR-0029).
 
 **Status:** Extended
 
-**Syntax.** `sanitizeArg:NAME`; alias `sanitiseArg`.
+**Syntax.** `sanitizeArg:NAME`.
 
 **Semantics.** When the rule matches, marks every argument of the transaction (query string
 or request body) whose name equals `NAME`, compared case-insensitively, so that its value
@@ -635,7 +636,7 @@ the length. libmodsecurity v3.0.17 rejects the action (`ACTION_NOT_SUPPORTED` in
 
 **Status:** Extended
 
-**Syntax.** `sanitizeMatched`; alias `sanitiseMatched`.
+**Syntax.** `sanitizeMatched`.
 
 **Semantics.** Marks, as `08-actions.md#sanitizearg` describes, the value the rule matched
 when the matched variable is `ARGS:x`, `ARGS_GET:x`, `ARGS_POST:x` or `ARGS_NAMES:x` (the
@@ -656,7 +657,7 @@ handles `ARGS`, `ARGS_NAMES` and the header collections but not `ARGS_GET` or `A
 **Status:** Extended
 
 **Syntax.** `sanitizeMatchedBytes` or `sanitizeMatchedBytes:N/M`, with `N` and `M` single
-digits; alias `sanitiseMatchedBytes`.
+digits.
 
 **Semantics.** As `sanitizeMatched`, but marks only the bytes the operator matched inside
 the value; the rest of the value stays in clear. With `N/M` the first `N` and the last `M`
@@ -674,7 +675,7 @@ matched bytes stay in clear and the bytes between them are written as one `[sani
 
 **Status:** Extended
 
-**Syntax.** `sanitizeRequestHeader:NAME`; alias `sanitiseRequestHeader`.
+**Syntax.** `sanitizeRequestHeader:NAME`.
 
 **Semantics.** Marks, as `08-actions.md#sanitizearg` describes, the value of every request
 header whose name equals `NAME`, compared case-insensitively (ADR-0033).
@@ -689,7 +690,7 @@ header whose name equals `NAME`, compared case-insensitively (ADR-0033).
 
 **Status:** Extended
 
-**Syntax.** `sanitizeResponseHeader:NAME`; alias `sanitiseResponseHeader`.
+**Syntax.** `sanitizeResponseHeader:NAME`.
 
 **Semantics.** Marks, as `08-actions.md#sanitizearg` describes, the value of every response
 header whose name equals `NAME`, compared case-insensitively (ADR-0033).
