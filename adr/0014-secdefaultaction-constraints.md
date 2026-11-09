@@ -8,22 +8,21 @@
 ## Context
 
 Checks each engine applies to a `SecDefaultAction` action list (all verified against
-source on 2026-10-06):
+source on 2026-10-06; the v3 metadata and `tag` rows corrected on 2026-11-09 after the
+libmodsecurity adapter loaded them):
 
 | Check | ModSecurity v2 (`cmd_default_action`) | libmodsecurity v3 (`seclang-parser.yy`) | Coraza 3.8.1 (`rule_parser.go` `ParseDefaultActions`) |
 |---|---|---|---|
 | missing disruptive action | error | error | error |
 | missing `phase` | error | **defaults to phase 1** | error |
-| metadata actions (`id`, `rev`, `msg`, `severity`, `ver`, `accuracy`, `maturity`, `logdata`) | error | error (not run-time actions) | error |
-| `tag` | **not checked** (`ENH` comment) | error | error |
+| metadata actions (`id`, `rev`, `msg`, `severity`, `ver`, `accuracy`, `maturity`, `logdata`) | error | error for the configuration-kind `id`, `rev`, `ver`, `accuracy`, `maturity`; **accepts** the run-time `msg`, `severity`, `logdata` | error |
+| `tag` | **not checked** (`ENH` comment) | **accepted** (run-time action) | error |
 | `chain`, `skip`, `skipAfter` | error | error | error |
 | `t:none` / transformations | warning | error on `t:none` | error on any `t:` |
 | second `SecDefaultAction` for the same phase | **replaces** the first | error | error |
 | when the check runs | at the directive | at the directive | **at the next rule parsed** |
 
 Coraza also installs a built-in `phase:2,log,auditlog,pass` when none is configured.
-ModSecurity v2 keeps a single *current* default action set rather than one per phase,
-which is what let a phase-less rule inherit its phase (ADR-0017).
 ModSecurity v2 keeps a single current default action set whose phase a phase-less rule
 inherits; the other two apply default actions by the rule's own phase (see ADR-0017).
 
@@ -48,12 +47,15 @@ text: `spec/03-processing-model.md#default-actions`.
 
 ## Consequences
 
-- For ModSecurity v2: reject `tag`; reject a repeated phase (today it replaces, so
-  `default-action-redefined.yaml` fails on v2).
-- For libmodsecurity v3: require `phase` instead of defaulting to 1 (today
-  `default-action-no-phase.yaml` fails on v3).
-- For Coraza: validate at the directive, not at the next rule (today the two negative
-  tests pass only because a rule follows the directive).
+- For ModSecurity v2: reject `tag` and transformations (today it warns on the latter);
+  reject a repeated phase (today it replaces). `default-action-redefined.yaml`,
+  `default-action-tag.yaml` and `default-action-transformation.yaml` fail on v2.
+- For libmodsecurity v3: require `phase` instead of defaulting to 1; reject `tag`, `msg`,
+  `severity`, `logdata` and every transformation, not only `t:none`.
+  `default-action-no-phase.yaml`, `default-action-tag.yaml`, `default-action-msg.yaml`
+  and `default-action-transformation.yaml` fail on v3.
+- For Coraza: validate at the directive, not at the next rule. `default-action-no-rule.yaml`
+  fails on Coraza; the other negative tests pass only because a rule follows the directive.
 - For rule authors: `SecDefaultAction "phase:N,log,auditlog,pass"` as CRS ships it is
   valid everywhere.
 
@@ -62,6 +64,10 @@ text: `spec/03-processing-model.md#default-actions`.
 - `tests/engine/processing/default-action-no-phase.yaml`
 - `tests/engine/processing/default-action-no-disruptive.yaml`
 - `tests/engine/processing/default-action-redefined.yaml`
+- `tests/engine/processing/default-action-tag.yaml`
+- `tests/engine/processing/default-action-msg.yaml`
+- `tests/engine/processing/default-action-transformation.yaml`
+- `tests/engine/processing/default-action-no-rule.yaml`
 
 ## References
 

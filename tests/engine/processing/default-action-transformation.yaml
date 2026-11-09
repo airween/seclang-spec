@@ -1,0 +1,16 @@
+meta:
+  name: default-action-transformation
+  description: SecDefaultAction with a transformation is a configuration error (ADR-0014)
+spec: 03-processing-model.md#default-actions
+rules: |
+  SecRuleEngine On
+  SecDefaultAction "phase:1,log,pass,t:lowercase"
+  SecRule ARGS_GET:a "@streq 1" "id:4036,phase:1,pass"
+tests:
+  - test_title: fails to load
+    stages:
+      - stage:
+          input:
+            uri: /
+          output:
+            expect_error: true

@@ -1,0 +1,15 @@
+meta:
+  name: default-action-no-rule
+  description: A violating SecDefaultAction is rejected even when no rule follows it (ADR-0014)
+spec: 03-processing-model.md#default-actions
+rules: |
+  SecRuleEngine On
+  SecDefaultAction "phase:1,log"
+tests:
+  - test_title: fails to load
+    stages:
+      - stage:
+          input:
+            uri: /
+          output:
+            expect_error: true

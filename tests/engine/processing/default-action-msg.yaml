@@ -1,0 +1,16 @@
+meta:
+  name: default-action-msg
+  description: SecDefaultAction with a msg is a configuration error (ADR-0014)
+spec: 03-processing-model.md#default-actions
+rules: |
+  SecRuleEngine On
+  SecDefaultAction "phase:1,log,pass,msg:'inherited'"
+  SecRule ARGS_GET:a "@streq 1" "id:4037,phase:1,pass"
+tests:
+  - test_title: fails to load
+    stages:
+      - stage:
+          input:
+            uri: /
+          output:
+            expect_error: true

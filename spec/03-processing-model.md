@@ -97,7 +97,9 @@ rejects a missing disruptive action or phase and the actions `chain`, `skip`, `s
 and the metadata actions except `tag` (an `ENH` comment notes the gap), warns on
 `severity`, `logdata` and transformations, and lets a later `SecDefaultAction` replace an
 earlier one. libmodsecurity v3 (`src/parser/seclang-parser.yy`) rejects a missing
-disruptive action, non-runtime actions and `t:none`, defaults a missing phase to 1, and
+disruptive action, configuration-kind actions (`id`, `rev`, `ver`, `accuracy`,
+`maturity`) and `t:none`, but accepts `tag`, `msg`, `severity`, `logdata` and other
+transformations, defaults a missing phase to 1, and
 rejects a second `SecDefaultAction` for the same phase. Coraza 3.8.1
 (`internal/seclang/rule_parser.go`, `ParseDefaultActions`) rejects metadata actions,
 transformations, a missing phase, a missing disruptive action and a second
@@ -108,7 +110,11 @@ parsed, so a violating directive followed by no rule loads. It applies a built-i
 **Tests.** `tests/engine/processing/default-action.yaml`,
 `tests/engine/processing/default-action-no-phase.yaml`,
 `tests/engine/processing/default-action-no-disruptive.yaml`,
-`tests/engine/processing/default-action-redefined.yaml`
+`tests/engine/processing/default-action-redefined.yaml`,
+`tests/engine/processing/default-action-tag.yaml`,
+`tests/engine/processing/default-action-msg.yaml`,
+`tests/engine/processing/default-action-transformation.yaml`,
+`tests/engine/processing/default-action-no-rule.yaml`
 
 ### Disruptive actions
 
