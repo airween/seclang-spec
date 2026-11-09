@@ -7,8 +7,10 @@ import unittest
 from pathlib import Path
 
 import httpd  # first: puts adapters/libmodsecurity on sys.path
+import data
 import v2_engine
-from data import Input, Interruption, Output, Profile, Response, Stage, Test
+import v2_unit
+from data import Input, Interruption, Output, Profile, Response, Stage, Test, UnitCase
 
 needs_httpd = unittest.skipUnless(os.environ.get(httpd.ENV_HTTPD), f"{httpd.ENV_HTTPD} not set")
 
@@ -191,6 +193,56 @@ class EngineTests(unittest.TestCase):
         p = self.profile("SecFoo bar", "/", Output(expect_error=True))
         with httpd.Backend() as b:
             self.assertEqual(v2_engine.run_profile(p, b), [])
+
+
+needs_msc_test = unittest.skipUnless(os.environ.get(v2_unit.ENV_MSC_TEST), f"{v2_unit.ENV_MSC_TEST} not set")
+
+
+def tfn(name: str, inp: str, out: str) -> UnitCase:
+    return UnitCase("tfn", name, None, inp, out, 1, "", [])
+
+
+class MscTestArgsTests(unittest.TestCase):
+    def test_msc_escape(self):
+        self.assertEqual(v2_unit.msc_escape("a\\b\x00\xff ~"), "a\\x5cb\\x00\\xff\\x20~")
+
+    def test_msc_test_args_tfn_op(self):
+        self.assertEqual(v2_unit.msc_test_args(tfn("lowercase", "AB\x01", "ab\x01")),
+                         ["-t", "tfn", "-n", "lowercase", "-p", "ab\\x01"])
+        op = UnitCase("op", "rx", None, "x", "", 0, "", [])
+        self.assertEqual(v2_unit.msc_test_args(op)[-4:], ["-p", "", "-r", "0"])
+
+
+@needs_msc_test
+class MscTestTests(unittest.TestCase):
+    def test_msc_test_runs(self):
+        with httpd.Backend() as b:
+            self.assertEqual(v2_unit.run_unit_file([tfn("lowercase", "AB\x01", "ab\x01")], b), [])
+            failures = v2_unit.run_unit_file([tfn("lowercase", "AB\x01", "XYZ")], b)
+        self.assertEqual(len(failures), 1)
+        self.assertIn("Output:", failures[0])
+
+
+@needs_httpd
+class ReGroupsTests(unittest.TestCase):
+    def test_re_groups_case(self):
+        cases = data.load_unit_cases(data.repo_root())["tests/unit/operators/rx.json"]
+        case = next(c for c in cases if c.re_groups)
+        with httpd.Backend() as b:
+            self.assertEqual(v2_unit.run_unit_file([case], b), [])
+
+    def test_re_groups_rule_that_fails_to_load_is_reported(self):
+        case = UnitCase("op", "rx", 'a"b', "a", "", 1, "", ["a"])
+        with httpd.Backend() as b:
+            failures = v2_unit.run_unit_file([case], b)
+        self.assertEqual(len(failures), 1)
+        self.assertIn("rule failed to load", failures[0])
+
+    def test_re_groups_control_char_param_skipped(self):
+        # a control character cannot be written inside a directive argument (as in the v3 adapter)
+        case = UnitCase("op", "rx", "abc\ndef", "abc\ndef", "", 1, "", ["abc\ndef"])
+        with httpd.Backend() as b:
+            self.assertEqual(v2_unit.run_unit_file([case], b), [])
 
 
 if __name__ == "__main__":

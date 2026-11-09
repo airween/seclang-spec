@@ -109,6 +109,19 @@ def _size(path: Path) -> int:
     return path.stat().st_size if path.exists() else 0
 
 
+def log_sizes(root: Path) -> tuple[int, int]:
+    return _size(root / "debug.log"), _size(root / "error.log")
+
+
+def stage_logs(root: Path, start: tuple[int, int]) -> tuple[bytes, bytes]:
+    """Debug- and error-log segments written since start, once the logging phase has finished."""
+    debug = root / "debug.log"
+    deadline = time.monotonic() + _LOG_WAIT
+    while not _DONE.search(_segment(debug, start[0])) and time.monotonic() < deadline:
+        time.sleep(0.01)
+    return _segment(debug, start[0]), _segment(root / "error.log", start[1])
+
+
 def run_profile(p: Profile, backend: httpd.Backend) -> list[str]:
     """Every failure of the profile in words; empty when it passes."""
     expect_error = any(st.output.expect_error for t in p.tests for st in t.stages)
@@ -120,18 +133,14 @@ def run_profile(p: Profile, backend: httpd.Backend) -> list[str]:
             return [] if err else ["configuration loaded but expect_error was set"]
         if err:
             return [f"configuration failed to load: {err}"]
-        debug, errors = root / "debug.log", root / "error.log"
         failures = []
         with httpd.Httpd(conf, port):
             for t in p.tests:
                 for n, st in enumerate(t.stages, 1):
                     backend.respond(st.response)
-                    d0, e0 = _size(debug), _size(errors)
+                    start = log_sizes(root)
                     status, _ = send(port, request_bytes(st.input))
-                    deadline = time.monotonic() + _LOG_WAIT
-                    while not _DONE.search(_segment(debug, d0)) and time.monotonic() < deadline:
-                        time.sleep(0.01)
-                    segment, log = _segment(debug, d0), _segment(errors, e0)
+                    segment, log = stage_logs(root, start)
                     triggered, disruptive = parse_debug_log(segment)
                     backend_status = st.response.status if st.response else 200
                     it = interruption(status, disruptive, backend_status)

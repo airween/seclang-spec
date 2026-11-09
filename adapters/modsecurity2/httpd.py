@@ -32,9 +32,10 @@ def free_port() -> int:
         return s.getsockname()[1]
 
 
-def write_root(root: Path, profile_rules: str, files: dict[str, str], backend_port: int) -> tuple[Path, int]:
+def write_root(root: Path, profile_rules: str | bytes, files: dict[str, str], backend_port: int) -> tuple[Path, int]:
     """Write files:, rules.conf and httpd.conf under root; return (conf path, listen port).
 
+    Rules given as bytes are written verbatim (unit-tier byte strings); text is UTF-8.
     The debug-log directives come after the rules so they override any the profile sets.
     """
     for name, content in files.items():
@@ -43,7 +44,8 @@ def write_root(root: Path, profile_rules: str, files: dict[str, str], backend_po
         p.write_text(content)
     for d in ("data", "tmp", "htdocs"):
         (root / d).mkdir(exist_ok=True)
-    (root / "rules.conf").write_text(profile_rules + "\n")
+    rules = profile_rules if isinstance(profile_rules, bytes) else profile_rules.encode("utf-8")
+    (root / "rules.conf").write_bytes(rules + b"\n")
     module = os.environ.get(ENV_MODULE, f"{_MODULES_DIR}/mod_security2.so")
     mods = "".join(f"LoadModule {m}_module {_MODULES_DIR}/mod_{m}.so\n"
                    for m in ("mpm_event", "authz_core", "unique_id", "remoteip", "proxy", "proxy_http"))
