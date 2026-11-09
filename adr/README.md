@@ -46,7 +46,7 @@ promoted into the spec (Extension).
 | [0022](0022-request-body-without-processor.md) | `REQUEST_BODY` without a body processor | Divergence | accepted |
 | [0023](0023-reference-adapters.md) | Reference adapters live in this repository | Clarification | accepted |
 | [0024](0024-ipmatch-invalid-entries.md) | Unparsable `@ipMatch` entries are configuration errors | Divergence | accepted |
-| [0025](0025-secrequestbodyinmemorylimit-extended.md) | `SecRequestBodyInMemoryLimit` is Extended, not Core | Divergence | proposed |
+| [0025](0025-secrequestbodyinmemorylimit-extended.md) | `SecRequestBodyInMemoryLimit` is Extended, not Core | Divergence | accepted |
 | [0026](0026-compresswhitespace-nbsp.md) | `compressWhitespace` treats the byte 0xA0 as whitespace | Divergence | accepted |
 | [0027](0027-rx-compile-mode.md) | `@rx` is compiled dot-all; line anchors need `(?m)` | Divergence | accepted |
 | [0028](0028-skipafter-label-is-a-marker.md) | `skipAfter` resolves to a `SecMarker`, never to a rule id | Divergence | accepted |

@@ -44,7 +44,8 @@ the C API, libmodsecurity v3.0.16 built by CI).
 - CI builds libmodsecurity from source (cached by tag); that adapter reads matched rules
   from the engine debug log because the C API omits `nolog` matches. Its first run added
   eight v3 rows, removed two predictions, moved `SecRequestBodyInMemoryLimit` to
-  Deprecated and produced ADR-0024.
+  Deprecated (the review of that run made it Extended instead, ADR-0025) and produced
+  ADR-0024.
 - The first Coraza run corrected the specification in three places (ctl:ruleEngine
   timing, skipAfter scope, quoted-argument escapes) and the review of that run corrected
   the escape rule again for the ModSecurity branches; that loop is what this ADR
