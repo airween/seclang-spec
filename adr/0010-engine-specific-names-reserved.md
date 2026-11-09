@@ -1,8 +1,9 @@
 # ADR-0010: Engine-specific names are reserved
 
-- **Status:** proposed
+- **Status:** accepted
 - **Date:** 2026-10-06
-- **Deciders:** @fzipi
+- **Accepted:** 2026-11-09
+- **Deciders:** @fzipi, @xanadu, @M4tteoP, @airween
 - **Category:** Clarification
 
 ## Context

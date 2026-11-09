@@ -31,7 +31,7 @@ promoted into the spec (Extension).
 | [0007](0007-persistent-collections.md) | Persistent collections are Extended | Divergence | accepted |
 | [0008](0008-collection-key-case.md) | Collection keys match case-insensitively | Divergence | accepted |
 | [0009](0009-phase-evaluation-model.md) | Strict per-phase evaluation is normative; early evaluation must be invisible | Clarification | accepted |
-| [0010](0010-engine-specific-names-reserved.md) | Engine-specific names are reserved | Clarification | proposed |
+| [0010](0010-engine-specific-names-reserved.md) | Engine-specific names are reserved | Clarification | accepted |
 | [0011](0011-v2-legacy-deprecated.md) | ModSecurity v2 legacy features are Deprecated | Deprecation | accepted |
 | [0012](0012-uppercase-transformation.md) | `uppercase` is promoted to Core | Extension | accepted |
 | [0013](0013-comment-line-continuation.md) | Comment lines ending in a backslash | Divergence | accepted |
