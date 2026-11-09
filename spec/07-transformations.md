@@ -530,7 +530,11 @@ the mirror of `parityEven7bit`, with the same high-bit caveat.
 
 **Status:** Extended
 
-**Semantics.** Removes C-style `/* ... */` and HTML `<!-- ... -->` comments; a SQL `--` or shell `#` outside a comment ends the value there. What follows a closing `*/` or `-->` is **not specified**: ModSecurity before v2.9.15 and v3.0.17 copies the next byte unexamined, so `/* x */` yields one NUL byte (the C string terminator); ModSecurity v2.9.15 (`re_tfns.c`) and libmodsecurity v3.0.17 (`remove_comments.cc`) carry on scanning and give the empty value. `tests/unit/transformations/removeComments.json` is maintained by hand and keeps only cases that do not depend on it. An unterminated comment yields one space. CRS prefers `removeCommentsChar`.
+**Semantics.** Removes C-style `/* ... */` and HTML `<!-- ... -->` comments; a SQL `--` or shell `#` outside a comment ends the value there. Scanning resumes at the byte after a closing `*/` or `-->`, so adjacent comments are all removed (`UNION/**//**/SELECT` yields `UNIONSELECT`) and a value that is only a comment yields the empty value (ModSecurity v2.9.15 `re_tfns.c`, libmodsecurity v3.0.17 `remove_comments.cc`). An unterminated comment yields one space. CRS prefers `removeCommentsChar`.
+
+**Divergence notes.** Coraza 3.8.1 (`internal/transformations/remove_comments.go`) and ModSecurity before v2.9.15 and v3.0.17 copy the byte that follows a closing `*/` or `-->` without examining it: the `/` or `<` that opens an adjacent comment survives, so `UNION/**//**/SELECT` yields `UNION/**/SELECT`, and at the end of the value the copied byte is the C string terminator (Coraza pads the input with NUL to reproduce it), so `/* x */` yields one NUL byte (`compat/known-gaps.md`).
+
+**Tests.** `tests/unit/transformations/removeComments.json`
 
 **Implemented by.** v2, v3, Coraza.
 

@@ -404,11 +404,10 @@ where
     else out
   termination_by b.size - i
 
-/-- `removeComments`. re_tfns.c `msre_fn_removeComments_execute`: outside a comment, `/*`
-and `<!--` open one and `--` or `#` ends the value; inside, `*/` and `-->` close it and
-the byte after the terminator is copied as is, which at end of input is the C terminator,
-one NUL byte, in every engine (v3 `remove_comments.cc`; Coraza `remove_comments.go` pads
-the input with NUL to reproduce it). An unterminated comment yields one space. -/
+/-- `removeComments`. re_tfns.c `msre_fn_removeComments_execute` (v2.9.15), v3.0.17
+`remove_comments.cc`: outside a comment, `/*` and `<!--` open one and `--` or `#` ends the
+value; inside, `*/` and `-->` close it and scanning resumes at the next byte, so adjacent
+comments are all removed. An unterminated comment yields one space. -/
 def removeComments (b : ByteArray) : ByteArray := go 0 false .empty
 where
   go (i : Nat) (inComment : Bool) (out : ByteArray) : ByteArray :=
@@ -421,8 +420,8 @@ where
         else if (c == '-'.toUInt8 && n1 == some '-'.toUInt8) || c == '#'.toUInt8 then out
         else go (i + 1) false (out.push c)
       else
-        if c == '*'.toUInt8 && n1 == some '/'.toUInt8 then go (i + 3) false (out.push (n2.getD 0))
-        else if c == '-'.toUInt8 && n1 == some '-'.toUInt8 && n2 == some '>'.toUInt8 then go (i + 4) false (out.push (n3.getD 0))
+        if c == '*'.toUInt8 && n1 == some '/'.toUInt8 then go (i + 2) false out
+        else if c == '-'.toUInt8 && n1 == some '-'.toUInt8 && n2 == some '>'.toUInt8 then go (i + 3) false out
         else go (i + 1) true out
     else if inComment then out.push 32 else out
   termination_by b.size - i
@@ -446,7 +445,9 @@ where
 #guard (cmdLine ⟨"C^OMMAND /C DIR".toUTF8.data⟩).data == "command/c dir".toUTF8.data
 #guard (cmdLine ⟨"\"cmd\",;\t\r\n/c (x) \u000b".toUTF8.data⟩).data == "cmd/c(x) \u000b".toUTF8.data
 #guard (removeCommentsChar ⟨"a/*b*/c--d#e<!--f-->g".toUTF8.data⟩).data == "abcdefg".toUTF8.data
-#guard (removeComments ⟨"/* TestCase */".toUTF8.data⟩).data == #[0]
+#guard (removeComments ⟨"/* TestCase */".toUTF8.data⟩).data == #[]
+#guard (removeComments ⟨"UNION/**//**/SELECT".toUTF8.data⟩).data == "UNIONSELECT".toUTF8.data
+#guard (removeComments ⟨"foo<!-- a --><!-- b -->bar".toUTF8.data⟩).data == "foobar".toUTF8.data
 #guard (removeComments ⟨"Before/* T*/ /* e */ /* s */ /* t */\r\nCase ".toUTF8.data⟩).data == "Before   \r\nCase ".toUTF8.data
 #guard (removeComments ⟨"a <!-- b --> c -- d".toUTF8.data⟩).data == "a  c ".toUTF8.data
 #guard (removeComments ⟨"a # b".toUTF8.data⟩).data == "a ".toUTF8.data
