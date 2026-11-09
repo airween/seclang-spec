@@ -37,6 +37,10 @@ the C API, libmodsecurity v3.0.16 built by CI).
 - Go and a Coraza dependency enter the repository; CI gains a Go job.
 - Known-gaps rows for Coraza and libmodsecurity v3 are verified; rows for ModSecurity v2
   remain predictions until an adapter exists for it.
+- 2026-11-09: `adapters/modsecurity2` runs ModSecurity v2.9.15 under Apache httpd in a
+  container (v2 has no linkable library API on `v2/master`), so every row is now verified.
+  Its first run confirmed all seven predicted v2 rows and added two (`body-errors.yaml`,
+  `containsWord.json`) and v2 to two existing ones.
 - CI builds libmodsecurity from source (cached by tag); that adapter reads matched rules
   from the engine debug log because the C API omits `nolog` matches. Its first run added
   eight v3 rows, removed two predictions, moved `SecRequestBodyInMemoryLimit` to

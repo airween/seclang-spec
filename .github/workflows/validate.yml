@@ -68,6 +68,22 @@ jobs:
         env:
           MODSECURITY_LIB: /home/runner/modsecurity/lib/libmodsecurity.so
       - run: differential/build/bin/seclang-eval differential/crs-v3.json
+  modsecurity2-adapter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        id: image
+        with:
+          path: /tmp/seclang-modsecurity2.tar
+          key: modsecurity2-image-${{ hashFiles('adapters/modsecurity2/Dockerfile') }}-${{ runner.arch }}
+      - if: steps.image.outputs.cache-hit == 'true'
+        run: docker load -i /tmp/seclang-modsecurity2.tar
+      - if: steps.image.outputs.cache-hit != 'true'
+        run: |
+          docker build -t seclang-modsecurity2 adapters/modsecurity2
+          docker save -o /tmp/seclang-modsecurity2.tar seclang-modsecurity2
+      - run: docker run --rm -v "$PWD":/repo seclang-modsecurity2 uv run python -m unittest discover -s adapters/modsecurity2 -v
   lean:
     runs-on: ubuntu-latest
     steps:

@@ -46,12 +46,6 @@
           {{- $class = "compat-partial" -}}
         {{- end -}}
       {{- end -}}
-      {{- if and $gaps (ge (len .) 4) -}}
-        {{- /* known gaps: rows naming Coraza or libmodsecurity are verified by the adapters in CI,
-               rows naming only ModSecurity v2 are predictions from source */ -}}
-        {{- $e := string (index . 1).Text -}}
-        {{- if or (in $e "Coraza") (in $e "libmodsecurity") }}{{ $class = "gap-verified" }}{{ else }}{{ $class = "gap-predicted" }}{{ end -}}
-      {{- end -}}
       <tr{{ with $class }} class="{{ . }}"{{ end }}>
         {{- range $i, $cell := . }}
           {{- $cc := "" -}}
