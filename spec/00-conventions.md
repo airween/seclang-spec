@@ -33,6 +33,20 @@ The initial Core set is the intersection of the three surveyed engines, restrict
 features used by OWASP CRS v4 or by the engines' recommended configuration files.
 Promoting a feature to Core needs an ADR (see ADR-0001).
 
+### Status transitions
+
+A feature moves between statuses as engines adopt it (ADR-0032):
+
+| From | To | When | Record |
+|---|---|---|---|
+| (new) | `Engine-specific` | One engine implements a name the specification does not yet list. | Matrix row and spec entry. |
+| `Engine-specific` | `Extended` | At least two engines implement it compatibly, the entry has full Syntax and Semantics, and at least one test exercises it (with `requires:` for engine profiles). | MINOR change; a Divergence ADR first if the engines disagree on what the entry would specify. |
+| `Extended` | `Core` | All three surveyed engines implement it, and OWASP CRS v4 or an engine's recommended configuration uses it. An engine that fails its tests gets a `compat/known-gaps.md` row. | ADR; MAJOR change. |
+| `Core` | `Extended` | An engine cannot reasonably implement it, or nothing portable relies on it (ADR-0025). | ADR; MAJOR change. |
+| any | `Deprecated` | The feature is legacy and a replacement exists, or no ruleset should use it (ADR-0011). | ADR. |
+
+A new feature that two engines already implement compatibly enters as `Extended`. A feature
+whose engines drop to fewer than two moves back to `Engine-specific`.
 
 ## Spec versioning
 
