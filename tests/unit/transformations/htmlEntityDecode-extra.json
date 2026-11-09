@@ -1,0 +1,56 @@
+[
+ {
+  "type": "tfn",
+  "name": "htmlEntityDecode",
+  "input": "javascript&colon;alert&lpar;1&rpar;",
+  "output": "javascript:alert(1)",
+  "ret": 1,
+  "spec": "07-transformations.md#htmlentitydecode",
+  "note": "named entities beyond the original five (ADR-0031)"
+ },
+ {
+  "type": "tfn",
+  "name": "htmlEntityDecode",
+  "input": "a&excl;b&quest;",
+  "output": "a!b?",
+  "ret": 1,
+  "spec": "07-transformations.md#htmlentitydecode",
+  "note": "named entities beyond the original five (ADR-0031)"
+ },
+ {
+  "type": "tfn",
+  "name": "htmlEntityDecode",
+  "input": "&Tab;x&NewLine;",
+  "output": "\tx\n",
+  "ret": 1,
+  "spec": "07-transformations.md#htmlentitydecode",
+  "note": "named entities beyond the original five (ADR-0031)"
+ },
+ {
+  "type": "tfn",
+  "name": "htmlEntityDecode",
+  "input": "&num;&percnt;&commat;&dollar;",
+  "output": "#%@$",
+  "ret": 1,
+  "spec": "07-transformations.md#htmlentitydecode",
+  "note": "named entities beyond the original five (ADR-0031)"
+ },
+ {
+  "type": "tfn",
+  "name": "htmlEntityDecode",
+  "input": "&lsqb;&rsqb;&lcub;&rcub;&verbar;&bsol;",
+  "output": "[]{}|\\",
+  "ret": 1,
+  "spec": "07-transformations.md#htmlentitydecode",
+  "note": "named entities beyond the original five (ADR-0031)"
+ },
+ {
+  "type": "tfn",
+  "name": "htmlEntityDecode",
+  "input": "a&shy;b",
+  "output": "a­b",
+  "ret": 1,
+  "spec": "07-transformations.md#htmlentitydecode",
+  "note": "shy is the byte AD, not UTF-8 (ADR-0031)"
+ }
+]

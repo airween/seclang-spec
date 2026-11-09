@@ -13,7 +13,8 @@ the non-breaking space byte 0xA0:
 - ModSecurity v2 (`apache2/re_tfns.c`, `msre_fn_compressWhitespace_execute`): `isspace`
   or `NBSP` (0xA0), byte by byte.
 - libmodsecurity v3.0.16 (`src/actions/transformations/compress_whitespace.cc`):
-  `isspace` only; 0xA0 is an ordinary byte.
+  `isspace` only; 0xA0 is an ordinary byte. Unchanged in v3.0.17 (rechecked 2026-11-09
+  with the reference adapter).
 - Coraza 3.8.1 (`internal/transformations/compress_whitespace.go`): decodes runes; a bare
   0xA0 byte (`rawNBSP`) and the UTF-8 sequences `C2 A0` and `C2 85` are whitespace, while
   an 0xA0 inside another valid sequence (`à`, `C3 A0`) is kept.

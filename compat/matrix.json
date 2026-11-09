@@ -2,7 +2,7 @@
  "generated": "2026-10-06",
  "engines": {
   "v2": "ModSecurity v2 (owasp-modsecurity/ModSecurity branch v2/master, 2026-09)",
-  "v3": "libmodsecurity v3.0.16 (owasp-modsecurity/ModSecurity branch v3/master)",
+  "v3": "libmodsecurity v3.0.17 (owasp-modsecurity/ModSecurity branch v3/master)",
   "coraza": "Coraza v3.8.1 (corazawaf/coraza)"
  },
  "categories": {
@@ -1984,7 +1984,7 @@
    {
     "name": "MULTIPART_DUPLICATE_PART_HEADER",
     "v2": false,
-    "v3": false,
+    "v3": true,
     "coraza": true,
     "status": "Engine-specific"
    },
@@ -2005,14 +2005,14 @@
    {
     "name": "MULTIPART_FILENAME_CHARSET",
     "v2": false,
-    "v3": false,
+    "v3": true,
     "coraza": true,
     "status": "Engine-specific"
    },
    {
     "name": "MULTIPART_FILENAME_LANGUAGE",
     "v2": false,
-    "v3": false,
+    "v3": true,
     "coraza": true,
     "status": "Engine-specific"
    },

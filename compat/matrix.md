@@ -3,7 +3,7 @@
 Generated from `compat/matrix.json` by `tools/matrix.py` on 2026-10-06. Do not edit by hand; edit the JSON and rerun the tool. A name links to its specification entry; on the published site, rows where the engines differ are tinted.
 
 - **v2**: ModSecurity v2 (owasp-modsecurity/ModSecurity branch v2/master, 2026-09)
-- **v3**: libmodsecurity v3.0.16 (owasp-modsecurity/ModSecurity branch v3/master)
+- **v3**: libmodsecurity v3.0.17 (owasp-modsecurity/ModSecurity branch v3/master)
 - **coraza**: Coraza v3.8.1 (corazawaf/coraza)
 
 ## directives (64 of 91 in all engines)
@@ -316,11 +316,11 @@ Generated from `compat/matrix.json` by `tools/matrix.py` on 2026-10-06. Do not e
 | [`MULTIPART_CRLF_LINE`](../spec/05-variables.md#multipart_crlf_line) | yes | - | - | Deprecated |
 | [`MULTIPART_DATA_AFTER`](../spec/05-variables.md#multipart_data_after) | yes | yes | yes | Extended |
 | [`MULTIPART_DATA_BEFORE`](../spec/05-variables.md#multipart_data_before) | yes | yes | - | Extended |
-| [`MULTIPART_DUPLICATE_PART_HEADER`](../spec/05-variables.md#multipart_duplicate_part_header) | - | - | yes | Engine-specific |
+| [`MULTIPART_DUPLICATE_PART_HEADER`](../spec/05-variables.md#multipart_duplicate_part_header) | - | yes | yes | Engine-specific |
 | [`MULTIPART_FILE_LIMIT_EXCEEDED`](../spec/05-variables.md#multipart_file_limit_exceeded) | yes | yes | - | Extended |
 | [`MULTIPART_FILENAME`](../spec/05-variables.md#multipart_filename) | yes | yes | yes | Extended |
-| [`MULTIPART_FILENAME_CHARSET`](../spec/05-variables.md#multipart_filename_charset) | - | - | yes | Engine-specific |
-| [`MULTIPART_FILENAME_LANGUAGE`](../spec/05-variables.md#multipart_filename_language) | - | - | yes | Engine-specific |
+| [`MULTIPART_FILENAME_CHARSET`](../spec/05-variables.md#multipart_filename_charset) | - | yes | yes | Engine-specific |
+| [`MULTIPART_FILENAME_LANGUAGE`](../spec/05-variables.md#multipart_filename_language) | - | yes | yes | Engine-specific |
 | [`MULTIPART_HEADER_FOLDING`](../spec/05-variables.md#multipart_header_folding) | yes | yes | - | Extended |
 | [`MULTIPART_INVALID_HEADER_FOLDING`](../spec/05-variables.md#multipart_invalid_header_folding) | yes | yes | - | Extended |
 | [`MULTIPART_INVALID_PART`](../spec/05-variables.md#multipart_invalid_part) | yes | yes | - | Extended |

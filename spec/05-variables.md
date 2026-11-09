@@ -49,11 +49,11 @@ any surveyed engine with its status (`00-conventions.md`).
 | [MULTIPART_CRLF_LINE](#multipart_crlf_line) | Deprecated | yes | - | - | Multipart anomaly flag |
 | [MULTIPART_DATA_AFTER](#multipart_data_after) | Extended | yes | yes | yes | Multipart anomaly flag |
 | [MULTIPART_DATA_BEFORE](#multipart_data_before) | Extended | yes | yes | - | Multipart anomaly flag |
-| [MULTIPART_DUPLICATE_PART_HEADER](#multipart_duplicate_part_header) | Engine-specific | - | - | yes | Coraza: multipart anomaly flag |
+| [MULTIPART_DUPLICATE_PART_HEADER](#multipart_duplicate_part_header) | Engine-specific | - | yes | yes | v3, Coraza: multipart anomaly flag |
 | [MULTIPART_FILE_LIMIT_EXCEEDED](#multipart_file_limit_exceeded) | Extended | yes | yes | - | Multipart anomaly flag |
 | [MULTIPART_FILENAME](#multipart_filename) | Extended | yes | yes | yes | File name of the current part |
-| [MULTIPART_FILENAME_CHARSET](#multipart_filename_charset) | Engine-specific | - | - | yes | Coraza: RFC 5987 filename* charset |
-| [MULTIPART_FILENAME_LANGUAGE](#multipart_filename_language) | Engine-specific | - | - | yes | Coraza: RFC 5987 filename* language |
+| [MULTIPART_FILENAME_CHARSET](#multipart_filename_charset) | Engine-specific | - | yes | yes | v3, Coraza: RFC 5987 filename* charset |
+| [MULTIPART_FILENAME_LANGUAGE](#multipart_filename_language) | Engine-specific | - | yes | yes | v3, Coraza: RFC 5987 filename* language |
 | [MULTIPART_HEADER_FOLDING](#multipart_header_folding) | Extended | yes | yes | - | Multipart anomaly flag |
 | [MULTIPART_INVALID_HEADER_FOLDING](#multipart_invalid_header_folding) | Extended | yes | yes | - | Multipart anomaly flag |
 | [MULTIPART_INVALID_PART](#multipart_invalid_part) | Extended | yes | yes | - | Multipart anomaly flag |
@@ -1455,25 +1455,25 @@ Reserved names; not specified (ADR-0010).
 
 **Status:** Engine-specific
 
-**Semantics.** Coraza: multipart anomaly flag.
+**Semantics.** libmodsecurity v3.0.17 and Coraza: multipart anomaly flag.
 
-**Implemented by.** Coraza.
+**Implemented by.** v3, Coraza.
 
 ### MULTIPART_FILENAME_CHARSET
 
 **Status:** Engine-specific
 
-**Semantics.** Coraza: RFC 5987 filename* charset.
+**Semantics.** libmodsecurity v3.0.17 and Coraza: RFC 5987 filename* charset.
 
-**Implemented by.** Coraza.
+**Implemented by.** v3, Coraza.
 
 ### MULTIPART_FILENAME_LANGUAGE
 
 **Status:** Engine-specific
 
-**Semantics.** Coraza: RFC 5987 filename* language.
+**Semantics.** libmodsecurity v3.0.17 and Coraza: RFC 5987 filename* language.
 
-**Implemented by.** Coraza.
+**Implemented by.** v3, Coraza.
 
 ### REQUEST_XML
 

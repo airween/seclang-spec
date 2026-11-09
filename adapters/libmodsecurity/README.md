@@ -15,13 +15,13 @@ Without `MODSECURITY_LIB` the conformance tests and the engine smoke tests are s
 
 ## Building the library
 
-CI builds v3.0.16 from source (`.github/workflows/validate.yml`, job
+CI builds v3.0.17 from source (`.github/workflows/validate.yml`, job
 `libmodsecurity-adapter`) and caches the install. The same recipe works locally; the
 build needs the libxml2, yajl and PCRE2 development packages so that XML and JSON bodies
 and the regex operators are available:
 
 ```sh
-git clone --depth 1 -b v3.0.16 --recurse-submodules --shallow-submodules https://github.com/owasp-modsecurity/ModSecurity.git
+git clone --depth 1 -b v3.0.17 --recurse-submodules --shallow-submodules https://github.com/owasp-modsecurity/ModSecurity.git
 cd ModSecurity && ./build.sh
 ./configure --prefix=$HOME/modsecurity --disable-doxygen-doc --disable-examples \
   --without-lua --without-lmdb --without-ssdeep --without-curl --without-geoip --without-maxmind
@@ -63,7 +63,7 @@ a known-gaps row like any other. CI runs it after the Lean job on the same gener
 
 Extended features the library does not implement are skipped, not failed: profiles
 through `requires:`, unit files through the `UNSUPPORTED_*` sets in `test_conformance.py`
-(empty for v3.0.16 built as above).
+(empty for v3.0.17 built as above).
 
 ## How the tiers are driven
 
@@ -87,7 +87,7 @@ through `requires:`, unit files through the `UNSUPPORTED_*` sets in `test_confor
 ## Known limits
 
 - An engine crash cannot be caught from `ctypes` and aborts the run.
-- The debug-log line formats are those of v3.0.16; a release that changes them needs
+- The debug-log line formats are those of v3.0.17; a release that changes them needs
   `engine_tier.parse_debug_log` updated (its tests in `test_adapter.py` pin the formats).
 - In-memory persistent collections are process-global in libmodsecurity, so profiles
   that use `initcol` share state within one run; only one profile does today.

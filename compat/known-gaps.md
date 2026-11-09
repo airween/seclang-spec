@@ -2,8 +2,8 @@
 
 Core tests in `tests/` that a surveyed engine is known to fail today, with the spec
 section that decides the behaviour. The engines are ModSecurity v2 (`v2/master`,
-2026-09), libmodsecurity v3.0.16 and Coraza v3.8.1, as read from source on 2026-10-06
-and 2026-10-07. Rows naming Coraza or libmodsecurity v3 are **verified**: `adapters/coraza` and
+2026-09), libmodsecurity v3.0.17 and Coraza v3.8.1, as read from source on 2026-10-06
+and 2026-10-07 (libmodsecurity rechecked against v3.0.17 on 2026-11-09). Rows naming Coraza or libmodsecurity v3 are **verified**: `adapters/coraza` and
 `adapters/libmodsecurity` run every test in CI and fail when a listed file passes or an
 unlisted one fails. Rows naming only ModSecurity v2 remain predictions from source until
 an adapter exists for it (on the published site those rows are tinted blue). An entry here is a bug for the engine, not a
@@ -41,6 +41,7 @@ whenever a Divergence ADR or a divergence note picks against an engine.
 | `tests/unit/transformations/urlDecodeUni.json` | Coraza | one full-width `%u` case decodes differently | `07-transformations.md#urldecodeuni` |
 | `tests/engine/actions/allow.yaml` | Coraza | `allow` also skips the logging phase | `08-actions.md#allow` |
 | `tests/unit/transformations/htmlEntityDecode.json` | Coraza | `&nbsp;` decodes to UTF-8 `C2 A0` (two cases) | `07-transformations.md#htmlentitydecode` |
+| `tests/unit/transformations/htmlEntityDecode-extra.json` | Coraza | `&shy;` decodes to UTF-8 `C2 AD` (`internal/transformations/html_entity_decode.go`, `html.UnescapeString`) (one case) | ADR-0031 |
 | `tests/engine/variables/multipart.yaml` | Coraza | `FILES` members keyed by the empty string, so `FILES:field` selects nothing | `05-variables.md#files` |
 | `tests/unit/operators/beginsWith.json`, `tests/unit/operators/contains.json`, `tests/unit/operators/endsWith.json`, `tests/unit/operators/streq.json`, `tests/unit/operators/within.json` | libmodsecurity v3, Coraza | an empty operator parameter is a load error (Coraza: "empty data"; v3: a parser syntax error, the parameter cannot be written at all); the spec says an empty string matches every value (one case per file) | `06-operators.md#contains` |
 | `tests/unit/transformations/hexDecode.json` | Coraza | an input with an odd length is returned unchanged instead of decoding the complete pairs (one case) | `07-transformations.md#hexdecode` |

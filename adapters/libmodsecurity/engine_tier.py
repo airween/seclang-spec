@@ -16,7 +16,7 @@ from mscapi import ModSecurity, RulesSet
 # line, which only a message text of that exact shape could spoof.
 _LINE = re.compile(rb"^\[[^\]]*\] \[.*\] \[(\d+)\] (.*)$")
 _BLOCK = re.compile(rb"^\(Rule: (\d+)\) ")
-# Disruptive action names as v3 prints them (lower-cased; v3.0.16 misspells redirect).
+# Disruptive action names as v3 prints them (lower-cased; v3.0.17 misspells redirect).
 # "block" is resolved against the intervention in run_stage.
 _ACTIONS = {b"deny": "deny", b"drop": "drop", b"redirect": "redirect", b"redirert": "redirect", b"block": "block"}
 

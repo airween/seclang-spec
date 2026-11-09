@@ -18,6 +18,7 @@ HAND_MAINTAINED = {
     ("transformations", "base64Decode"),
     ("operators", "pmFromFile"),  # pmFromFile cases need corpus-internal files
     ("transformations", "cssDecode"),  # one corpus expectation corrected (07-transformations.md#cssdecode)
+    ("transformations", "removeComments"),  # what follows a closing comment is unspecified (07-transformations.md#removecomments)
 }
 # Individual corpus cases the spec rejects (06-operators.md#validatebyterange: an empty or
 # unparsable parameter is a configuration error, not "permit byte 0").

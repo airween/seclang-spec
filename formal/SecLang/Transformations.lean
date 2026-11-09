@@ -513,12 +513,25 @@ where
     else out
   termination_by b.size - i
 
-/-- The byte of a named entity, compared case-insensitively. -/
+/-- The named entities of ADR-0031: every WHATWG entity that is one code point up to U+007F,
+plus `nbsp` and `shy`, as generated in msc_util.c `msc_html_named_entities` (v2.9.15) and
+html_entity_decode.cc `named_entities` (v3.0.17). -/
+def namedEntities : List (String × UInt8) :=
+  [("amp", 0x26), ("apos", 0x27), ("ast", 0x2A), ("bsol", 0x5C), ("colon", 0x3A),
+   ("comma", 0x2C), ("commat", 0x40), ("diacriticalgrave", 0x60), ("dollar", 0x24),
+   ("equals", 0x3D), ("excl", 0x21), ("grave", 0x60), ("gt", 0x3E), ("hat", 0x5E),
+   ("lbrace", 0x7B), ("lbrack", 0x5B), ("lcub", 0x7B), ("lowbar", 0x5F), ("lpar", 0x28),
+   ("lsqb", 0x5B), ("lt", 0x3C), ("midast", 0x2A), ("nbsp", 0xA0), ("newline", 0x0A),
+   ("nonbreakingspace", 0xA0), ("num", 0x23), ("percnt", 0x25), ("period", 0x2E),
+   ("plus", 0x2B), ("quest", 0x3F), ("quot", 0x22), ("rbrace", 0x7D), ("rbrack", 0x5D),
+   ("rcub", 0x7D), ("rpar", 0x29), ("rsqb", 0x5D), ("semi", 0x3B), ("shy", 0xAD),
+   ("sol", 0x2F), ("tab", 0x09), ("underbar", 0x5F), ("verbar", 0x7C), ("vert", 0x7C),
+   ("verticalline", 0x7C)]
+
+/-- The byte of a named entity, the whole name compared case-insensitively. -/
 def namedEntity (name : ByteArray) : Option UInt8 :=
   let s := (lowercase name).data
-  if s == "quot".toUTF8.data then some 0x22 else if s == "amp".toUTF8.data then some 0x26
-  else if s == "lt".toUTF8.data then some 0x3C else if s == "gt".toUTF8.data then some 0x3E
-  else if s == "nbsp".toUTF8.data then some 0xA0 else none
+  (namedEntities.find? (fun (n, _) => n.toUTF8.data == s)).map (·.2)
 
 /-- Value of the `n` digits at `p` in the given base, modulo 256. -/
 def digitsValue (b : ByteArray) (p n base : Nat) : UInt8 := Id.run do
@@ -528,7 +541,7 @@ def digitsValue (b : ByteArray) (p n base : Nat) : UInt8 := Id.run do
 
 /-- `htmlEntityDecode`. msc_util.c `html_entities_decode_inplace`: `&#NNN;`, `&#xHH;` (the
 `;` optional, the value modulo 256; v2's `strtol` saturates instead for values beyond
-`long`) and the five named entities; anything else is copied. -/
+`long`) and the named entities of `namedEntities`; anything else is copied. -/
 def htmlEntityDecode (b : ByteArray) : ByteArray := go 0 .empty
 where
   go (i : Nat) (out : ByteArray) : ByteArray :=
@@ -559,6 +572,8 @@ where
 #guard (jsDecode ⟨"\\u\\u0\\u01\\u012".toUTF8.data⟩).data == "uu0u01u012".toUTF8.data
 #guard (htmlEntityDecode ⟨"&#x41;&#X42&#67;&#68&quot;&AMP&lt&gt;&nbsp;&foo;&#xg;&#;&".toUTF8.data⟩).data
   == ("ABCD\"&<>".toUTF8.push 0xA0 ++ "&foo;&#xg;&#;&".toUTF8).data
+#guard (htmlEntityDecode ⟨"javascript&colon;alert&LPAR;1&rpar&ltest;&Tab;".toUTF8.data⟩).data
+  == "javascript:alert(1)&ltest;\t".toUTF8.data
 
 /-- `normalisePath` / `normalisePathWin`. A transcription of msc_util.c
 `normalize_path_inplace`: `src` walks the input, `out` is the output written so far (the C

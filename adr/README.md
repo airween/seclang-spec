@@ -52,3 +52,4 @@ promoted into the spec (Extension).
 | [0028](0028-skipafter-label-is-a-marker.md) | `skipAfter` resolves to a `SecMarker`, never to a rule id | Divergence | proposed |
 | [0029](0029-tag-exceptions-exact.md) | Tag and message rule exceptions select by exact string | Divergence | proposed |
 | [0030](0030-negation-per-value.md) | A negated operator applies per value | Clarification | proposed |
+| [0031](0031-htmlentitydecode-named-entities.md) | `htmlEntityDecode` decodes the ASCII named entities of the WHATWG table | Divergence | proposed |

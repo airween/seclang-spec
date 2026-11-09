@@ -14,7 +14,7 @@ directives, variables, operators, transformations, actions, body processors and 
 It ships 98 engine-tier test profiles and 62 unit-tier files holding about
 4,280 cases, 21 ADRs (all `proposed`), a three-engine compatibility matrix and a
 table of the Core tests each engine fails today. The engines surveyed were ModSecurity
-v2 (`v2/master`, 2026-09), libmodsecurity v3.0.16 and Coraza v3.8.1.
+v2 (`v2/master`, 2026-09), libmodsecurity v3.0.17 and Coraza v3.8.1.
 
 ## Layout
 
@@ -26,7 +26,7 @@ v2 (`v2/master`, 2026-09), libmodsecurity v3.0.16 and Coraza v3.8.1.
 | `compat/` | Three-engine feature matrix (`matrix.json`, rendered by `tools/matrix.py`) and `known-gaps.md`, the Core tests each engine is known to fail today. |
 | `docs/superpowers/` | The design document and the per-phase implementation plans this draft was built from. |
 | `tools/` | `validate.py` enforces the repo's invariants; CI runs it. `import_sts.py` regenerates the unit tier from the SecRules Test Set. |
-| `adapters/` | Reference adapters that run `tests/` against a real engine (ADR-0023). `adapters/coraza` runs Coraza v3.8.1 and `adapters/libmodsecurity` runs libmodsecurity v3.0.16 in CI, with `compat/known-gaps.md` as the expected-failure list. |
+| `adapters/` | Reference adapters that run `tests/` against a real engine (ADR-0023). `adapters/coraza` runs Coraza v3.8.1 and `adapters/libmodsecurity` runs libmodsecurity v3.0.17 in CI, with `compat/known-gaps.md` as the expected-failure list. |
 | `formal/` | Lean 4 model of the specification, run in CI: every transformation of spec 07 and every library-free operator of spec 06 against the unit-tier corpus (`lake exe seclang-check`), a parser for the configuration grammar of spec 01–04 against every engine profile (`lake exe seclang-parse`), and the processing model of spec 03 with URL-encoded, multipart and JSON bodies and the body limits run against the profiles' transactions (`lake exe seclang-eval`), with theorems for ADR-0016 and ADR-0017. |
 
 ## Status labels

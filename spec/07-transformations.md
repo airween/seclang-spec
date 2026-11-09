@@ -185,16 +185,65 @@ that does not begin a recognised sequence is dropped and the byte kept (`\8` bec
 **Syntax.** `t:htmlEntityDecode`
 
 **Semantics.** Decodes `&#NNN;` and `&#xHH;` numeric references (the `;` optional) and
-the named entities `&quot; &amp; &lt; &gt; &nbsp;`; other named entities are left as is.
-A numeric reference yields one byte, the low 8 bits of the code point (ModSecurity v2
-`msc_util.c`, libmodsecurity v3 `html_entity_decode.cc`).
+named references. A numeric reference yields one byte, the low 8 bits of the code point
+(ModSecurity v2 `msc_util.c`, libmodsecurity v3 `html_entity_decode.cc`). A named
+reference is `&`, the longest following run of ASCII letters and digits, and an optional
+`;`. When the whole run, compared case-insensitively, is one of the names below, the
+reference MUST decode to the byte listed (ADR-0031). The names are every WHATWG named
+character reference that is one code point up to U+007F, plus `nbsp` and `shy`:
 
-**Divergence notes.** Coraza 3.8.1 (`internal/transformations/html_entity_decode.go`,
-`html.UnescapeString`) decodes every HTML5 named entity and emits UTF-8, so `&nbsp;`
-yields `C2 A0` instead of the byte `A0` and two imported cases fail there
-(`compat/known-gaps.md`).
+| Byte | Names |
+|---|---|
+| `09` | `tab` |
+| `0A` | `newline` |
+| `21` | `excl` |
+| `22` | `quot` |
+| `23` | `num` |
+| `24` | `dollar` |
+| `25` | `percnt` |
+| `26` | `amp` |
+| `27` | `apos` |
+| `28` | `lpar` |
+| `29` | `rpar` |
+| `2A` | `ast`, `midast` |
+| `2B` | `plus` |
+| `2C` | `comma` |
+| `2E` | `period` |
+| `2F` | `sol` |
+| `3A` | `colon` |
+| `3B` | `semi` |
+| `3C` | `lt` |
+| `3D` | `equals` |
+| `3E` | `gt` |
+| `3F` | `quest` |
+| `40` | `commat` |
+| `5B` | `lbrack`, `lsqb` |
+| `5C` | `bsol` |
+| `5D` | `rbrack`, `rsqb` |
+| `5E` | `hat` |
+| `5F` | `lowbar`, `underbar` |
+| `60` | `diacriticalgrave`, `grave` |
+| `7B` | `lbrace`, `lcub` |
+| `7C` | `verbar`, `vert`, `verticalline` |
+| `7D` | `rbrace`, `rcub` |
+| `A0` | `nbsp`, `nonbreakingspace` |
+| `AD` | `shy` |
 
-**Tests.** `tests/unit/transformations/htmlEntityDecode.json`
+Any other named reference, including one whose run only begins with a listed name
+(`&ltest;`), is **not specified**: an engine MAY leave it as is or decode it.
+
+**Divergence notes.** ModSecurity v2.9.15 (`msc_util.c`, `msc_html_named_entities`) and
+libmodsecurity v3.0.17 (`html_entity_decode.cc`, `named_entities`) implement the table above
+as written and leave every other named reference as is. Earlier releases knew only `quot`,
+`amp`, `lt`, `gt` and `nbsp` and compared a prefix, so `&ltest;` yielded `<` (v3.0.16
+measured). Coraza 3.8.1 (`internal/transformations/html_entity_decode.go`,
+`html.UnescapeString`) decodes every HTML5 named entity and emits UTF-8: `&nbsp;` yields `C2 A0`
+instead of the byte `A0` and two imported cases fail there (`compat/known-gaps.md`),
+`&shy;` yields `C2 AD`, and the legacy forms without `;` decode, so `&ltest;` yields
+`<est;`.
+
+**Tests.** `tests/unit/transformations/htmlEntityDecode.json`,
+`tests/unit/transformations/htmlEntityDecode-extra.json`
 
 ### jsDecode
 
@@ -422,7 +471,7 @@ Specified in outline; SHOULD be implemented.
 
 **Status:** Extended
 
-**Semantics.** Base64 decoding that skips every byte outside the alphabet, NUL included, and ignores `=` instead of stopping (Coraza ADR-0014 lineage; libmodsecurity v3 `decode_forgiven_engine`). The result when `=` follows a single dangling sextet is not specified (ModSecurity v2 `decode_base64_ext` and v3 return the empty value). ModSecurity v2 stops at a NUL byte (C string); Coraza 3.8.1 (`base64decode.go`) stops at `=` and also accepts the base64url alphabet (`-`, `_`).
+**Semantics.** Base64 decoding that skips every byte outside the alphabet, NUL included, and ignores `=` instead of stopping (Coraza ADR-0014 lineage; libmodsecurity v3 `decode_forgiven_engine`). The result when `=` follows a single dangling sextet is not specified (ModSecurity v2 `decode_base64_ext` and v3 return the empty value). ModSecurity v2 stops at a NUL byte (C string); Coraza 3.8.1 (`base64decode.go`) stops at `=`. Coraza, ModSecurity v2.9.15 (`msc_util.c`, `b64_reverse_t`) and libmodsecurity v3.0.17 (`src/utils/base64.cc`, `decode_forgiven_engine`) also accept the base64url alphabet (`-`, `_`), which earlier ModSecurity releases skip.
 
 **Implemented by.** v2, v3, Coraza.
 
@@ -481,7 +530,7 @@ the mirror of `parityEven7bit`, with the same high-bit caveat.
 
 **Status:** Extended
 
-**Semantics.** Removes C-style `/* ... */` and HTML `<!-- ... -->` comments; a SQL `--` or shell `#` outside a comment ends the value there. The byte that follows a closing `*/` or `-->` is copied as is, which at the end of the value is the C string terminator: `/* x */` yields one NUL byte in every engine (ModSecurity v2 `re_tfns.c`, libmodsecurity v3 `remove_comments.cc`, Coraza `remove_comments.go`). An unterminated comment yields one space. CRS prefers `removeCommentsChar`.
+**Semantics.** Removes C-style `/* ... */` and HTML `<!-- ... -->` comments; a SQL `--` or shell `#` outside a comment ends the value there. What follows a closing `*/` or `-->` is **not specified**: ModSecurity before v2.9.15 and v3.0.17 copies the next byte unexamined, so `/* x */` yields one NUL byte (the C string terminator); ModSecurity v2.9.15 (`re_tfns.c`) and libmodsecurity v3.0.17 (`remove_comments.cc`) carry on scanning and give the empty value. `tests/unit/transformations/removeComments.json` is maintained by hand and keeps only cases that do not depend on it. An unterminated comment yields one space. CRS prefers `removeCommentsChar`.
 
 **Implemented by.** v2, v3, Coraza.
 

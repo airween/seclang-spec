@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: lean
     env:
-      MSC_VERSION: v3.0.16
+      MSC_VERSION: v3.0.17
       MSC_PREFIX: /home/runner/modsecurity
     steps:
       - uses: actions/checkout@v4

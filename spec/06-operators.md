@@ -286,9 +286,12 @@ whole match and `TX:1`…`TX:9` the groups; unit cases carry them as `re_groups`
 **Divergence notes.** ModSecurity v2 uses PCRE, libmodsecurity v3 PCRE2, Coraza Go
 `regexp` (RE2). OWASP CRS v4 is written within the Core subset and checked by its
 toolchain. Match limits (`SecPcreMatchLimit`) apply to PCRE engines only. Compile
-options differ: v2 `PCRE_DOTALL | PCRE_DOLLAR_ENDONLY` (`apache2/re_operators.c`), v3.0.16
+options differ: v2 `PCRE_DOTALL | PCRE_DOLLAR_ENDONLY` (`apache2/re_operators.c`), v3.0.17
 `PCRE2_DOTALL | PCRE2_MULTILINE` (`src/utils/regex.cc`), Coraza v3.8.1 `(?sm)` by default
-(`internal/operators/rx.go`); see ADR-0027.
+(`internal/operators/rx.go`); see ADR-0027. A pattern without macros that does not compile
+fails the configuration in all three: v2 `msre_op_rx_param_init`, libmodsecurity v3.0.17
+`Rx::init` ("Invalid regular expression"; v3.0.16 loaded the rule and never matched it),
+Coraza `internal/operators/rx.go`.
 
 **Tests.** `tests/unit/operators/rx.json`, `tests/engine/operators/rx-capture.yaml`,
 `tests/engine/operators/rx-dotall.yaml`
@@ -487,7 +490,7 @@ Specified in outline; SHOULD be implemented.
 
 **Status:** Extended
 
-**Semantics.** Searched like `verifyCC`; a match is valid when its first eleven digits are exactly eleven, are not `00000000000`, `11111111111` … `99999999999` or `01234567890`, and the last two agree with the CPF check-digit sums (weights 10…2 and 11…2, remainder below 2 giving 0, otherwise 11 minus the remainder) (ModSecurity v2 `cpf_verify`). libmodsecurity v3.0.16 searches each suffix of the value as a separate subject (`src/operators/verify_cpf.cc`, `VerifyCPF::evaluate`), so `^` and look-behind context are relative to the suffix, not the whole value.
+**Semantics.** Searched like `verifyCC`; a match is valid when its first eleven digits are exactly eleven, are not `00000000000`, `11111111111` … `99999999999` or `01234567890`, and the last two agree with the CPF check-digit sums (weights 10…2 and 11…2, remainder below 2 giving 0, otherwise 11 minus the remainder) (ModSecurity v2 `cpf_verify`). libmodsecurity v3.0.17 searches each suffix of the value as a separate subject (`src/operators/verify_cpf.cc`, `VerifyCPF::evaluate`), so `^` and look-behind context are relative to the suffix, not the whole value.
 
 **Implemented by.** v2, v3.
 
@@ -495,7 +498,7 @@ Specified in outline; SHOULD be implemented.
 
 **Status:** Extended
 
-**Semantics.** Searched like `verifyCC`; a match is valid when it holds exactly nine digits that are neither all ascending by one nor all equal, with area (first three), group (next two) and serial (last four) non-zero, area not 666 and below 740 (ModSecurity v2 `ssn_verify`). libmodsecurity v3.0.16 searches each suffix of the value as a separate subject (`src/operators/verify_ssn.cc`, `VerifySSN::evaluate`), so `^` and look-behind context are relative to the suffix, not the whole value.
+**Semantics.** Searched like `verifyCC`; a match is valid when it holds exactly nine digits that are neither all ascending by one nor all equal, with area (first three), group (next two) and serial (last four) non-zero, area not 666 and below 740 (ModSecurity v2 `ssn_verify`). libmodsecurity v3.0.17 searches each suffix of the value as a separate subject (`src/operators/verify_ssn.cc`, `VerifySSN::evaluate`), so `^` and look-behind context are relative to the suffix, not the whole value.
 
 **Implemented by.** v2, v3.
 

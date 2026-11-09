@@ -577,8 +577,9 @@ configurations set the list.
 and inspected (`#secresponsebodyaccess`). Multiple occurrences accumulate. Types are
 compared against the response `Content-Type` with any parameters (`; charset=…`)
 removed; whether the comparison ignores case is **not specified** (ModSecurity v2
-compares case-insensitively through `apr_table_get`, libmodsecurity v3 and Coraza
-compare exactly). The tests use bare, lowercase `Content-Type` values so that neither
+compares case-insensitively through `apr_table_get`, libmodsecurity v3.0.17 lower-cases
+the response type before the lookup (`transaction.cc`, `processResponseBody`; v3.0.16
+compared exactly), Coraza compares exactly). The tests use bare, lowercase `Content-Type` values so that neither
 parameter stripping nor case is what they measure.
 
 **Divergence notes.** Defaults differ as listed.
