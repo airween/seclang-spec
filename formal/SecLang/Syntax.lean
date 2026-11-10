@@ -188,16 +188,18 @@ def isIPv6 (s : String) : Bool :=
     | _, _ => false
   | _ => false
 
+/-- One `@ipMatch` entry: an address with an optional in-range prefix. -/
+def ipEntryOk (e : String) : Bool :=
+  let (addr, pfx) := match e.splitOn "/" with
+    | [a] => (a, none) | [a, p] => (a, some p) | _ => ("", some "x")
+  let v6 := addr.contains ':'
+  let prefixOk := match pfx with | none => true | some p => (natOf? p).any (· ≤ if v6 then 128 else 32)
+  (if v6 then isIPv6 addr else isIPv4 addr) && prefixOk
+
 /-- `06#ipmatch`: every entry an address with an optional in-range prefix (ADR-0024). -/
 def checkIpMatch (line : Nat) (param : String) : Parse Unit :=
-  (param.splitOn ",").forM fun e => do
-    let e := trimBlanks e
-    let (addr, pfx) := match e.splitOn "/" with
-      | [a] => (a, none) | [a, p] => (a, some p) | _ => ("", some "x")
-    let v6 := addr.contains ':'
-    let prefixOk := match pfx with | none => true | some p => (natOf? p).any (· ≤ if v6 then 128 else 32)
-    let ok := (if v6 then isIPv6 addr else isIPv4 addr) && prefixOk
-    if !ok then err line s!"invalid @ipMatch entry '{e}'" else pure ()
+  (param.splitOn ",").forM fun e =>
+    if !ipEntryOk (trimBlanks e) then err line s!"invalid @ipMatch entry '{trimBlanks e}'" else pure ()
 
 /-- `06#validatebyterange`: decimal bytes or `LOW-HIGH` ranges. -/
 def checkByteRange (line : Nat) (param : String) : Parse Unit := do
@@ -623,5 +625,43 @@ def parseConfig (files : List (String × String)) (text : String) : Parse Config
 #guard (parseConfig [("a.txt", "x")] "SecRule ARGS \"@pmFromFile a.txt b.txt\" \"id:1,phase:1,pass\"") matches .error ⟨1, _, _⟩
 #guard (parseConfig [("a.txt", "x")] "SecRule ARGS \"@pmFromFile a.txt\" \"id:1,phase:1,pass\"") matches .ok _
 #guard (parseConfig [("dir/nets.txt", "x")] "SecRule ARGS \"@ipMatchF nets.txt\" \"id:1,phase:1,pass\"") matches .ok _
+
+/-! ## Theorems for ADR-0005, ADR-0015 and ADR-0024 -/
+
+/-- ADR-0005: a line whose directive name is not found (unknown, or Engine-specific) is a
+configuration error; it is never skipped. -/
+theorem unknown_directive_error (fuel : Nat) (files : List (String × String)) (depth : Nat) (st : St)
+    (l : Line) {name : String} {rest : List String}
+    (hargs : splitArgs l = .ok (name :: rest)) (hname : findDirective name = none) :
+    ∃ e, parseLine (fuel + 1) files depth st l = .error e := by
+  simp [parseLine, hargs, hname, bind, Except.bind, err]
+
+/-- ADR-0015: a rule that starts a chain without an `id` value is a configuration error. -/
+theorem rule_without_id_error (line : Nat) (as : List Action) (st : St)
+    (hstart : st.pendingChain = false) (hid : (as.find? (·.name == "id")).bind (·.value) = none) :
+    ∃ e, checkRule line as st = .error e := by
+  unfold checkRule
+  by_cases hd : (disruptives as).length > 1 <;>
+    simp [hd, hstart, hid, bind, Except.bind, err]
+
+/-- A check run over a list of entries passes exactly when every entry passes. -/
+theorem forM_check_ok (l : List String) (ok : String → Bool) (msg : String → String) (line : Nat) :
+    (l.forM fun e => if !ok e then err line (msg e) else (pure () : Parse Unit)) = .ok () ↔ l.all ok := by
+  induction l with
+  | nil => simp [pure, Except.pure]
+  | cons a l ih =>
+    by_cases h : ok a <;> simp_all [bind, Except.bind, err, pure, Except.pure]
+
+/-- ADR-0024: an `@ipMatch` parameter is accepted exactly when every entry is a valid address
+with an optional in-range prefix; one bad entry rejects the configuration. -/
+theorem ipMatch_all_entries (line : Nat) (param : String) :
+    checkIpMatch line param = .ok () ↔ (param.splitOn ",").all (ipEntryOk ∘ trimBlanks) := by
+  unfold checkIpMatch
+  exact forM_check_ok _ (ipEntryOk ∘ trimBlanks) _ line
+
+#guard ipEntryOk "192.168.0.0/16" && ipEntryOk "::1" && ipEntryOk "2001:db8::/32"
+#guard !ipEntryOk "192.168.0.0/33" && !ipEntryOk "10.0.0.256" && !ipEntryOk "not-an-ip"
+#guard checkIpMatch 1 "10.0.0.1, 192.168.0.0/16" matches .ok _
+#guard checkIpMatch 1 "10.0.0.1,bad" matches .error _
 
 end SecLang

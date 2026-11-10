@@ -305,6 +305,13 @@ where
 
 #guard (compressWhitespace ⟨"  T  \t   C  ".toUTF8.data⟩).data == " T C ".toUTF8.data
 #guard (compressWhitespace ⟨#[0x61, 0xA0, 0xA0, 0x62, 0x00]⟩).data == #[0x61, 0x20, 0x62, 0x00]
+
+/-- ADR-0026: the whitespace of `compressWhitespace` and `removeWhitespace` is exactly the C
+`isspace` bytes (`\t`, `\n`, `\v`, `\f`, `\r`, space) plus `0xA0`; no other byte, such as
+`0x85` or `0x1C`, counts. Checked over all 256 byte values. -/
+theorem isWs_bytes : ∀ n : Fin 256,
+    isWs n.val.toUInt8 = [9, 10, 11, 12, 13, 32, 0xA0].contains n.val := by
+  decide +kernel
 #guard (hexDecode ⟨"546573740043617365".toUTF8.data⟩).data == "Test\u0000Case".toUTF8.data
 #guard (hexDecode ⟨"01234567890a0".toUTF8.data⟩).data == #[0x01, 0x23, 0x45, 0x67, 0x89, 0x0A]
 #guard (urlDecode ⟨"Test+Case%41%u0042%".toUTF8.data⟩).data == "Test CaseA%u0042%".toUTF8.data

@@ -304,6 +304,11 @@ def targetExclusions (tx : Tx) (c : Chain) : List Variable :=
   (tx.removedTargets.filter (·.1 == c.id)).map (·.2) ++
   (tx.removedTagTargets.filter fun (tag, _) => (tagsOf c).contains tag).map (·.2)
 
+/-- Whether an operator matched, given each selected value's hit (ADR-0030): plainly when some
+value hit, negated when some value missed; never with no value. -/
+def opMatched (negate : Bool) (hits : List (Option α)) : Bool :=
+  if negate then hits.any (·.isNone) else hits.any (·.isSome)
+
 /-- One rule of a chain (`02#secrule-structure`, `02#operator`, `08#multimatch`,
 `06#unconditionalmatch`): the rule matches when some value matches (negation per value, ADR-0030); the
 operator fails for every value and at least one value was selected. -/
@@ -321,7 +326,7 @@ def runRule (o : Oracle) (c : Chain) (r : Rule) (tx : Tx) : Tx × Bool :=
       let hits := stages.filterMap fun w => let (ok, caps) := evalOperator o op.name param w; if ok then some (w, caps) else none
       (name, hits.getLast?, stages.getLastD v)
     -- negation applies per value (ADR-0030): the rule matches when some value fails the operator
-    let matched := if op.negate then results.any (·.2.1.isNone) else results.any (·.2.1.isSome)
+    let matched := opMatched op.negate (results.map (·.2.1))
     if !matched then (tx, false) else
     let hits := results.filterMap fun (n, h, _) => h.map fun (w, caps) => (n, w, caps)
     let (name, value, caps) := match hits.getLast? with
@@ -510,6 +515,79 @@ theorem off_is_final (o : Oracle) (p : Nat) (items : List Item) (ps : PhaseState
   cases items with
   | nil => rfl
   | cons i rest => simp [runItems, h, Mode.isOff]
+
+/-- ADR-0008: a key selector picks a member exactly when the keys agree ignoring case. -/
+theorem key_selector_ignores_case (o : Oracle) (tx : Tx) (v : Variable) (k : String) (m : Member)
+    (h : v.selector = some (.key k)) :
+    m ∈ selectMembers o tx v ↔ m ∈ collection tx v.collection ∧ m.key.toLower = (latin k).toLower := by
+  simp [selectMembers, h, keyEq]
+
+/-- ADR-0008: a regular-expression selector always reaches the oracle case-insensitive. -/
+theorem regex_selector_ignores_case (o : Oracle) (tx : Tx) (v : Variable) (re : String) (m : Member)
+    (h : v.selector = some (.regex re)) :
+    m ∈ selectMembers o tx v ↔ m ∈ collection tx v.collection ∧ (o.rx ("(?i)" ++ re) (text m.key)).isSome := by
+  simp [selectMembers, h, rxName]
+
+/-- A stopped phase (ended, or the engine off) runs nothing more. -/
+theorem runItems_stopped (o : Oracle) (p : Nat) (items : List Item) (ps : PhaseState) (tx : Tx)
+    (h : (tx.ended || tx.mode.isOff) = true) : runItems o p items ps tx = tx := by
+  cases items with
+  | nil => rfl
+  | cons i rest => simp [runItems, h]
+
+/-- A chain of another phase is passed over: it evaluates nothing and leaves the flow-control
+state as it was. -/
+theorem other_phase_passed (o : Oracle) (p : Nat) (c : Chain) (rest : List Item) (ps : PhaseState)
+    (tx : Tx) (hc : c.phase ≠ p) :
+    runItems o p (.chain c :: rest) ps tx = runItems o p rest ps tx := by
+  by_cases hs : (tx.ended || tx.mode.isOff) = true
+  · rw [runItems_stopped o p _ ps tx hs, runItems_stopped o p _ ps tx hs]
+  · have hc' : (c.phase != p) = true := by simpa using hc
+    simp only [runItems, hs]
+    cases ps.skipAfter <;> simp [hc']
+
+/-- The items a phase can act on: every marker (markers are phase-less, ADR-0016) and the chains
+of that phase. -/
+def ofPhase (p : Nat) : Item → Bool
+  | .marker _ => true
+  | .chain c => c.phase == p
+
+/-- ADR-0009: a phase runs exactly as if the configuration held only its own rules and the
+markers; no rule of another phase is evaluated early or late. -/
+theorem phase_strict (o : Oracle) (p : Nat) (items : List Item) (ps : PhaseState) (tx : Tx) :
+    runItems o p items ps tx = runItems o p (items.filter (ofPhase p)) ps tx := by
+  induction items generalizing ps tx with
+  | nil => rfl
+  | cons i rest ih =>
+    cases i with
+    | marker l => simp only [List.filter, ofPhase]; simp only [runItems, ih]
+    | chain c =>
+      by_cases hc : c.phase = p
+      · simp only [List.filter, ofPhase, hc, beq_self_eq_true]; simp only [runItems, ih]
+      · have hf : (ofPhase p (.chain c)) = false := by simpa [ofPhase] using hc
+        rw [other_phase_passed o p c rest ps tx hc, List.filter_cons_of_neg (by simp [hf])]
+        exact ih ps tx
+
+/-- ADR-0030: a negated operator matches when some selected value fails it. -/
+theorem negated_per_value (hits : List (Option α)) :
+    opMatched true hits = true ↔ ∃ h ∈ hits, h = none := by
+  simp [opMatched]
+
+/-- ADR-0030: a plain operator matches when some selected value passes it. -/
+theorem plain_per_value (hits : List (Option α)) :
+    opMatched false hits = true ↔ ∃ h ∈ hits, h.isSome := by
+  simp [opMatched]
+
+/-- ADR-0030: negation is per value, not the complement of the plain match: with one value
+that passes and one that fails, `@op` and `!@op` both match. -/
+theorem negation_not_complement (hits : List (Option α)) (a : α) (h₁ : some a ∈ hits) (h₂ : none ∈ hits) :
+    opMatched true hits = true ∧ opMatched false hits = true := by
+  simp only [opMatched, ite_true, Bool.false_eq_true, ite_false, List.any_eq_true]
+  exact ⟨⟨none, h₂, rfl⟩, ⟨some a, h₁, rfl⟩⟩
+
+/-- ADR-0030: with no value selected neither form matches. -/
+theorem no_value_no_match (negate : Bool) : opMatched negate ([] : List (Option α)) = false := by
+  cases negate <;> rfl
 
 /-- Phase 5 runs whenever the engine is not off at its boundary, interrupted or not. -/
 theorem logging_phase_runs (tx : Tx) (h : tx.nextMode ≠ .off) : phaseRuns (startPhase tx) 5 = true := by

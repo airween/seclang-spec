@@ -343,4 +343,26 @@ def findCtl (s : String) : Option (String × CtlKind) := findRow ctlOptions s
 #guard findTransformation "normalizePath" == some "normalisePath"
 #guard findTransformation "NONE" == some "none"
 
+/-! ## Theorems for ADR-0002 -/
+
+/-- ADR-0002: a row lookup sees a name only through its lower-case form. -/
+theorem findRow_case (rows : List (String × Status × α)) {s₁ s₂ : String}
+    (h : s₁.toLower = s₂.toLower) : findRow rows s₁ = findRow rows s₂ := by
+  simp only [findRow, h]
+
+/-- ADR-0002: so does a lookup through the ADR-0004 aliases. -/
+theorem findNamed_case (rows : List (String × Status)) (aliases : List (String × String)) {s₁ s₂ : String}
+    (h : s₁.toLower = s₂.toLower) : findNamed rows aliases s₁ = findNamed rows aliases s₂ := by
+  simp only [findNamed, h]
+  cases aliases.lookup s₂.toLower <;> simp [findRow_case _ h]
+
+/-- ADR-0002: directive, operator, action, transformation, variable and `ctl:` names are
+looked up ignoring case. -/
+theorem names_case_insensitive {s₁ s₂ : String} (h : s₁.toLower = s₂.toLower) :
+    findDirective s₁ = findDirective s₂ ∧ findOperator s₁ = findOperator s₂ ∧
+    findAction s₁ = findAction s₂ ∧ findTransformation s₁ = findTransformation s₂ ∧
+    findVariable s₁ = findVariable s₂ ∧ findCtl s₁ = findCtl s₂ :=
+  ⟨findRow_case _ h, findNamed_case _ _ h, findRow_case _ h, findNamed_case _ _ h,
+   findRow_case _ h, findRow_case _ h⟩
+
 end SecLang

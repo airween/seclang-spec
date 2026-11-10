@@ -65,13 +65,8 @@ effective rules after exceptions and default actions, the five phases, chains, `
 (`SecLang/Regex.lean`, the Core `@rx` subset) and in how the variable store is populated
 per phase through a phase-boundary hook (`SecLang/Request.lean`: chapters 05 and 09 for
 URL-encoded, multipart and JSON bodies, chapter 04 for the request and response body limits,
-which the hook applies at phases 2 and 4). Eight theorems close the file: `phase_default` and
-`phase_not_inherited` (ADR-0017); `skipAfter_missing` and `later_phase_unaffected` (ADR-0016:
-an unsatisfied `skipAfter` leaves the transaction untouched, so every later phase runs as if
-it had not fired) with `skipAfter_ends_with_phase` restating the construction;
-`interrupted_phase_quiet`, `body_limit_reject_quiet` (a `Reject` limit evaluates no rule of
-its phase) and `logging_phase_runs`. `@rx` is compiled dot-all with anchors at the subject
-ends (ADR-0027).
+which the hook applies at phases 2 and 4). `@rx` is compiled dot-all with anchors at the
+subject ends (ADR-0027). The theorems about it are listed under "Theorems" below.
 
     cd formal && lake exe seclang-eval .lake/engine-rules.json    # exit 1 on any mismatch
 
@@ -81,6 +76,35 @@ profile is reported `unsupported (<reason>)` when it needs the XML body processo
 `setsid`/`setuid`/`setrsc`, `@detectSQLi`/`@detectXSS` or log assertions; that list is the
 model's boundary, not a known gap. Persistent collections exist within one transaction only
 (`initcol` creates them, `setvar` writes them, nothing survives the transaction).
+
+## Theorems
+
+Next to the `#guard` checks, which test concrete inputs, each accepted ADR with a behaviour
+the model carries has a theorem that holds for every input. `lake build` checks them all, and
+none depends on an axiom beyond Lean's standard three.
+
+| ADR | Theorems | File |
+|---|---|---|
+| ADR-0002 | `findRow_case`, `findNamed_case`, `names_case_insensitive`: every name lookup sees only the lower-case name | `SecLang/Names.lean` |
+| ADR-0005 | `unknown_directive_error`: a directive name that is not found is a configuration error | `SecLang/Syntax.lean` |
+| ADR-0008 | `key_selector_ignores_case`, `regex_selector_ignores_case` | `SecLang/Semantics.lean` |
+| ADR-0009 | `phase_strict`: a phase runs as if the configuration held only its own rules and the markers (with `other_phase_passed`, `runItems_stopped`) | `SecLang/Semantics.lean` |
+| ADR-0015 | `rule_without_id_error` | `SecLang/Syntax.lean` |
+| ADR-0016 | `skipAfter_missing`, `later_phase_unaffected`; `skipAfter_ends_with_phase` restates the construction | `SecLang/Semantics.lean` |
+| ADR-0017 | `phase_default`, `phase_not_inherited` | `SecLang/Semantics.lean` |
+| ADR-0024 | `ipMatch_all_entries`: an `@ipMatch` parameter is accepted exactly when every entry is valid (with `forM_check_ok`) | `SecLang/Syntax.lean` |
+| ADR-0026 | `isWs_bytes`: the whitespace bytes are exactly the C `isspace` set plus `0xA0`, over all 256 values | `SecLang/Transformations.lean` |
+| ADR-0027 | `dot_matches_newline`, `eol_only_at_end` | `SecLang/Regex.lean` |
+| ADR-0028 | `skipAfter_ignores_chain` | `SecLang/Semantics.lean` |
+| ADR-0029 | `removed_by_tag_exact` | `SecLang/Semantics.lean` |
+| ADR-0030 | `negated_per_value`, `plain_per_value`, `negation_not_complement`, `no_value_no_match` | `SecLang/Semantics.lean` |
+| ADR-0034 (proposed) | `off_is_final` | `SecLang/Semantics.lean` |
+| none | `interrupted_phase_quiet`, `body_limit_reject_quiet` (a `Reject` limit evaluates no rule of its phase), `logging_phase_runs` | `SecLang/Semantics.lean` |
+
+The other accepted ADRs either set a status or a process with nothing to prove (0001, 0003,
+0007, 0010, 0011, 0023, 0025, 0032), concern log output the model does not produce (0021), or
+are long byte loops checked by `#guard` and the corpus rather than by a theorem (0012, 0013,
+0018, 0022, 0031).
 
 ## What a mismatch means
 

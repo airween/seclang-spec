@@ -37,6 +37,9 @@ Proved over the model: `formal/SecLang/Regex.lean` (ADR-0027) and
 
 | Theorem | Statement |
 |---|---|
+| `findRow_case` | ADR-0002: a row lookup sees a name only through its lower-case form. |
+| `findNamed_case` | ADR-0002: so does a lookup through the ADR-0004 aliases. |
+| `names_case_insensitive` | ADR-0002: directive, operator, action, transformation, variable and `ctl:` names are looked up ignoring case. |
 | `dot_matches_newline` | ADR-0027: under the default flags `.` matches a newline like any other byte. |
 | `eol_only_at_end` | ADR-0027: without `(?m)`, `$` matches at the end of the subject only, never before an inner newline (the v2 `DOLLAR_ENDONLY` reading the model follows). |
 | `phase_default` | ADR-0017: a rule without `phase` runs in phase 2. |
@@ -49,7 +52,21 @@ Proved over the model: `formal/SecLang/Regex.lean` (ADR-0027) and
 | `skipAfter_ignores_chain` | ADR-0028: while a `skipAfter` label is pending, a chain is passed over whatever its id; only a marker can end the skip. |
 | `removed_by_tag_exact` | ADR-0029: a `ctl:ruleRemoveByTag` parameter removes a chain exactly when it equals one of the chain's tags (no substring or regular-expression match). |
 | `off_is_final` | ADR-0034: once the mode is `Off`, no further rule of the phase runs (and `phaseRuns` keeps every later phase from starting). |
+| `key_selector_ignores_case` | ADR-0008: a key selector picks a member exactly when the keys agree ignoring case. |
+| `regex_selector_ignores_case` | ADR-0008: a regular-expression selector always reaches the oracle case-insensitive. |
+| `runItems_stopped` | A stopped phase (ended, or the engine off) runs nothing more. |
+| `other_phase_passed` | A chain of another phase is passed over: it evaluates nothing and leaves the flow-control state as it was. |
+| `phase_strict` | ADR-0009: a phase runs exactly as if the configuration held only its own rules and the markers; no rule of another phase is evaluated early or late. |
+| `negated_per_value` | ADR-0030: a negated operator matches when some selected value fails it. |
+| `plain_per_value` | ADR-0030: a plain operator matches when some selected value passes it. |
+| `negation_not_complement` | ADR-0030: negation is per value, not the complement of the plain match: with one value that passes and one that fails, `@op` and `!@op` both match. |
+| `no_value_no_match` | ADR-0030: with no value selected neither form matches. |
 | `logging_phase_runs` | Phase 5 runs whenever the engine is not off at its boundary, interrupted or not. |
+| `unknown_directive_error` | ADR-0005: a line whose directive name is not found (unknown, or Engine-specific) is a configuration error; it is never skipped. |
+| `rule_without_id_error` | ADR-0015: a rule that starts a chain without an `id` value is a configuration error. |
+| `forM_check_ok` | A check run over a list of entries passes exactly when every entry passes. |
+| `ipMatch_all_entries` | ADR-0024: an `@ipMatch` parameter is accepted exactly when every entry is a valid address with an optional in-range prefix; one bad entry rejects the configuration. |
+| `isWs_bytes` | ADR-0026: the whitespace of `compressWhitespace` and `removeWhitespace` is exactly the C `isspace` bytes (`\t`, `\n`, `\v`, `\f`, `\r`, space) plus `0xA0`; no other byte, such as `0x85` or `0x1C`, counts. Checked over all 256 byte values. |
 
 ## Compile-time checks
 
@@ -63,6 +80,6 @@ Proved over the model: `formal/SecLang/Regex.lean` (ADR-0027) and
 | `formal/SecLang/Regex.lean` | 41 |
 | `formal/SecLang/Request.lean` | 47 |
 | `formal/SecLang/Semantics.lean` | 47 |
-| `formal/SecLang/Syntax.lean` | 74 |
+| `formal/SecLang/Syntax.lean` | 78 |
 | `formal/SecLang/Transformations.lean` | 79 |
-| **Total** | **343** |
+| **Total** | **347** |
