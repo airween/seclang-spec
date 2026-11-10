@@ -57,3 +57,4 @@ promoted into the spec (Extension).
 | [0033](0033-sanitize-actions-extended.md) | The `sanitize*` actions are Extended and mask with a fixed string | Divergence | proposed |
 | [0034](0034-ruleengine-off-is-final.md) | `ctl:ruleEngine=Off` is final for the transaction | Divergence | proposed |
 | [0035](0035-noauditlog-relevance-only.md) | `noauditlog` affects relevance only; the audit record lists every logged match | Divergence | proposed |
+| [0036](0036-parameterised-transformations.md) | Parameterised transformations, defined by name | Extension | proposed |
