@@ -43,6 +43,7 @@ runs:
       env:
         SOURCE: ${{ steps.src.outputs.path }}
         SECLANG_OBSOLETE_GAPS: ${{ inputs.obsolete-gaps }}
+        GOTOOLCHAIN: auto   # the adapter's go.mod may need a newer Go than the engine's
       run: |
         go mod edit -replace=github.com/corazawaf/coraza/v3="$SOURCE"
         go mod tidy
