@@ -80,7 +80,7 @@ jobs:
   seclang:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: fzipi/seclang-spec@<commit SHA>   # pin: new tests land on main
         with:
           engine: coraza
