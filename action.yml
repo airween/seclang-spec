@@ -9,7 +9,7 @@ inputs:
     description: "Engine in the checkout: coraza, libmodsecurity or modsecurity2"
     required: true
   source:
-    description: Path of the engine checkout (relative to the workspace or absolute). libmodsecurity and modsecurity2 need their submodules.
+    description: Path of the engine checkout (relative to the workspace or absolute). libmodsecurity and modsecurity2 need their submodules, recursively.
     required: false
     default: ${{ github.workspace }}
   obsolete-gaps:

@@ -89,8 +89,8 @@ jobs:
 | Engine | `engine:` | Checkout | What the action does |
 |---|---|---|---|
 | Coraza | `coraza` | the repository root | points the adapter's `go.mod` at the checkout (`replace`), then `go test` |
-| libmodsecurity v3 | `libmodsecurity` | with `submodules: true` | `build.sh`, `configure` with libxml2, yajl and PCRE2 and the debug log enabled, `make install` under `$RUNNER_TEMP`, then the Python adapter over the C API; run it in its own job, since it reconfigures the tree |
-| ModSecurity v2 | `modsecurity2` | with `submodules: true` | builds `adapters/modsecurity2/Dockerfile` with the checkout as the `modsecurity2-src` build context, then runs the adapter under Apache in that image |
+| libmodsecurity v3 | `libmodsecurity` | with `submodules: recursive` (Mbed TLS has its own) | `build.sh`, `configure` with libxml2, yajl and PCRE2 and the debug log enabled, `make install` under `$RUNNER_TEMP`, then the Python adapter over the C API; run it in its own job, since it reconfigures the tree |
+| ModSecurity v2 | `modsecurity2` | with `submodules: recursive` | builds `adapters/modsecurity2/Dockerfile` with the checkout as the `modsecurity2-src` build context, then runs the adapter under Apache in that image |
 
 `source:` takes another path when the engine is not checked out at the workspace root. Pin
 the action to a commit or tag: the tests and `compat/known-gaps.md` change on `main`, and the

@@ -30,7 +30,7 @@ jobs:
           repository: ${{ matrix.repository }}
           ref: ${{ matrix.ref }}
           path: engine
-          submodules: true
+          submodules: recursive   # Mbed TLS in libmodsecurity has its own submodules
       - uses: ./
         with:
           engine: ${{ matrix.engine }}
