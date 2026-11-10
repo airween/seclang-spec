@@ -272,11 +272,13 @@ non-printable bytes, Coraza escapes with Go's `%q`.
 
 **Semantics.** Evaluates the operator against the value before any transformation and
 again after each transformation in the `t:` list, instead of only against the final
-value. The rule matches if any evaluation matches.
+value. The rule matches if any evaluation matches. A negated operator (`!@`) is negated at
+each evaluation, so it matches when the operator is false for at least one of them
+(ADR-0030).
 
 **Divergence notes.** None known.
 
-**Tests.** `tests/engine/actions/capture-multimatch.yaml`
+**Tests.** `tests/engine/actions/capture-multimatch.yaml` (including a negated operator)
 
 ### noauditlog
 

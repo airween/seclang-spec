@@ -97,7 +97,7 @@ none depends on an axiom beyond Lean's standard three.
 | ADR-0027 | `dot_matches_newline`, `eol_only_at_end` | `SecLang/Regex.lean` |
 | ADR-0028 | `skipAfter_ignores_chain` | `SecLang/Semantics.lean` |
 | ADR-0029 | `removed_by_tag_exact` | `SecLang/Semantics.lean` |
-| ADR-0030 | `negated_per_value`, `plain_per_value`, `negation_not_complement`, `no_value_no_match` | `SecLang/Semantics.lean` |
+| ADR-0030 | `negated_per_value`, `plain_per_value`, `negation_not_complement`, `negation_per_stage`, `no_value_no_match` | `SecLang/Semantics.lean` |
 | ADR-0034 (proposed) | `off_is_final` | `SecLang/Semantics.lean` |
 | none | `interrupted_phase_quiet`, `body_limit_reject_quiet` (a `Reject` limit evaluates no rule of its phase), `logging_phase_runs` | `SecLang/Semantics.lean` |
 

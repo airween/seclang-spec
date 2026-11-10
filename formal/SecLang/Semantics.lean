@@ -304,14 +304,16 @@ def targetExclusions (tx : Tx) (c : Chain) : List Variable :=
   (tx.removedTargets.filter (·.1 == c.id)).map (·.2) ++
   (tx.removedTagTargets.filter fun (tag, _) => (tagsOf c).contains tag).map (·.2)
 
-/-- Whether an operator matched, given each selected value's hit (ADR-0030): plainly when some
-value hit, negated when some value missed; never with no value. -/
-def opMatched (negate : Bool) (hits : List (Option α)) : Bool :=
-  if negate then hits.any (·.isNone) else hits.any (·.isSome)
+/-- Whether an operator matched, given the operator's result at each evaluation of each selected
+value (one evaluation, or one per `multiMatch` stage): a leading `!` negates every evaluation, and
+the rule matches when some evaluation of some value matches (ADR-0030, `08#multimatch`); never
+with no value. -/
+def opMatched (negate : Bool) (evals : List (List Bool)) : Bool :=
+  evals.any (·.any (· != negate))
 
 /-- One rule of a chain (`02#secrule-structure`, `02#operator`, `08#multimatch`,
-`06#unconditionalmatch`): the rule matches when some value matches (negation per value, ADR-0030); the
-operator fails for every value and at least one value was selected. -/
+`06#unconditionalmatch`): the rule matches when some evaluation of some value matches, with
+negation per evaluation (ADR-0030); at least one value must have been selected. -/
 def runRule (o : Oracle) (c : Chain) (r : Rule) (tx : Tx) : Tx × Bool :=
   match r.operator with
   | none => (applyActions tx r.actions, true)
@@ -323,15 +325,14 @@ def runRule (o : Oracle) (c : Chain) (r : Rule) (tx : Tx) : Tx × Bool :=
     let results := values.map fun (name, v) =>
       let stages : List ByteArray := if multi then tfns.foldl (fun acc t => acc ++ [applyTfn t (acc.getLastD v)]) [v]
                     else [tfns.foldl (fun w t => applyTfn t w) v]
-      let hits := stages.filterMap fun w => let (ok, caps) := evalOperator o op.name param w; if ok then some (w, caps) else none
-      (name, hits.getLast?, stages.getLastD v)
-    -- negation applies per value (ADR-0030): the rule matches when some value fails the operator
-    let matched := opMatched op.negate (results.map (·.2.1))
+      let evals := stages.map fun w => let (ok, caps) := evalOperator o op.name param w; (w, ok, caps)
+      (name, evals)
+    -- negation applies per evaluation (ADR-0030): a negated rule matches when some evaluation fails
+    let matched := opMatched op.negate (results.map fun (_, es) => es.map (·.2.1))
     if !matched then (tx, false) else
-    let hits := results.filterMap fun (n, h, _) => h.map fun (w, caps) => (n, w, caps)
-    let (name, value, caps) := match hits.getLast? with
-      | some h => h
-      | none => match results.getLast? with | some (n, _, w) => (n, w, none) | none => ("", .empty, none)
+    let hits := results.filterMap fun (n, es) =>
+      (es.filter (·.2.1 != op.negate)).getLast?.map fun (w, _, caps) => (n, w, caps)
+    let (name, value, caps) := hits.getLastD ("", .empty, none)
     let tx := { tx with matchedVar := value, matchedVarName := name,
                         matchedVars := hits.map fun (n, w, _) => ⟨n, w⟩ }
     let tx := if hasAction r.actions "capture" then (match caps with | some cs => setCaptures tx cs | none => tx) else tx
@@ -568,25 +569,30 @@ theorem phase_strict (o : Oracle) (p : Nat) (items : List Item) (ps : PhaseState
         rw [other_phase_passed o p c rest ps tx hc, List.filter_cons_of_neg (by simp [hf])]
         exact ih ps tx
 
-/-- ADR-0030: a negated operator matches when some selected value fails it. -/
-theorem negated_per_value (hits : List (Option α)) :
-    opMatched true hits = true ↔ ∃ h ∈ hits, h = none := by
+/-- ADR-0030: a negated operator matches when some evaluation of some selected value fails it. -/
+theorem negated_per_value (evals : List (List Bool)) :
+    opMatched true evals = true ↔ ∃ e ∈ evals, false ∈ e := by
   simp [opMatched]
 
-/-- ADR-0030: a plain operator matches when some selected value passes it. -/
-theorem plain_per_value (hits : List (Option α)) :
-    opMatched false hits = true ↔ ∃ h ∈ hits, h.isSome := by
+/-- ADR-0030: a plain operator matches when some evaluation of some selected value passes it. -/
+theorem plain_per_value (evals : List (List Bool)) :
+    opMatched false evals = true ↔ ∃ e ∈ evals, true ∈ e := by
   simp [opMatched]
 
 /-- ADR-0030: negation is per value, not the complement of the plain match: with one value
 that passes and one that fails, `@op` and `!@op` both match. -/
-theorem negation_not_complement (hits : List (Option α)) (a : α) (h₁ : some a ∈ hits) (h₂ : none ∈ hits) :
-    opMatched true hits = true ∧ opMatched false hits = true := by
-  simp only [opMatched, ite_true, Bool.false_eq_true, ite_false, List.any_eq_true]
-  exact ⟨⟨none, h₂, rfl⟩, ⟨some a, h₁, rfl⟩⟩
+theorem negation_not_complement (evals : List (List Bool)) (h₁ : [true] ∈ evals) (h₂ : [false] ∈ evals) :
+    opMatched true evals = true ∧ opMatched false evals = true :=
+  ⟨(negated_per_value evals).2 ⟨[false], h₂, by simp⟩, (plain_per_value evals).2 ⟨[true], h₁, by simp⟩⟩
+
+/-- ADR-0030 with `multiMatch` (`08#multimatch`): negation is per evaluation, so one value that
+fails the operator at one stage and passes it at another matches both `@op` and `!@op`. -/
+theorem negation_per_stage (e : List Bool) (h₁ : true ∈ e) (h₂ : false ∈ e) :
+    opMatched true [e] = true ∧ opMatched false [e] = true :=
+  ⟨(negated_per_value [e]).2 ⟨e, by simp, h₂⟩, (plain_per_value [e]).2 ⟨e, by simp, h₁⟩⟩
 
 /-- ADR-0030: with no value selected neither form matches. -/
-theorem no_value_no_match (negate : Bool) : opMatched negate ([] : List (Option α)) = false := by
+theorem no_value_no_match (negate : Bool) : opMatched negate [] = false := by
   cases negate <;> rfl
 
 /-- Phase 5 runs whenever the engine is not off at its boundary, interrupted or not. -/
@@ -627,6 +633,9 @@ def demoStore (args : List (String × String)) : Store :=
 #guard tri (run "SecAction \"id:1,phase:1,pass,nolog,setvar:tx.a=5,setvar:tx.a=+3,setvar:tx.b=%{tx.a},setvar:tx.c=x,setvar:!tx.c,setvar:tx.d\"\nSecRule TX:a \"@eq 8\" \"id:2,phase:1,pass\"\nSecRule TX:b \"@streq 8\" \"id:3,phase:1,pass\"\nSecRule &TX:c \"@eq 0\" \"id:4,phase:1,pass\"\nSecRule TX:d \"@eq 1\" \"id:5,phase:1,pass\"" (demoStore [])) == [1, 2, 3, 4, 5]
 #guard tri (run "SecRule ARGS_GET:a \"@rx ^(\\w+)-(\\w+)$\" \"id:1,phase:1,pass,capture,setvar:tx.first=%{TX.1}\"\nSecRule TX:first \"@streq foo\" \"id:2,phase:1,pass\"\nSecRule TX:0 \"@streq foo-bar\" \"id:3,phase:1,pass\"\nSecRule TX:2 \"@streq bar\" \"id:4,phase:1,pass\"" (demoStore [("a", "foo-bar")])) == [1, 2, 3, 4]
 #guard tri (run "SecRule ARGS_GET:a \"@streq abc\" \"id:1,phase:1,pass,t:lowercase,t:hexEncode,multiMatch\"\nSecRule ARGS_GET:a \"@streq abc\" \"id:2,phase:1,pass,t:lowercase,t:hexEncode\"\nSecRule ARGS_GET:a \"@streq ABC\" \"id:3,phase:1,pass,t:lowercase,t:none\"" (demoStore [("a", "ABC")])) == [1, 3]
+-- a negated operator is negated at each multiMatch evaluation (ADR-0030): "ABC" fails `@streq abc`
+#guard tri (run "SecRule ARGS_GET:a \"!@streq abc\" \"id:1,phase:1,pass,t:lowercase,multiMatch\"\nSecRule ARGS_GET:a \"!@streq abc\" \"id:2,phase:1,pass,t:lowercase\"" (demoStore [("a", "ABC")])) == [1]
+#guard tri (run "SecRule ARGS_GET:a \"!@streq abc\" \"id:1,phase:1,pass,t:lowercase,multiMatch,chain\"\n  SecRule MATCHED_VAR \"@streq ABC\" \"t:none\"" (demoStore [("a", "ABC")])) == [1]
 #guard tri (run "SecRule ARGS_GET:a \"@streq 1\" \"id:1,phase:1,pass,tag:'drop-me'\"\nSecRule ARGS_GET:a \"@streq 1\" \"id:2,phase:1,pass\"\nSecRule ARGS_GET:a|ARGS_GET:b \"@streq 1\" \"id:3,phase:1,pass\"\nSecRule ARGS_GET:a \"@streq 1\" \"id:4,phase:1,deny\"\nSecRuleRemoveByTag drop-me\nSecRuleRemoveById 2\nSecRuleUpdateTargetById 3 \"!ARGS_GET:a\"\nSecRuleUpdateActionById 4 \"pass\"" (demoStore [("a", "1")])) == [4]
 -- regex selectors ignore case, like key selectors (ADR-0008)
 #guard tri (run "SecAction \"id:1,phase:1,pass,nolog,setvar:tx.Score=5\"\nSecRule TX:/^SCORE$/ \"@eq 5\" \"id:2,phase:1,pass\"\nSecRule ARGS_GET:/^A$/ \"@streq x\" \"id:3,phase:1,pass\"" (demoStore [("a", "x")])) == [1, 2, 3]

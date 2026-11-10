@@ -11,7 +11,7 @@ engine: a mismatch is a defect to fix before merge, never a known gap.
 | `seclang-check` | `tests/unit/transformations` | 39 files: 362 cases passed, 0 failed |
 | `seclang-check` | `tests/unit/operators` | 25 files: 3907 cases passed, 0 failed, 2 skipped (regex outside the Core subset, ADR-0018); not formalized: `detectSQLi.json`, `detectXSS.json` |
 | `seclang-parse` | `tests/engine` | 123 profiles, 0 mismatches |
-| `seclang-eval` | `tests/engine` | 203 stages, 0 mismatches, 8 unsupported profiles |
+| `seclang-eval` | `tests/engine` | 204 stages, 0 mismatches, 8 unsupported profiles |
 | `seclang-parse` | OWASP CRS (`crs_setup_version` 4252) | 29 profiles, 0 mismatches |
 | `seclang-eval` | generated requests, what Coraza did (`adapters/coraza/cmd/differential`, seed 1, 30 per profile) | 2550 stages, 0 mismatches |
 
@@ -57,9 +57,10 @@ Proved over the model: `formal/SecLang/Regex.lean` (ADR-0027) and
 | `runItems_stopped` | A stopped phase (ended, or the engine off) runs nothing more. |
 | `other_phase_passed` | A chain of another phase is passed over: it evaluates nothing and leaves the flow-control state as it was. |
 | `phase_strict` | ADR-0009: a phase runs exactly as if the configuration held only its own rules and the markers; no rule of another phase is evaluated early or late. |
-| `negated_per_value` | ADR-0030: a negated operator matches when some selected value fails it. |
-| `plain_per_value` | ADR-0030: a plain operator matches when some selected value passes it. |
+| `negated_per_value` | ADR-0030: a negated operator matches when some evaluation of some selected value fails it. |
+| `plain_per_value` | ADR-0030: a plain operator matches when some evaluation of some selected value passes it. |
 | `negation_not_complement` | ADR-0030: negation is per value, not the complement of the plain match: with one value that passes and one that fails, `@op` and `!@op` both match. |
+| `negation_per_stage` | ADR-0030 with `multiMatch` (`08#multimatch`): negation is per evaluation, so one value that fails the operator at one stage and passes it at another matches both `@op` and `!@op`. |
 | `no_value_no_match` | ADR-0030: with no value selected neither form matches. |
 | `logging_phase_runs` | Phase 5 runs whenever the engine is not off at its boundary, interrupted or not. |
 | `unknown_directive_error` | ADR-0005: a line whose directive name is not found (unknown, or Engine-specific) is a configuration error; it is never skipped. |
@@ -79,7 +80,7 @@ Proved over the model: `formal/SecLang/Regex.lean` (ADR-0027) and
 | `formal/SecLang/Operators.lean` | 30 |
 | `formal/SecLang/Regex.lean` | 41 |
 | `formal/SecLang/Request.lean` | 47 |
-| `formal/SecLang/Semantics.lean` | 47 |
+| `formal/SecLang/Semantics.lean` | 49 |
 | `formal/SecLang/Syntax.lean` | 78 |
 | `formal/SecLang/Transformations.lean` | 79 |
-| **Total** | **347** |
+| **Total** | **349** |

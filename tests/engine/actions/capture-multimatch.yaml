@@ -1,6 +1,6 @@
 meta:
   name: capture-multimatch
-  description: capture fills TX:0..9; multiMatch evaluates the operator after every transformation
+  description: capture fills TX:0..9; multiMatch evaluates the operator after every transformation, negating each evaluation
 spec: 08-actions.md#capture
 rules: |
   SecRuleEngine On
@@ -8,6 +8,8 @@ rules: |
     SecRule TX:2 "@streq example" "t:none"
   SecRule ARGS_GET:b "@streq abc" "id:7031,phase:1,pass,t:lowercase,t:hexEncode,multiMatch"
   SecRule ARGS_GET:b "@streq abc" "id:7032,phase:1,pass,t:lowercase,t:hexEncode"
+  SecRule ARGS_GET:c "!@streq abc" "id:7033,phase:1,pass,t:lowercase,multiMatch"
+  SecRule ARGS_GET:c "!@streq abc" "id:7034,phase:1,pass,t:lowercase"
 tests:
   - test_title: capture group two
     stages:
@@ -26,4 +28,14 @@ tests:
           output:
             triggered_rules: [7031]
             non_triggered_rules: [7032]
+            no_interruption: true
+  - test_title: a negated operator is negated at each multiMatch evaluation
+    spec: 08-actions.md#multimatch
+    stages:
+      - stage:
+          input:
+            uri: /?c=ABC
+          output:
+            triggered_rules: [7033]
+            non_triggered_rules: [7034]
             no_interruption: true

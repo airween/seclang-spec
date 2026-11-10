@@ -136,7 +136,8 @@ argument, after one run of whitespace, is its parameter. An argument that does n
 with `@` or `!@` is the parameter of the implicit `@rx` operator. A leading `!` negates
 the result per value: the rule matches when the operator is false for *at least one*
 selected value, so at least one value must have been selected
-(`06-operators.md#unconditionalmatch`, ADR-0030). The
+(`06-operators.md#unconditionalmatch`, ADR-0030). Under `multiMatch` the negation applies to
+each evaluation of a value (`08-actions.md#multimatch`). The
 set of operators and their parameters is defined in `06-operators.md`. An unknown
 operator name MUST be a configuration error.
 

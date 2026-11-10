@@ -48,9 +48,32 @@ never matches (`06-operators.md#unconditionalmatch`). Normative text:
 - For this repository: the Lean model negates per value; `operator-forms.yaml` gains a
   two-valued stage.
 
+## Amendment (2026-11-10): `multiMatch`
+
+The decision above names values; under `multiMatch` (`08-actions.md#multimatch`) one value
+is evaluated several times, before any transformation and after each one. All three
+engines negate each evaluation, so a negated rule matches when the operator is false for at
+least one evaluation of at least one value:
+
+- ModSecurity v2 (`apache2/re.c`, `msre_rule_process_normal`): calls `execute_operator`,
+  which applies `op_negated`, at the raw value and after each transformation that changes it.
+- libmodsecurity v3 (`src/rule_with_operator.cc`, `RuleWithOperator::evaluate`, read at
+  v3.0.11): calls `executeOperatorAt` once per transformed value, and
+  `Operator::evaluateInternal` negates each result; the v3.0.17 adapter passes the stage
+  below.
+- Coraza v3.8.1 (`internal/corazawaf/rule.go`, `executeOperator`): negates per entry of
+  `executeTransformationsMultimatch`, whose first entry is the raw value.
+
+The Lean model had negated once per value, after all of its evaluations (match only when
+every evaluation failed); no profile combined `!` with `multiMatch`. The model now negates
+per evaluation, `MATCHED_VAR` is the evaluation that matched, and
+`tests/engine/actions/capture-multimatch.yaml` gains a negated stage. This amendment
+clarifies the scope of the decision and changes nothing for the engines.
+
 ## Tests
 
 - `tests/engine/grammar/operator-forms.yaml` (two values, one failing the operator)
+- `tests/engine/actions/capture-multimatch.yaml` (negated operator under `multiMatch`)
 
 ## References
 
