@@ -27,6 +27,7 @@ v2 (`v2/master`, 2026-09), libmodsecurity v3.0.17 and Coraza v3.8.1.
 | `docs/superpowers/` | The design document and the per-phase implementation plans this draft was built from. |
 | `tools/` | `validate.py` enforces the repo's invariants; CI runs it. `import_sts.py` regenerates the unit tier from the SecRules Test Set. |
 | `adapters/` | Reference adapters that run `tests/` against a real engine (ADR-0023). `adapters/coraza` runs Coraza v3.8.1, `adapters/libmodsecurity` runs libmodsecurity v3.0.17 and `adapters/modsecurity2` runs ModSecurity v2.9.15 under Apache in CI, with `compat/known-gaps.md` as the expected-failure list. |
+| `action.yml` | GitHub Action that runs the reference adapter for Coraza, libmodsecurity v3 or ModSecurity v2 against an engine checkout, for the engines' own CI (below). |
 | `formal/` | Lean 4 model of the specification, run in CI: every transformation of spec 07 and every library-free operator of spec 06 against the unit-tier corpus (`lake exe seclang-check`), a parser for the configuration grammar of spec 01–04 against every engine profile (`lake exe seclang-parse`), and the processing model of spec 03 with URL-encoded, multipart and JSON bodies and the body limits run against the profiles' transactions (`lake exe seclang-eval`), with theorems for ADR-0016 and ADR-0017. |
 
 ## Status labels
@@ -64,3 +65,35 @@ the validator. The design document is in `docs/superpowers/specs/`.
 2. Compare your failures with `compat/known-gaps.md`; a failure not listed there is either
    a bug in your engine or a bug in this specification. Open an issue for the latter.
 3. Review the ADRs; two engines agreeing moves an ADR from `proposed` to `accepted`.
+
+## Testing an engine in its own CI
+
+`action.yml` builds the engine from the calling repository's checkout and runs this
+repository's reference adapter against it: the engine and unit tiers, gated by
+`compat/known-gaps.md`. A failure no row lists fails the job. A listed test that now passes
+is reported as a warning (`obsolete-gaps: warn`, the default), so fixing a gap never breaks
+the build; open an issue here to drop the row.
+
+```yaml
+# .github/workflows/seclang.yml in corazawaf/coraza
+jobs:
+  seclang:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: fzipi/seclang-spec@<commit SHA>   # pin: new tests land on main
+        with:
+          engine: coraza
+```
+
+| Engine | `engine:` | Checkout | What the action does |
+|---|---|---|---|
+| Coraza | `coraza` | the repository root | points the adapter's `go.mod` at the checkout (`replace`), then `go test` |
+| libmodsecurity v3 | `libmodsecurity` | with `submodules: true` | `build.sh`, `configure` with libxml2, yajl and PCRE2 and the debug log enabled, `make install` under `$RUNNER_TEMP`, then the Python adapter over the C API; run it in its own job, since it reconfigures the tree |
+| ModSecurity v2 | `modsecurity2` | with `submodules: true` | builds `adapters/modsecurity2/Dockerfile` with the checkout as the `modsecurity2-src` build context, then runs the adapter under Apache in that image |
+
+`source:` takes another path when the engine is not checked out at the workspace root. Pin
+the action to a commit or tag: the tests and `compat/known-gaps.md` change on `main`, and the
+pinned version is the specification the engine is said to conform to.
+`.github/workflows/conformance-action.yml` runs the action here against the versions the
+adapters pin.

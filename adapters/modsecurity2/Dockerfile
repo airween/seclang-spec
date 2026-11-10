@@ -1,12 +1,25 @@
 # ModSecurity v2 + Apache httpd + msc_test, for adapters/modsecurity2.
 # Build from the repository root (the context is narrowed by Dockerfile.dockerignore):
 #   docker build -t seclang-modsecurity2 -f adapters/modsecurity2/Dockerfile .
+# To build a local ModSecurity v2 checkout (with submodules) instead of the pinned tag, replace
+# the modsecurity2-src stage with it, as action.yml does:
+#   docker build --build-context modsecurity2-src=/path/to/ModSecurity ...
 # Package list from v2's own .github/workflows/ci.yml (PCRE2 is the default). The base is
 # pinned by digest; apt still resolves bookworm's current packages at build time (Apache
 # 2.4.68 on 2026-11-09), and CI keeps the built image cached.
-FROM debian:bookworm-slim@sha256:734a72b3d6142a71993b4bc580ca01d8ca687f77a2c422d96a961d3376b179bc
+FROM debian:bookworm-slim@sha256:734a72b3d6142a71993b4bc580ca01d8ca687f77a2c422d96a961d3376b179bc AS modsecurity2-clone
 
 ARG MODSECURITY2_REF=v2.9.15
+
+RUN apt-get update -qq && apt-get install -y --no-install-recommends ca-certificates git \
+    && git clone --depth 1 -b "$MODSECURITY2_REF" --recurse-submodules --shallow-submodules \
+      https://github.com/owasp-modsecurity/ModSecurity.git /src
+
+# The source tree alone, at the root, so a --build-context of that name can stand in for it.
+FROM scratch AS modsecurity2-src
+COPY --from=modsecurity2-clone /src /
+
+FROM debian:bookworm-slim@sha256:734a72b3d6142a71993b4bc580ca01d8ca687f77a2c422d96a961d3376b179bc
 
 RUN apt-get update -qq && apt-get install -y --no-install-recommends \
       ca-certificates git build-essential autoconf automake libtool pkg-config \
@@ -14,9 +27,8 @@ RUN apt-get update -qq && apt-get install -y --no-install-recommends \
       python3 \
     && rm -rf /var/lib/apt/lists/*
 
-RUN git clone --depth 1 -b "$MODSECURITY2_REF" --recurse-submodules --shallow-submodules \
-      https://github.com/owasp-modsecurity/ModSecurity.git /src \
-    && cd /src && ./autogen.sh && ./configure --without-lua \
+COPY --from=modsecurity2-src / /src
+RUN cd /src && ./autogen.sh && ./configure --without-lua \
     && make -j"$(nproc)" && make install && make -C tests msc_test \
     && cp tests/msc_test /usr/local/bin/msc_test
 

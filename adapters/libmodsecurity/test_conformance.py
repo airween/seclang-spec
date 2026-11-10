@@ -7,7 +7,6 @@ entirely fails with "known-gaps row is obsolete".
 from __future__ import annotations
 
 import os
-import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -88,14 +87,7 @@ def run_unit_file(cases: list[data.UnitCase]) -> list[str]:
 
 class Gated(unittest.TestCase):
     def report(self, path: str, known: dict[str, str], failures: list[str]):
-        reason = known.get(path)
-        if reason is not None:
-            if not failures:
-                self.fail(f"known-gaps row is obsolete: remove the row for {path} ({reason})")
-            for f in failures:
-                print(f"expected (known gap: {reason}): {path}: {f}", file=sys.stderr)
-        elif failures:
-            self.fail("\n".join(failures))
+        gaps.report(self, path, known, failures)
 
 
 class TestEngine(Gated):

@@ -33,3 +33,14 @@ func TestLoadGaps(t *testing.T) {
 		t.Errorf("reason = %q", gaps["tests/engine/b.yaml"])
 	}
 }
+
+func TestObsoleteRowWarnsOnlyWhenAsked(t *testing.T) {
+	t.Setenv(ObsoleteEnv, "")
+	if _, fatal := ObsoleteRow("tests/engine/a.yaml", "one"); !fatal {
+		t.Fatal("obsolete row must fail by default")
+	}
+	t.Setenv(ObsoleteEnv, "warn")
+	if msg, fatal := ObsoleteRow("tests/engine/a.yaml", "one"); fatal || msg == "" {
+		t.Fatalf("warn mode: fatal=%v msg=%q", fatal, msg)
+	}
+}

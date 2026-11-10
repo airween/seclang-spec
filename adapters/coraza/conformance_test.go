@@ -60,7 +60,11 @@ func reportGated(t *testing.T, path string, gaps map[string]string, failures []s
 	reason, expected := gaps[path]
 	switch {
 	case expected && len(failures) == 0:
-		t.Fatalf("known-gaps row is obsolete: remove the row for %s (%s)", path, reason)
+		msg, fatal := ObsoleteRow(path, reason)
+		if fatal {
+			t.Fatal(msg)
+		}
+		fmt.Println("::warning::" + msg)
 	case expected:
 		for _, f := range failures {
 			t.Log("expected (known gap: " + reason + "): " + f)

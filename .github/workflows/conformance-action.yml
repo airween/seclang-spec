@@ -1,0 +1,38 @@
+name: conformance-action
+# Runs action.yml the way an engine's own CI would, against the engine versions the adapters
+# pin, so a change to the action is tested before engines pick it up.
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  engine:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - engine: coraza
+            repository: corazawaf/coraza
+            ref: v3.8.1
+          - engine: libmodsecurity
+            repository: owasp-modsecurity/ModSecurity
+            ref: v3.0.17
+          - engine: modsecurity2
+            repository: owasp-modsecurity/ModSecurity
+            ref: v2.9.15
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ matrix.repository }}
+          ref: ${{ matrix.ref }}
+          path: engine
+          submodules: true
+      - uses: ./
+        with:
+          engine: ${{ matrix.engine }}
+          source: engine
+          obsolete-gaps: fail

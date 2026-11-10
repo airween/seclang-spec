@@ -1,0 +1,89 @@
+name: SecLang conformance
+description: Run the seclang-spec conformance tests against Coraza, libmodsecurity v3 or ModSecurity v2 built from a checkout
+author: OWASP SecLang
+branding:
+  icon: check-circle
+  color: blue
+inputs:
+  engine:
+    description: "Engine in the checkout: coraza, libmodsecurity or modsecurity2"
+    required: true
+  source:
+    description: Path of the engine checkout (relative to the workspace or absolute). libmodsecurity and modsecurity2 need their submodules.
+    required: false
+    default: ${{ github.workspace }}
+  obsolete-gaps:
+    description: "What a compat/known-gaps.md row whose test now passes does: warn (an engine fixed a gap) or fail"
+    required: false
+    default: warn
+runs:
+  using: composite
+  steps:
+    - id: src
+      shell: bash
+      env:
+        ENGINE: ${{ inputs.engine }}
+        SOURCE: ${{ inputs.source }}
+        OBSOLETE: ${{ inputs.obsolete-gaps }}
+      run: |
+        case "$ENGINE" in coraza|libmodsecurity|modsecurity2) ;; *)
+          echo "::error::engine must be coraza, libmodsecurity or modsecurity2, not '$ENGINE'"; exit 1 ;; esac
+        case "$OBSOLETE" in warn|fail) ;; *)
+          echo "::error::obsolete-gaps must be warn or fail, not '$OBSOLETE'"; exit 1 ;; esac
+        echo "path=$(cd "$GITHUB_WORKSPACE" && realpath "$SOURCE")" >> "$GITHUB_OUTPUT"
+
+    # Coraza: the reference adapter, built against the checkout instead of its pinned release.
+    - if: inputs.engine == 'coraza'
+      uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+      with:
+        go-version-file: ${{ steps.src.outputs.path }}/go.mod
+    - if: inputs.engine == 'coraza'
+      shell: bash
+      working-directory: ${{ github.action_path }}/adapters/coraza
+      env:
+        SOURCE: ${{ steps.src.outputs.path }}
+        SECLANG_OBSOLETE_GAPS: ${{ inputs.obsolete-gaps }}
+      run: |
+        go mod edit -replace=github.com/corazawaf/coraza/v3="$SOURCE"
+        go mod tidy
+        go test ./... -count=1 -v
+
+    # libmodsecurity v3: build the checkout with the libraries the adapter needs (libxml2,
+    # yajl, PCRE2, debug log on), then drive it through the C API.
+    - if: inputs.engine == 'libmodsecurity'
+      shell: bash
+      working-directory: ${{ steps.src.outputs.path }}
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -y -qq libpcre2-dev libxml2-dev libyajl-dev automake libtool pkg-config g++ make
+        ./build.sh
+        ./configure --prefix="$RUNNER_TEMP/seclang-libmodsecurity" --disable-doxygen-doc --disable-examples \
+          --without-lua --without-lmdb --without-ssdeep --without-curl --without-geoip --without-maxmind
+        make -j"$(nproc)"
+        make install
+    - if: inputs.engine == 'libmodsecurity'
+      uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+      with:
+        python-version: "3.12"
+    - if: inputs.engine == 'libmodsecurity'
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      env:
+        SECLANG_OBSOLETE_GAPS: ${{ inputs.obsolete-gaps }}
+      run: |
+        uv sync
+        MODSECURITY_LIB="$RUNNER_TEMP/seclang-libmodsecurity/lib/libmodsecurity.so" \
+          uv run python -m unittest discover -s adapters/libmodsecurity -v
+
+    # ModSecurity v2: the adapter's image, with the checkout in place of the pinned tag.
+    - if: inputs.engine == 'modsecurity2'
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      env:
+        SOURCE: ${{ steps.src.outputs.path }}
+        SECLANG_OBSOLETE_GAPS: ${{ inputs.obsolete-gaps }}
+      run: |
+        docker build --build-context modsecurity2-src="$SOURCE" -t seclang-modsecurity2 \
+          -f adapters/modsecurity2/Dockerfile .
+        docker run --rm -e SECLANG_OBSOLETE_GAPS -v "$PWD":/repo seclang-modsecurity2 \
+          uv run python -m unittest discover -s adapters/modsecurity2 -v

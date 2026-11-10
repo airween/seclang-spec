@@ -1,7 +1,10 @@
 """The adapter's own tests: parsers and loaders always; engine smoke tests when MODSECURITY_LIB is set."""
+import contextlib
+import io
 import os
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 import data
@@ -59,6 +62,20 @@ class GapsTests(unittest.TestCase):
                              {"tests/engine/b.yaml": "two", "tests/engine/c.yaml": "two"})
             self.assertEqual(set(gaps.load_gaps(p, "coraza")),
                              {"tests/engine/a.yaml", "tests/engine/b.yaml", "tests/engine/c.yaml"})
+
+    def test_obsolete_row_fails_unless_warn(self):
+        case = unittest.TestCase()
+        known = {"tests/engine/a.yaml": "one"}
+        with mock.patch.dict(os.environ, {gaps.OBSOLETE_ENV: ""}):
+            with self.assertRaisesRegex(AssertionError, "obsolete"):
+                gaps.report(case, "tests/engine/a.yaml", known, [])
+        with mock.patch.dict(os.environ, {gaps.OBSOLETE_ENV: "warn"}), \
+                contextlib.redirect_stdout(io.StringIO()) as out:
+            gaps.report(case, "tests/engine/a.yaml", known, [])
+        self.assertIn("::warning::known-gaps row is obsolete", out.getvalue())
+        with mock.patch.dict(os.environ, {gaps.OBSOLETE_ENV: "warn"}):
+            with self.assertRaisesRegex(AssertionError, "boom"):
+                gaps.report(case, "tests/engine/b.yaml", known, ["boom"])
 
 
 @needs_engine
