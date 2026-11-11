@@ -1,4 +1,4 @@
-# ADR-0019: `DURATION` is wall-clock milliseconds since the engine created the transaction
+# ADR-0019: `DURATION` is wall-clock microseconds since the engine created the transaction
 
 - **Status:** proposed
 - **Date:** 2026-10-06
@@ -28,15 +28,20 @@ All three engines expose a `DURATION` variable with three incompatible meanings:
   `tx.Timestamp = time.Now().UnixNano()` when it creates the transaction, so the start
   point is already recorded.
 
-The reference manual says "milliseconds". No published ruleset reads `DURATION`.
+The manuals disagree too. The v2 reference manual says "milliseconds elapsed since the
+beginning of the current transaction" (from 2.6.0) and adds "Starting with ModSecurity
+2.7.0 the time is microseconds", which is what v2 reports. The v3 reference manual says
+milliseconds. Coraza documents the variable as not implemented
+(`internal/variables/variables.go`). No published ruleset reads `DURATION`.
 
 The first version of this ADR left the unit and clock unspecified. It was amended on
-2026-11-11, before acceptance, to fix both.
+2026-11-11, before acceptance, to fix both; microseconds were chosen over milliseconds the same
+day, after the v2 manual's 2.7.0 note was checked.
 
 ## Decision
 
 `DURATION` is the wall-clock time elapsed since the engine created the transaction, in
-whole milliseconds, written as a base-10 integer with no sign, fraction or unit
+whole microseconds, written as a base-10 integer with no sign, fraction or unit
 (truncated, not rounded). The transaction is created when the host hands the request to
 the engine (v2 `create_tx_context`, v3 `msc_new_transaction`, Coraza `NewTransaction`);
 time the host spent before that, such as reading the request headers, is not counted.
@@ -48,6 +53,12 @@ time the host spent before that, such as reading the request headers, is not cou
 - **Fix the unit and the clock, keep it Extended (chosen).** One meaning for slow-request
   rules, an integer that `@gt` and `@lt` compare, and a value that a test can check. No
   engine is required to implement it.
+- **Microseconds (chosen) or milliseconds.** Microseconds are what v2 has documented and
+  reported since 2.7.0, so v2 keeps its unit and no existing v2 rule changes meaning; they
+  are also fine enough that a fast request rarely reads 0, and a 64-bit integer holds
+  centuries of them. Milliseconds match the v3 manual and v2's 2.6.0 text, but v3 does not
+  implement them (it reports CPU seconds) and v2 users would see every value divided by
+  1000. Milliseconds rejected.
 - **Count from when the server received the request.** It would include slow header
   delivery, but only Apache records that moment: the v2 nginx and IIS connectors, v3 and
   Coraza never see it, so the value would mean something different per host. Slow-client
@@ -63,15 +74,16 @@ time the host spent before that, such as reading the request headers, is not cou
 ## Consequences
 
 - For ModSecurity v2: take a timestamp in `create_tx_context` and report
-  `(apr_time_now() - start) / 1000`. The values existing v2 rules read change from
-  microseconds to milliseconds: a release-note item.
+  `apr_time_now() - start`. The unit is unchanged; on Apache the values get smaller by the
+  time spent reading the request headers.
 - For libmodsecurity v3: record a monotonic wall-clock time in the `Transaction`
-  constructor and report integer milliseconds. Internal state only; it fits 3.x.
-- For Coraza: report `(time.Now().UnixNano() - tx.Timestamp) / 1e6`.
+  constructor and report integer microseconds. Internal state only; it fits 3.x. The v3
+  reference manual's "milliseconds" needs correcting.
+- For Coraza: report `(time.Now().UnixNano() - tx.Timestamp) / 1000`.
 - For rule authors: `DURATION` compares across engines once they implement this ADR;
   until then, profiles that need it declare `requires:`.
 - Black-box tests can check only the form of the value and a sanity bound, not its unit
-  or clock: a fast request can legitimately report 0.
+  or clock: a very fast request can legitimately report 0.
 
 ## Tests
 

@@ -119,7 +119,7 @@ def phase1Store (st : Settings) (r : Request) : Store :=
    ("ARGS_GET", getArgs), ("ARGS_GET_NAMES", namesOf getArgs), ("ARGS", getArgs),
    ("ARGS_NAMES", namesOf getArgs), ("ARGS_COMBINED_SIZE", natText (combinedSize getArgs)),
    ("REQUEST_BODY_LENGTH", natText 0), ("REQBODY_PROCESSOR", scalar (text "")),
-   -- the model has no clock: no time passes, so `DURATION` is always 0 ms (ADR-0019)
+   -- the model has no clock: no time passes, so `DURATION` is always 0 µs (ADR-0019)
    ("DURATION", natText 0)]
 
 /-- Body processor from the `Content-Type` prefix (`09#processor-selection`) unless a

@@ -1,13 +1,13 @@
 meta:
   name: duration
-  description: "DURATION is a non-negative integer number of milliseconds (ADR-0019)"
+  description: "DURATION is a non-negative integer number of microseconds (ADR-0019)"
 spec: 05-variables.md#duration
 requires:
   - 05-variables.md#duration
 rules: |
   SecRuleEngine On
   SecRule DURATION "@rx ^[0-9]+$" "id:6059,phase:1,pass"
-  SecRule DURATION "@lt 60000" "id:6075,phase:1,pass"
+  SecRule DURATION "@lt 60000000" "id:6075,phase:1,pass"
   SecRule DURATION "@rx ^[0-9]+$" "id:6076,phase:5,pass"
 tests:
   - test_title: an integer in every phase, well under a minute
