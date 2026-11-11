@@ -1,0 +1,33 @@
+meta:
+  name: ctl-auditlogparts-absolute
+  description: "ctl:auditLogParts=LETTERS sets the transaction's parts to exactly those letters (ADR-0006)"
+spec: 08-actions.md#ctlauditlogparts
+rules: |
+  SecRuleEngine On
+  SecRequestBodyAccess On
+  SecRule REQUEST_HEADERS:X-Parts "@streq absolute" "id:7156,phase:1,pass,nolog,ctl:auditLogParts=ABFHZ"
+  SecRule ARGS_POST:x "@streq 1" "id:7157,phase:2,pass,log,auditlog,msg:'seclang absolute parts'"
+tests:
+  - test_title: without the ctl, part C carries the request body
+    stages:
+      - stage:
+          input:
+            method: POST
+            uri: /
+            headers: {Content-Type: application/x-www-form-urlencoded}
+            data: x=1&y=seclangbodyonly
+          output:
+            triggered_rules: [7157]
+            audit_log_contains: seclangbodyonly
+  - test_title: with ctl:auditLogParts=ABFHZ, the body is gone and part H stays
+    stages:
+      - stage:
+          input:
+            method: POST
+            uri: /
+            headers: {Content-Type: application/x-www-form-urlencoded, X-Parts: absolute}
+            data: x=1&y=seclangbodyonly
+          output:
+            triggered_rules: [7156, 7157]
+            no_audit_log_contains: seclangbodyonly
+            audit_log_contains: seclang absolute parts

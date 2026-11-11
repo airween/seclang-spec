@@ -10,10 +10,10 @@ engine: a mismatch is a defect to fix before merge, never a known gap.
 |---|---|---|
 | `seclang-check` | `tests/unit/transformations` | 39 files: 362 cases passed, 0 failed |
 | `seclang-check` | `tests/unit/operators` | 25 files: 3907 cases passed, 0 failed, 2 skipped (regex outside the Core subset, ADR-0018); not formalized: `detectSQLi.json`, `detectXSS.json` |
-| `seclang-parse` | `tests/engine` | 127 profiles, 0 mismatches |
-| `seclang-eval` | `tests/engine` | 208 stages, 0 mismatches, 8 unsupported profiles |
+| `seclang-parse` | `tests/engine` | 128 profiles, 0 mismatches |
+| `seclang-eval` | `tests/engine` | 208 stages, 0 mismatches, 9 unsupported profiles |
 | `seclang-parse` | OWASP CRS (`crs_setup_version` 4252) | 29 profiles, 0 mismatches |
-| `seclang-eval` | generated requests, what Coraza did (`adapters/coraza/cmd/differential`, seed 1, 30 per profile) | 2610 stages, 0 mismatches |
+| `seclang-eval` | generated requests, what Coraza did (`adapters/coraza/cmd/differential`, seed 1, 30 per profile) | 2640 stages, 0 mismatches |
 | `seclang-eval` | OWASP CRS with generated requests, what Coraza did (`tools/crs_profile.py`, seed 1) | 20 stages, 0 mismatches |
 
 ## Profiles outside the model
@@ -22,6 +22,7 @@ Reported as unsupported with the reason; the list is the model's boundary, not a
 
 | Profile | Reason |
 |---|---|
+| `tests/engine/actions/ctl-auditlogparts-absolute.yaml` | log assertions |
 | `tests/engine/actions/sanitize.yaml` | log assertions |
 | `tests/engine/body/xml-no-xxe.yaml` | variable XML |
 | `tests/engine/logging/audit-noauditlog-listed.yaml` | log assertions |
@@ -82,6 +83,6 @@ Proved over the model: `formal/SecLang/Regex.lean` (ADR-0027) and
 | `formal/SecLang/Regex.lean` | 41 |
 | `formal/SecLang/Request.lean` | 48 |
 | `formal/SecLang/Semantics.lean` | 49 |
-| `formal/SecLang/Syntax.lean` | 78 |
+| `formal/SecLang/Syntax.lean` | 81 |
 | `formal/SecLang/Transformations.lean` | 79 |
-| **Total** | **350** |
+| **Total** | **353** |

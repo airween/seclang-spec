@@ -12,6 +12,7 @@ whenever a Divergence ADR or a divergence note picks against an engine.
 
 | Test | Engine | Behaviour today | Decided in |
 |---|---|---|---|
+| `tests/engine/actions/ctl-auditlogparts-absolute.yaml` | libmodsecurity v3 | `ctl:auditLogParts` without `+` or `-` is a parse error ("Expecting an action"; `seclang-scanner.ll`, `=[+|-]{AUDIT_PARTS}`) | ADR-0006 |
 | `tests/engine/body/files-combined-size-fields.yaml` | Coraza | `FILES_COMBINED_SIZE` includes the bytes of non-file fields (`internal/bodyprocessors/multipart.go`, `totalSize` grows in the field branch too) | `05-variables.md#files_combined_size` |
 | `tests/engine/directives/secrequestbodyjsondepthlimit.yaml` | ModSecurity v2 | top-level object not counted toward `SecRequestBodyJsonDepthLimit`; limit 2 accepts depth 3 | `04-directives.md#secrequestbodyjsondepthlimit` |
 | `tests/engine/directives/secrequestbodylimit-boundary.yaml` | Coraza | a body of exactly `SecRequestBodyLimit` bytes is rejected (`transaction.go`, `>= tx.RequestBodyLimit`; v2 and v3 use `>`) | `04-directives.md#secrequestbodylimit` |

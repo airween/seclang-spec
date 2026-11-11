@@ -27,8 +27,8 @@ Phase 1 survey and added to the matrix in Phase 3.
 
 | Status | Options |
 |---|---|
-| Core | `auditEngine`, `auditLogParts` (relative form only), `forceRequestBodyVariable`, `requestBodyAccess`, `requestBodyProcessor`, `ruleEngine`, `ruleRemoveById`, `ruleRemoveByTag`, `ruleRemoveTargetById`, `ruleRemoveTargetByTag` |
-| Extended | `requestBodyLimit`, `responseBodyAccess`, `responseBodyLimit`, `ruleRemoveByMsg`, `ruleRemoveTargetByMsg`, `debugLogLevel`, `parseXmlIntoArgs`, absolute-form `auditLogParts` |
+| Core | `auditEngine`, `auditLogParts` (relative and absolute forms), `forceRequestBodyVariable`, `requestBodyAccess`, `requestBodyProcessor`, `ruleEngine`, `ruleRemoveById`, `ruleRemoveByTag`, `ruleRemoveTargetById`, `ruleRemoveTargetByTag` |
+| Extended | `requestBodyLimit`, `responseBodyAccess`, `responseBodyLimit`, `ruleRemoveByMsg`, `ruleRemoveTargetByMsg`, `debugLogLevel`, `parseXmlIntoArgs` |
 | Deprecated | `hashEngine`, `hashEnforcement` |
 | Engine-specific | `responseBodyProcessor`, `forceResponseBodyVariable` (Coraza) |
 
@@ -42,17 +42,26 @@ the actions in Phase 3.
   hash engine; rejected.
 - Core = strict three-way intersection (chosen): it already covers everything CRS and
   its documented exclusion mechanisms use.
+- `ctl:auditLogParts`, absolute form Extended (this ADR's first version): it was left out
+  of Core only because libmodsecurity v3 rejects it. Both forms are Core instead (amended
+  2026-11-11, before acceptance): v2 and Coraza already accept both, the absolute form is
+  what `SecAuditLogParts` takes, and v3's gap is a scanner rule.
 
 ## Consequences
 
 - For libmodsecurity v3: the eight missing options are Extended, so not required.
+  `ctl:auditLogParts` MUST also accept the absolute form; the scanner rule
+  (`seclang-scanner.ll`, `=[+|-]{AUDIT_PARTS}`) makes the sign optional.
+  `ctl-auditlogparts-absolute.yaml` fails on v3.
 - For Coraza: `parseXmlIntoArgs` is Extended, not required.
-- For rule authors: `ctl:auditLogParts=+E` is portable, `ctl:auditLogParts=ABCEZ` is not.
+- For rule authors: `ctl:auditLogParts=+E` and `ctl:auditLogParts=ABCEZ` are both portable
+  once v3 accepts the absolute form.
 
 ## Tests
 
 - `tests/engine/processing/ctl-timing.yaml`
 - `tests/engine/processing/ctl-core-options-load.yaml`
+- `tests/engine/actions/ctl-auditlogparts-absolute.yaml`
 
 ## References
 

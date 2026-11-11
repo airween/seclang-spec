@@ -295,7 +295,8 @@ def checkCtl (line : Nat) (v : String) : Parse String := do
   | .onOffRelevantOnly => enum ["on", "off", "relevantonly"]
   | .onOffOnlyArgs => enum ["on", "off", "onlyargs"]
   | .parts => if val.length ≥ 2 && (val.startsWith "+" || val.startsWith "-") then checkArg line .auditParts (dropFirst val)
-              else err line "ctl:auditLogParts takes +LETTERS or -LETTERS"
+              else if !val.isEmpty then checkArg line .auditParts val  -- absolute form (ADR-0006)
+              else err line "ctl:auditLogParts takes +LETTERS, -LETTERS or LETTERS"
   | .processor => enum ["urlencoded", "xml", "json"]
   | .nat => if (natOf? val).isSome then pure () else err line s!"ctl:{canon} takes a number"
   | .idRange => discard (parseRanges line [val])
@@ -389,6 +390,9 @@ def parseActions (line : Nat) (s : String) : Parse (List Action) := do
 #guard (parseActions 1 "ctl:responseBodyProcessor=X") matches .error _
 #guard (parseActions 1 "ctl:ruleRemoveTargetById=7150;ARGS_GET:a") matches .ok _
 #guard (parseActions 1 "ctl:ruleRemoveById=200-100") matches .error _
+#guard (parseActions 1 "ctl:auditLogParts=ABFHZ") matches .ok _
+#guard (parseActions 1 "ctl:auditLogParts=+E") matches .ok _
+#guard (parseActions 1 "ctl:auditLogParts=AXZ") matches .error _
 #guard (parseActions 1 "setvar:tx") matches .error _
 #guard (parseRanges 1 ["5010", "5012-5013"]).toOption == some [(5010, 5010), (5012, 5013)]
 #guard (parseRanges 1 ["200-100"]) matches .error _

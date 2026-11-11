@@ -464,12 +464,17 @@ list; `t:none` resets the inherited list. Repeatable.
 
 **Status:** Core
 
-**Syntax.** `ctl:auditLogParts=+LETTERS` or `-LETTERS`
+**Syntax.** `ctl:auditLogParts=+LETTERS`, `-LETTERS` or `LETTERS`
 
-**Semantics.** Adds or removes audit log parts for this transaction. The absolute form
-(`=ABCZ`) is Extended (ADR-0006).
+**Semantics.** With `+` or `-`, adds or removes audit log parts for this transaction;
+without a sign, sets the parts to exactly `LETTERS`, which follow the rules of
+`04-directives.md#secauditlogparts` (ADR-0006).
 
-**Tests.** `tests/engine/actions/ctl-options.yaml`
+**Divergence notes.** libmodsecurity v3 rejects the form without a sign
+(`seclang-scanner.ll`, `=[+|-]{AUDIT_PARTS}`).
+
+**Tests.** `tests/engine/actions/ctl-options.yaml`,
+`tests/engine/actions/ctl-auditlogparts-absolute.yaml`
 
 ### ctl:forceRequestBodyVariable
 

@@ -714,13 +714,14 @@ header, `B` request headers, `C` request body, `D` reserved, `E` intermediary re
 body, `F` response headers, `G` reserved, `H` audit trailer, `I` request body without
 files, `J` uploaded files information, `K` matched rules, `Z` end marker. `A` and `Z`
 are mandatory. A letter outside `A`–`K` and `Z` MUST be a configuration error.
-`ctl:auditLogParts` changes the parts for one transaction. Its Core value form is
-relative, `+X` to add and `-X` to remove parts, which all three engines accept; the
-absolute form (`ctl:auditLogParts=ABCZ`) is Extended because libmodsecurity v3 rejects
-it (ADR-0006).
+`ctl:auditLogParts` changes the parts for one transaction, in either Core value form:
+relative, `+X` to add and `-X` to remove parts, or absolute (`ctl:auditLogParts=ABCZ`),
+which replaces the parts with exactly those letters under the rules above (ADR-0006).
 
 **Divergence notes.** All three reject unknown letters (v2 `is_valid_parts_specification`,
-v3 scanner character class `[ABCDEFGHJKIZ]`, Coraza `ParseAuditLogParts`). Which parts
+v3 scanner character class `[ABCDEFGHJKIZ]`, Coraza `ParseAuditLogParts`). libmodsecurity
+v3 accepts only the relative form of `ctl:auditLogParts` (`seclang-scanner.ll`,
+`=[+|-]{AUDIT_PARTS}`); v2 and Coraza accept both. Which parts
 each engine actually fills is a `10-logging.md` matter; Coraza does not implement `D`,
 `E` or `G`.
 
