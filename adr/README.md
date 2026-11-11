@@ -25,7 +25,7 @@ promoted into the spec (Extension).
 | [0001](0001-status-labels-and-core.md) | Status labels and the meaning of Core | Clarification | accepted |
 | [0002](0002-case-insensitive-names.md) | Directive, operator, action and transformation names match case-insensitively | Divergence | accepted |
 | [0003](0003-test-formats.md) | Test formats: SecRules Test Set JSON for units, go-ftw-derived YAML for engine profiles | Clarification | accepted |
-| [0004](0004-canonical-names-and-aliases.md) | Canonical names and required aliases | Divergence | proposed |
+| [0004](0004-canonical-names-and-aliases.md) | Canonical names and required aliases | Divergence | accepted |
 | [0005](0005-unknown-and-unsupported-directives.md) | Unknown versus unsupported directives | Divergence | accepted |
 | [0006](0006-core-ctl-options.md) | Core `ctl:` options | Divergence | accepted |
 | [0007](0007-persistent-collections.md) | Persistent collections are Extended | Divergence | accepted |
