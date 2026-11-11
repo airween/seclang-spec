@@ -744,7 +744,11 @@ Specified in outline; SHOULD be implemented. Full sections follow when an engine
 
 **Status:** Extended
 
-**Semantics.** Time spent processing the transaction so far. Units differ: ModSecurity v2 reports wall-clock microseconds (`apr_time_now() - r->request_time`), libmodsecurity v3 CPU seconds as a decimal fraction (`utils::cpu_seconds()`), Coraza always `0`. Unspecified; see ADR-0019.
+**Semantics.** The wall-clock time elapsed since the engine created the transaction, in whole milliseconds, as a base-10 integer (truncated). Time the host spent before handing the request to the engine, such as reading the request headers, is not counted (ADR-0019).
+
+**Divergence notes.** ModSecurity v2 reports wall-clock microseconds since the host's `r->request_time` (`apache2/re_variables.c`, `var_duration_generate`), which on Apache is set after the request line and before the headers are read; libmodsecurity v3 reports process CPU seconds as a decimal fraction (`src/variables/duration.cc`, `utils::cpu_seconds()`); Coraza always reports `0` (`internal/corazawaf/waf.go`).
+
+**Tests.** `tests/engine/variables/duration.yaml`
 
 **Implemented by.** v2, v3, Coraza.
 

@@ -40,7 +40,7 @@ promoted into the spec (Extension).
 | [0016](0016-skipafter-scope.md) | `skipAfter` scope ends with the phase | Divergence | accepted |
 | [0017](0017-default-phase.md) | The default phase is 2 and is never inherited | Divergence | accepted |
 | [0018](0018-regex-dialect.md) | Core regular-expression syntax is the RE2-compatible subset | Divergence | accepted |
-| [0019](0019-duration-units.md) | `DURATION` is Extended with unspecified units | Clarification | proposed |
+| [0019](0019-duration-units.md) | `DURATION` is wall-clock milliseconds since the engine created the transaction | Divergence | proposed |
 | [0020](0020-json-argument-names.md) | JSON argument names are unspecified | Clarification | proposed |
 | [0021](0021-logging-contract.md) | The portable logging contract is rule ids, messages and logdata | Clarification | accepted |
 | [0022](0022-request-body-without-processor.md) | `REQUEST_BODY` without a body processor | Divergence | accepted |

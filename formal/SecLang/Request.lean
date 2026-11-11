@@ -118,7 +118,9 @@ def phase1Store (st : Settings) (r : Request) : Store :=
    ("REQUEST_COOKIES", cookies), ("REQUEST_COOKIES_NAMES", namesOf cookies),
    ("ARGS_GET", getArgs), ("ARGS_GET_NAMES", namesOf getArgs), ("ARGS", getArgs),
    ("ARGS_NAMES", namesOf getArgs), ("ARGS_COMBINED_SIZE", natText (combinedSize getArgs)),
-   ("REQUEST_BODY_LENGTH", natText 0), ("REQBODY_PROCESSOR", scalar (text ""))]
+   ("REQUEST_BODY_LENGTH", natText 0), ("REQBODY_PROCESSOR", scalar (text "")),
+   -- the model has no clock: no time passes, so `DURATION` is always 0 ms (ADR-0019)
+   ("DURATION", natText 0)]
 
 /-- Body processor from the `Content-Type` prefix (`09#processor-selection`) unless a
 phase 1 `ctl:requestBodyProcessor` chose one. -/
@@ -357,6 +359,7 @@ def phase4Store (st : Settings) (resp : Option Response) (store : Store) : Store
 #guard ((phase1Store {} { uri := "/dir/file.php?x=1" }).get "REQUEST_FILENAME").map (ofBytes ·.value) == ["/dir/file.php"]
 #guard ((phase1Store {} { uri := "/dir/file.php?x=1" }).get "REQUEST_BASENAME").map (ofBytes ·.value) == ["file.php"]
 #guard ((phase1Store {} { uri := "/dir/file.php?x=1" }).get "QUERY_STRING").map (ofBytes ·.value) == ["x=1"]
+#guard ((phase1Store {} { uri := "/" }).get "DURATION").map (ofBytes ·.value) == ["0"]
 #guard ((phase1Store {} { uri := "/", headers := [("Cookie", "a=1; b=2; a=3")] }).get "REQUEST_COOKIES").map (fun m => (m.key, ofBytes m.value)) == [("a", "1"), ("b", "2"), ("a", "3")]
 #guard ((phase1Store {} { uri := "/", headers := [("X-Test", " Hello ")] }).get "REQUEST_HEADERS_NAMES").map (ofBytes ·.value) == ["X-Test"]
 #guard (let s := phase1Store { argsLimit := some 2 } { uri := "/?a=1&b=2" }

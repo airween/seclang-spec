@@ -134,7 +134,7 @@ def variables : List (String × Status × VarShape) := [
   ("RESPONSE_HEADERS", .core, .collection),
   ("RESPONSE_STATUS", .core, .scalar),
   ("AUTH_TYPE", .extended, .unspecified),
-  ("DURATION", .extended, .unspecified),
+  ("DURATION", .extended, .scalar),
   ("ENV", .extended, .unspecified),
   ("FILES_SIZES", .extended, .unspecified),
   ("FILES_TMP_CONTENT", .extended, .unspecified),
