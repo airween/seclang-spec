@@ -18,6 +18,13 @@ exactly one value (`05-variables.md#collection-keys`), the engines disagree on w
   `REQUEST_BODY` is registered as `VAR_LIST` (`apache2/re_variables.c`), so
   `&REQUEST_BODY` loads while `&REQUEST_URI`, `&REQUEST_BODY_LENGTH` and
   `&REQBODY_PROCESSOR` do not. Checked with `apache2 -t` in the reference adapter's image.
+  `REQUEST_BODY` was `VAR_SIMPLE` until commit `d93ce9cee` (2014, which added
+  `FULL_REQUEST` next to it and gives no reason for the change); its generator did not
+  change. `var_request_body_generate` yields the body as one value and never reads the
+  key, so `REQUEST_BODY:foo` and `REQUEST_BODY:/^zz/` load and select the whole body. It
+  yields no value when the body did not reach the variable (no body, or no `URLENCODED`
+  processor and no `ctl:forceRequestBodyVariable`, ADR-0022), so `&REQUEST_BODY` counts
+  0 there and 1 otherwise. Checked with the reference adapter.
 - libmodsecurity v3 (v3.0.17): `VariableModificatorCount` (`src/variables/variable.h`)
   wraps any variable the parser accepts (`src/parser/seclang-parser.yy`) and counts the
   values it yields: 1 for a scalar.
@@ -54,7 +61,8 @@ never an error.
 ## Consequences
 
 - For ModSecurity v2: drop the `VAR_SIMPLE` check in `apache2/re.c` and return a count
-  of 1. A migration path proposed in issue 73: accept the new behaviour behind a
+  of 1, also for a scalar with no value: `&REQUEST_BODY` counts 0 today when the body
+  did not reach the variable. A migration path proposed in issue 73: accept the new behaviour behind a
   compile-time flag and warn when a rule depends on the old error, then remove the flag.
 - For libmodsecurity v3 and Coraza: no change.
 - For rule authors: until v2 changes, `&` on a scalar stops a v2 configuration from
@@ -63,6 +71,7 @@ never an error.
 ## Tests
 
 - `tests/engine/variables/count-scalar.yaml`
+- `tests/engine/variables/count-request-body.yaml`
 - `tests/engine/grammar/unknown-variable-count.yaml`
 
 ## References

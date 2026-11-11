@@ -1,0 +1,29 @@
+meta:
+  name: count-request-body
+  description: "&REQUEST_BODY counts 1 with or without a body (ADR-0037)"
+spec: 02-grammar.md#variable-list
+rules: |
+  SecRuleEngine On
+  SecRequestBodyAccess On
+  SecRule &REQUEST_BODY "@eq 1" "id:6335,phase:2,pass"
+tests:
+  - test_title: no body counts 1
+    stages:
+      - stage:
+          input:
+            uri: /
+          output:
+            triggered_rules: [6335]
+            no_interruption: true
+  - test_title: urlencoded body counts 1
+    stages:
+      - stage:
+          input:
+            method: POST
+            uri: /
+            headers:
+              Content-Type: application/x-www-form-urlencoded
+            data: a=hello
+          output:
+            triggered_rules: [6335]
+            no_interruption: true
