@@ -27,7 +27,7 @@ tests:
             triggered_rules: [6330]
             no_log_contains: hunter2pass
             no_audit_log_contains: hunter2pass
-            audit_log_contains: '[sanitized]'
+            audit_log_contains: '**sanitized**'
   - test_title: sanitizeMatched masks a URL-encoded body argument
     spec: 08-actions.md#sanitizematched
     stages:
@@ -40,7 +40,7 @@ tests:
             triggered_rules: [6331]
             no_log_contains: '4111111111111111'
             no_audit_log_contains: '4111111111111111'
-            audit_log_contains: '[sanitized]'
+            audit_log_contains: '**sanitized**'
   - test_title: sanitizeMatchedBytes masks only the matched bytes
     spec: 08-actions.md#sanitizematchedbytes
     stages:
@@ -50,7 +50,7 @@ tests:
             triggered_rules: [6332]
             no_log_contains: s3cr3tw0rd
             no_audit_log_contains: s3cr3tw0rd
-            audit_log_contains: 'keep-[sanitized]-tail'
+            audit_log_contains: 'keep-**sanitized**-tail'
   - test_title: sanitizeRequestHeader masks a request header
     spec: 08-actions.md#sanitizerequestheader
     stages:
@@ -61,7 +61,7 @@ tests:
             triggered_rules: [6333]
             no_log_contains: tok-abcdef123456
             no_audit_log_contains: tok-abcdef123456
-            audit_log_contains: '[sanitized]'
+            audit_log_contains: '**sanitized**'
   - test_title: sanitizeResponseHeader masks a response header
     spec: 08-actions.md#sanitizeresponseheader
     stages:
@@ -73,4 +73,4 @@ tests:
             triggered_rules: [6334]
             no_log_contains: sess-9876543210
             no_audit_log_contains: sess-9876543210
-            audit_log_contains: '[sanitized]'
+            audit_log_contains: '**sanitized**'

@@ -53,7 +53,7 @@ transaction's audit log entry, whatever its format. A profile that uses either g
 `SecAuditEngine On`, `SecAuditLogParts ABCFHZ` and a serial audit log in the adapter's
 work directory, appended after its `rules` so they override the profile's own audit
 directives. Profiles use them only with a request or response value, with the mask
-`[sanitized]` (`spec/08-actions.md#sanitizearg`), and with a rule's `msg` text to check
+`**sanitized**` (`spec/08-actions.md#sanitizearg`), and with a rule's `msg` text to check
 which rules part H lists (ADR-0035), never with the audit layout.
 
 ## What "triggered" means

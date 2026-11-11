@@ -633,7 +633,7 @@ values equals `TAG` (ADR-0029).
 
 **Semantics.** When the rule matches, marks every argument of the transaction (query string
 or request body) whose name equals `NAME`, compared case-insensitively, so that its value
-is written to the logs as the mask `[sanitized]`, whatever its length. Wherever the engine
+is written to the logs as the mask `**sanitized**`, whatever its length. Wherever the engine
 writes a marked argument or header, or text derived from it, to the transaction's audit log
 entry (request line and URI, headers, bodies, matched-rule messages) or to an error-log
 line written by this rule or a later rule of the same transaction (the URI or query string
@@ -683,7 +683,7 @@ digits.
 
 **Semantics.** As `sanitizeMatched`, but marks only the bytes the operator matched inside
 the value; the rest of the value stays in clear. With `N/M` the first `N` and the last `M`
-matched bytes stay in clear and the bytes between them are written as one `[sanitized]`
+matched bytes stay in clear and the bytes between them are written as one `**sanitized**`
 (ADR-0033).
 
 **Divergence notes.** As for `sanitizeArg`; v2 parses `N/M` in

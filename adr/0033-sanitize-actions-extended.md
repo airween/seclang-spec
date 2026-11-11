@@ -39,7 +39,7 @@ four entries after it), spelled `sanitize*` only: v2's `sanitise*` spellings are
   other variable. `sanitizeMatchedBytes` marks only the bytes the operator matched inside
   that value; `sanitizeMatchedBytes:N/M` leaves the first `N` and the last `M` of them in
   clear.
-- A marked value is written as the fixed mask `[sanitized]`, whatever its length, wherever
+- A marked value is written as the fixed mask `**sanitized**`, whatever its length, wherever
   the engine writes that argument or header, or text derived from it, to the transaction's
   audit log entry (request line and URI, headers, request and response bodies,
   matched-rule messages) or to an error-log line written by the rule that marks it or by a
@@ -49,7 +49,7 @@ four entries after it), spelled `sanitize*` only: v2's `sanitise*` spellings are
   value inside a body it writes MUST write that whole body as the mask. Error-log lines
   written before the action ran are not retracted. The debug log is out of scope.
 - The positive form is fixed only for the audit log: where the value would appear in an
-  audit part the engine writes `[sanitized]` there. Where the mask appears in the error log
+  audit part the engine writes `**sanitized**` there. Where the mask appears in the error log
   is engine-specific; only the absence of the clear value is normative.
 - The actions are non-disruptive, run when the rule matches, and change only logging; the
   variables keep their values for later rules.
@@ -74,7 +74,7 @@ four entries after it), spelled `sanitize*` only: v2's `sanitise*` spellings are
 
 ## Consequences
 
-- For ModSecurity v2: write `[sanitized]` instead of one `*` per byte, and apply the marks
+- For ModSecurity v2: write `**sanitized**` instead of one `*` per byte, and apply the marks
   to error-log lines and to macro expansion in `msg` and `logdata`.
 - For libmodsecurity v3: register the actions instead of `ACTION_NOT_SUPPORTED` and apply
   the marks in the audit log writer and in `RuleMessage`.
