@@ -2262,6 +2262,13 @@
     "status": "Core"
    },
    {
+    "name": "REQUEST_BASENAME_RAW",
+    "v2": false,
+    "v3": false,
+    "coraza": false,
+    "status": "Extended"
+   },
+   {
     "name": "REQUEST_BODY",
     "v2": true,
     "v3": true,
@@ -2295,6 +2302,13 @@
     "v3": true,
     "coraza": true,
     "status": "Core"
+   },
+   {
+    "name": "REQUEST_FILENAME_RAW",
+    "v2": false,
+    "v3": false,
+    "coraza": false,
+    "status": "Extended"
    },
    {
     "name": "REQUEST_HEADERS",

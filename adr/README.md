@@ -59,3 +59,6 @@ promoted into the spec (Extension).
 | [0035](0035-noauditlog-relevance-only.md) | `noauditlog` affects relevance only; the audit record lists every logged match | Divergence | accepted |
 | [0036](0036-parameterised-transformations.md) | Parameterised transformations, defined by name | Extension | accepted |
 | [0037](0037-count-applies-to-scalars.md) | `&` applies to every variable and counts a scalar as 1 | Divergence | accepted |
+| [0038](0038-uri-variables-percent-decoded.md) | The URI variables are percent-decoded once, from phase 1 | Divergence | proposed |
+| [0039](0039-engine-identification-variables.md) | Engine identification variables and behaviour flags | Extension | proposed |
+| [0040](0040-optional-variables.md) | A `?` prefix names a variable the engine may not know | Extension | proposed |

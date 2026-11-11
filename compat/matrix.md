@@ -273,7 +273,7 @@ Generated from `compat/matrix.json` by `tools/matrix.py` on 2026-10-06. Do not e
 | [`urlEncode`](../spec/07-transformations.md#urlencode) | yes | yes | yes | Extended |
 | [`utf8toUnicode`](../spec/07-transformations.md#utf8tounicode) | yes | yes | yes | Core |
 
-## variables (74 of 144 in all engines)
+## variables (74 of 146 in all engines)
 
 | Name | v2 | v3 | coraza | status |
 |---|---|---|---|---|
@@ -356,11 +356,13 @@ Generated from `compat/matrix.json` by `tools/matrix.py` on 2026-10-06. Do not e
 | [`REQBODY_PROCESSOR_ERROR`](../spec/05-variables.md#reqbody_processor_error) | - | yes | yes | Extended |
 | [`REQBODY_PROCESSOR_ERROR_MSG`](../spec/05-variables.md#reqbody_processor_error_msg) | - | yes | yes | Extended |
 | [`REQUEST_BASENAME`](../spec/05-variables.md#request_basename) | yes | yes | yes | Core |
+| [`REQUEST_BASENAME_RAW`](../spec/05-variables.md#request_basename_raw) | - | - | - | Extended |
 | [`REQUEST_BODY`](../spec/05-variables.md#request_body) | yes | yes | yes | Core |
 | [`REQUEST_BODY_LENGTH`](../spec/05-variables.md#request_body_length) | yes | yes | yes | Core |
 | [`REQUEST_COOKIES`](../spec/05-variables.md#request_cookies) | yes | yes | yes | Core |
 | [`REQUEST_COOKIES_NAMES`](../spec/05-variables.md#request_cookies_names) | yes | yes | yes | Core |
 | [`REQUEST_FILENAME`](../spec/05-variables.md#request_filename) | yes | yes | yes | Core |
+| [`REQUEST_FILENAME_RAW`](../spec/05-variables.md#request_filename_raw) | - | - | - | Extended |
 | [`REQUEST_HEADERS`](../spec/05-variables.md#request_headers) | yes | yes | yes | Core |
 | [`REQUEST_HEADERS_NAMES`](../spec/05-variables.md#request_headers_names) | yes | yes | yes | Core |
 | [`REQUEST_LINE`](../spec/05-variables.md#request_line) | yes | yes | yes | Core |

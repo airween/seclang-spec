@@ -89,11 +89,13 @@ any surveyed engine with its status (`00-conventions.md`).
 | [REQBODY_PROCESSOR_ERROR](#reqbody_processor_error) | Extended | - | yes | yes | Older name for REQBODY_ERROR |
 | [REQBODY_PROCESSOR_ERROR_MSG](#reqbody_processor_error_msg) | Extended | - | yes | yes | Older name for REQBODY_ERROR_MSG |
 | [REQUEST_BASENAME](#request_basename) | Core | yes | yes | yes | Last path segment |
+| [REQUEST_BASENAME_RAW](#request_basename_raw) | Extended | - | - | - | Last path segment as sent |
 | [REQUEST_BODY](#request_body) | Core | yes | yes | yes | Raw request body |
 | [REQUEST_BODY_LENGTH](#request_body_length) | Core | yes | yes | yes | Request body size in bytes |
 | [REQUEST_COOKIES](#request_cookies) | Core | yes | yes | yes | Cookies by name |
 | [REQUEST_COOKIES_NAMES](#request_cookies_names) | Core | yes | yes | yes | Cookie names |
 | [REQUEST_FILENAME](#request_filename) | Core | yes | yes | yes | Request path without query |
+| [REQUEST_FILENAME_RAW](#request_filename_raw) | Extended | - | - | - | Request path as sent |
 | [REQUEST_HEADERS](#request_headers) | Core | yes | yes | yes | Request headers by name |
 | [REQUEST_HEADERS_NAMES](#request_headers_names) | Core | yes | yes | yes | Request header names |
 | [REQUEST_LINE](#request_line) | Core | yes | yes | yes | The request line |
@@ -330,9 +332,11 @@ integration concern outside this specification.
 **Status:** Core
 
 **Semantics.** Scalar: the last segment of `REQUEST_FILENAME`, after the final `/`; the
-whole filename when there is no `/`.
+whole filename when there is no `/`. It is therefore percent-decoded too (ADR-0038);
+`REQUEST_BASENAME_RAW` is the same segment as sent.
 
-**Divergence notes.** None known.
+**Divergence notes.** ModSecurity v2 takes it from the path as sent; see
+`REQUEST_FILENAME`.
 
 **Tests.** `tests/engine/variables/request-line.yaml`
 
@@ -363,13 +367,15 @@ members.
 
 **Status:** Core
 
-**Semantics.** Scalar: the path component of the request URI without the query string.
-Whether percent-encoded characters in the path are decoded is **not specified**; the
-test uses a path with none.
+**Semantics.** Scalar: the path component of the request target, the part before the
+first `?` as sent, after URI percent-decoding (`REQUEST_URI`, ADR-0038). Set before
+phase 1. `REQUEST_FILENAME_RAW` is the same path as sent.
 
 **Divergence notes.** ModSecurity v2 uses Apache's `parsed_uri.path`, which is the path as
-sent (`apache2/re_variables.c`); libmodsecurity v3 (`src/transaction.cc`, `m_uri_decoded`)
-and Coraza (`transaction.go`, `url.Parse` path) use the decoded path.
+sent (`apache2/re_variables.c`, `var_request_filename_generate`);
+`tests/engine/variables/request-uri-decoded.yaml` fails on v2 (`compat/known-gaps.md`).
+libmodsecurity v3 (`src/transaction.cc`, `Transaction::processURI`) and Coraza
+(`internal/corazawaf/transaction.go`, `url.URL.Path`) decode.
 
 **Tests.** `tests/engine/variables/request-line.yaml`
 
@@ -433,13 +439,24 @@ PROTOCOL`, without the line terminator.
 **Status:** Core
 
 **Semantics.** Scalar: the request path followed by `?` and the query string when
-present, without scheme and host, as sent (no decoding).
+present, without scheme and host (removed from the target as sent, before decoding),
+after URI percent-decoding (ADR-0038): every `%`
+followed by two hexadecimal digits becomes the byte they encode (RFC 3986 §2.1), once,
+so `%2526` becomes `%26`. `+`, a `%` not followed by two hexadecimal digits and `%u`
+sequences are kept as sent; this is not `t:urlDecode`, which also turns `+` into a space.
+The value is set before phase 1 and is the same in every phase. Decoding can produce any
+byte, including NUL, `/` and `?`: rules that depend on the request's own delimiters or on
+its encoding read `REQUEST_URI_RAW`, `REQUEST_FILENAME_RAW` or `QUERY_STRING`.
 
-**Divergence notes.** Coraza re-serialises the parsed URL (`transaction.go`,
-`url.URL.String()`), which can normalise unusual encodings; identical for the
-origin-form requests the tests use.
+**Divergence notes.** ModSecurity v2 (`apache2/re_variables.c`,
+`var_request_uri_generate`) and Coraza (`internal/corazawaf/transaction.go`,
+`Transaction.ProcessURI`, `url.URL.String()`) do not decode;
+`tests/engine/variables/request-uri-decoded.yaml` fails on both (`compat/known-gaps.md`).
+libmodsecurity v3 decodes (`src/transaction.cc`, `Transaction::processURI`,
+`utils::uri_decode`).
 
-**Tests.** `tests/engine/variables/request-line.yaml`
+**Tests.** `tests/engine/variables/request-line.yaml`,
+`tests/engine/variables/request-uri-decoded.yaml`
 
 ### REQUEST_URI_RAW
 
@@ -1015,6 +1032,24 @@ Specified in outline; SHOULD be implemented. Full sections follow when an engine
 **Semantics.** Older name for REQBODY_ERROR_MSG.
 
 **Implemented by.** v3, Coraza.
+
+### REQUEST_BASENAME_RAW
+
+**Status:** Extended
+
+**Semantics.** Scalar: the last segment of `REQUEST_FILENAME_RAW`, after the final `/`, as
+sent (ADR-0038).
+
+**Implemented by.** none yet.
+
+### REQUEST_FILENAME_RAW
+
+**Status:** Extended
+
+**Semantics.** Scalar: the path component of the request target, the part before the
+first `?`, as sent, without percent-decoding (ADR-0038).
+
+**Implemented by.** none yet.
 
 ### RESOURCE
 

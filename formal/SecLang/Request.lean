@@ -21,6 +21,24 @@ def text (s : String) : ByteArray := s.toUTF8
 def latin (s : String) : String := ofBytes s.toUTF8
 def scalar (v : ByteArray) : List Member := [⟨"", v⟩]
 
+/-- URI percent-decoding (`05#request_uri`, ADR-0038): `%` and two hex digits become that
+byte, once; `+` and any other `%` stay. -/
+def uriDecode (b : ByteArray) : ByteArray := go 0 .empty
+where
+  go (i : Nat) (out : ByteArray) : ByteArray :=
+    if h : i < b.size then
+      match (if b[i] == '%'.toUInt8 then (hexAt b (i + 1)).bind fun h1 => (hexAt b (i + 2)).map (h1 * 16 + ·) else none) with
+      | some x => go (i + 3) (out.push x)
+      | none => go (i + 1) (out.push b[i])
+    else out
+  termination_by b.size - i
+
+/-- The bytes after the last `/`; all of them when there is none (`05#request_basename`). -/
+def lastSegment (b : ByteArray) : ByteArray :=
+  match (List.range b.size).reverse.find? (b[·]! == '/'.toUInt8) with
+  | some i => b.extract (i + 1) b.size
+  | none => b
+
 structure Request where
   method : String := "GET"
   uri : String := "/"
@@ -98,7 +116,7 @@ def natText (n : Nat) : List Member := scalar (text (toString n))
 def phase1Store (st : Settings) (r : Request) : Store :=
   let (path, query) := match r.uri.splitOn "?" with
     | [p] => (p, "") | p :: rest => (p, "?".intercalate rest) | [] => ("", "")
-  let base := (path.splitOn "/").getLast?.getD path
+  let file := uriDecode (text path)
   let getArgs := parseArgs st.argSep st.argsLimit query
   let headers := r.headers.map fun (k, v) => Member.mk (latin k) (text (trimBlanks v))
   let cookies := (r.headers.filter fun (k, _) => k.toLower == "cookie").flatMap fun (_, v) =>
@@ -108,9 +126,9 @@ def phase1Store (st : Settings) (r : Request) : Store :=
         | [n] => Member.mk (latin (trimBlanks n)) (text "")
         | n :: rest => Member.mk (latin (trimBlanks n)) (text (trimBlanks ("=".intercalate rest)))
         | [] => Member.mk "" (text ""))
-  [("REQUEST_METHOD", scalar (text r.method)), ("REQUEST_URI", scalar (text r.uri)),
-   ("REQUEST_URI_RAW", scalar (text r.uri)), ("REQUEST_FILENAME", scalar (text path)),
-   ("REQUEST_BASENAME", scalar (text base)), ("QUERY_STRING", scalar (text query)),
+  [("REQUEST_METHOD", scalar (text r.method)), ("REQUEST_URI", scalar (uriDecode (text r.uri))),
+   ("REQUEST_URI_RAW", scalar (text r.uri)), ("REQUEST_FILENAME", scalar file),
+   ("REQUEST_BASENAME", scalar (lastSegment file)), ("QUERY_STRING", scalar (text query)),
    ("REQUEST_PROTOCOL", scalar (text r.version)),
    ("REQUEST_LINE", scalar (text s!"{r.method} {r.uri} {r.version}")),
    ("REMOTE_ADDR", scalar (text r.remoteAddr)), ("UNIQUE_ID", scalar (text "seclang-model")),
@@ -358,6 +376,9 @@ def phase4Store (st : Settings) (resp : Option Response) (store : Store) : Store
 #guard (parseArgs '&' (some 2) "a=1&b=2&c=3").map (·.key) == ["a", "b"]
 #guard ((phase1Store {} { uri := "/dir/file.php?x=1" }).get "REQUEST_FILENAME").map (ofBytes ·.value) == ["/dir/file.php"]
 #guard ((phase1Store {} { uri := "/dir/file.php?x=1" }).get "REQUEST_BASENAME").map (ofBytes ·.value) == ["file.php"]
+#guard ((phase1Store {} { uri := "/d%20x/f%41+b.php?r=%2526&s=%zz" }).get "REQUEST_URI").map (ofBytes ·.value) == ["/d x/fA+b.php?r=%26&s=%zz"]
+#guard ((phase1Store {} { uri := "/d%20x/f%41+b.php?r=%2526" }).get "REQUEST_BASENAME").map (ofBytes ·.value) == ["fA+b.php"]
+#guard ((phase1Store {} { uri := "/d%20x?r=%2526" }).get "QUERY_STRING").map (ofBytes ·.value) == ["r=%2526"]
 #guard ((phase1Store {} { uri := "/dir/file.php?x=1" }).get "QUERY_STRING").map (ofBytes ·.value) == ["x=1"]
 #guard ((phase1Store {} { uri := "/" }).get "DURATION").map (ofBytes ·.value) == ["0"]
 #guard ((phase1Store {} { uri := "/", headers := [("Cookie", "a=1; b=2; a=3")] }).get "REQUEST_COOKIES").map (fun m => (m.key, ofBytes m.value)) == [("a", "1"), ("b", "2"), ("a", "3")]

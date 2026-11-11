@@ -1,0 +1,21 @@
+meta:
+  name: request-uri-decoded
+  description: "REQUEST_URI, REQUEST_FILENAME and REQUEST_BASENAME are percent-decoded once from phase 1; + and invalid escapes stay; the raw variables stay as sent (ADR-0038)"
+spec: 05-variables.md#request_uri
+rules: |
+  SecRuleEngine On
+  SecRule REQUEST_URI "@streq /d x/fA+b.php?q=A+b&r=%26&s=%zz" "id:6340,phase:1,pass,t:none"
+  SecRule REQUEST_URI "@streq /d x/fA+b.php?q=A+b&r=%26&s=%zz" "id:6341,phase:2,pass,t:none"
+  SecRule REQUEST_FILENAME "@streq /d x/fA+b.php" "id:6342,phase:1,pass,t:none"
+  SecRule REQUEST_BASENAME "@streq fA+b.php" "id:6343,phase:1,pass,t:none"
+  SecRule REQUEST_URI_RAW "@streq /d%20x/f%41+b.php?q=%41+b&r=%2526&s=%zz" "id:6344,phase:1,pass,t:none"
+  SecRule QUERY_STRING "@streq q=%41+b&r=%2526&s=%zz" "id:6345,phase:1,pass,t:none"
+tests:
+  - test_title: decoded once, + and invalid escapes kept, raw variables as sent
+    stages:
+      - stage:
+          input:
+            uri: "/d%20x/f%41+b.php?q=%41+b&r=%2526&s=%zz"
+          output:
+            triggered_rules: [6340, 6341, 6342, 6343, 6344, 6345]
+            no_interruption: true
