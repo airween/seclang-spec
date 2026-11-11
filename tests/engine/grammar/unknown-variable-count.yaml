@@ -1,0 +1,15 @@
+meta:
+  name: unknown-variable-count
+  description: "& does not make an unknown variable name acceptable; it is still a configuration error (ADR-0005, ADR-0037)"
+spec: 02-grammar.md#variable-list
+rules: |
+  SecRuleEngine On
+  SecRule &FROBNICATE "@eq 0" "id:3031,phase:1,pass"
+tests:
+  - test_title: fails to load
+    stages:
+      - stage:
+          input:
+            uri: /
+          output:
+            expect_error: true

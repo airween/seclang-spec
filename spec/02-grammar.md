@@ -105,7 +105,8 @@ ADR-0037.
 **Tests.** `tests/engine/grammar/variable-list.yaml`,
 `tests/engine/grammar/variable-count-and-exclusion.yaml`,
 `tests/engine/variables/count-scalar.yaml`,
-`tests/engine/grammar/unknown-variable.yaml`
+`tests/engine/grammar/unknown-variable.yaml`,
+`tests/engine/grammar/unknown-variable-count.yaml`
 
 ### Variable selectors
 

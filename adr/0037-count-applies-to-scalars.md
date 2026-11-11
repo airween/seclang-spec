@@ -34,6 +34,11 @@ does this select" for every variable, as it does on a collection.
 the scalar yet, since a scalar always holds one value (`05-variables.md#collection-keys`).
 `&` on a scalar MUST NOT be a configuration error.
 
+`&` does not change name resolution: a name that is not a variable this specification
+defines is still a configuration error (`02-grammar.md#variable-list`, ADR-0005), with or
+without `&`, and a known collection or member with no values counts 0 (`&TX:foo "@eq 0"`),
+never an error.
+
 ## Options considered
 
 - **Count every variable; a scalar counts 1 (chosen).** What v3 and Coraza do, and the
@@ -58,6 +63,7 @@ the scalar yet, since a scalar always holds one value (`05-variables.md#collecti
 ## Tests
 
 - `tests/engine/variables/count-scalar.yaml`
+- `tests/engine/grammar/unknown-variable-count.yaml`
 
 ## References
 
