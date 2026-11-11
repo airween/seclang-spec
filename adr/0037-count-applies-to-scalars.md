@@ -1,8 +1,9 @@
 # ADR-0037: `&` applies to every variable and counts a scalar as 1
 
-- **Status:** proposed
+- **Status:** accepted
 - **Date:** 2026-11-11
-- **Deciders:** @fzipi
+- **Accepted:** 2026-11-11
+- **Deciders:** @fzipi, @xanadu, @M4tteoP, @airween, @franbuehler, @theseion
 - **Category:** Divergence
 
 ## Context

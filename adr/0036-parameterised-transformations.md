@@ -1,8 +1,9 @@
 # ADR-0036: Parameterised transformations, defined by name
 
-- **Status:** proposed
+- **Status:** accepted
 - **Date:** 2026-11-10
-- **Deciders:** @fzipi
+- **Accepted:** 2026-11-11
+- **Deciders:** @fzipi, @xanadu, @M4tteoP, @airween, @franbuehler, @theseion
 - **Category:** Extension
 
 ## Context

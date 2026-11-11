@@ -27,7 +27,7 @@ promoted into the spec (Extension).
 | [0003](0003-test-formats.md) | Test formats: SecRules Test Set JSON for units, go-ftw-derived YAML for engine profiles | Clarification | accepted |
 | [0004](0004-canonical-names-and-aliases.md) | Canonical names and required aliases | Divergence | proposed |
 | [0005](0005-unknown-and-unsupported-directives.md) | Unknown versus unsupported directives | Divergence | accepted |
-| [0006](0006-core-ctl-options.md) | Core `ctl:` options | Divergence | proposed |
+| [0006](0006-core-ctl-options.md) | Core `ctl:` options | Divergence | accepted |
 | [0007](0007-persistent-collections.md) | Persistent collections are Extended | Divergence | accepted |
 | [0008](0008-collection-key-case.md) | Collection keys match case-insensitively | Divergence | accepted |
 | [0009](0009-phase-evaluation-model.md) | Strict per-phase evaluation is normative; early evaluation must be invisible | Clarification | accepted |
@@ -35,7 +35,7 @@ promoted into the spec (Extension).
 | [0011](0011-v2-legacy-deprecated.md) | ModSecurity v2 legacy features are Deprecated | Deprecation | accepted |
 | [0012](0012-uppercase-transformation.md) | `uppercase` is promoted to Core | Extension | accepted |
 | [0013](0013-comment-line-continuation.md) | Comment lines ending in a backslash | Divergence | accepted |
-| [0014](0014-secdefaultaction-constraints.md) | `SecDefaultAction` constraints | Divergence | proposed |
+| [0014](0014-secdefaultaction-constraints.md) | `SecDefaultAction` constraints | Divergence | accepted |
 | [0015](0015-mandatory-rule-id.md) | Every rule carries an id | Divergence | accepted |
 | [0016](0016-skipafter-scope.md) | `skipAfter` scope ends with the phase | Divergence | accepted |
 | [0017](0017-default-phase.md) | The default phase is 2 and is never inherited | Divergence | accepted |
@@ -54,8 +54,8 @@ promoted into the spec (Extension).
 | [0030](0030-negation-per-value.md) | A negated operator applies per value | Clarification | accepted |
 | [0031](0031-htmlentitydecode-named-entities.md) | `htmlEntityDecode` decodes the ASCII named entities of the WHATWG table | Divergence | accepted |
 | [0032](0032-status-transitions.md) | When a feature changes status | Clarification | accepted |
-| [0033](0033-sanitize-actions-extended.md) | The `sanitize*` actions are Extended and mask with a fixed string | Divergence | proposed |
+| [0033](0033-sanitize-actions-extended.md) | The `sanitize*` actions are Extended and mask with a fixed string | Divergence | accepted |
 | [0034](0034-ruleengine-off-is-final.md) | `ctl:ruleEngine=Off` is final for the transaction | Divergence | accepted |
 | [0035](0035-noauditlog-relevance-only.md) | `noauditlog` affects relevance only; the audit record lists every logged match | Divergence | accepted |
-| [0036](0036-parameterised-transformations.md) | Parameterised transformations, defined by name | Extension | proposed |
-| [0037](0037-count-applies-to-scalars.md) | `&` applies to every variable and counts a scalar as 1 | Divergence | proposed |
+| [0036](0036-parameterised-transformations.md) | Parameterised transformations, defined by name | Extension | accepted |
+| [0037](0037-count-applies-to-scalars.md) | `&` applies to every variable and counts a scalar as 1 | Divergence | accepted |
