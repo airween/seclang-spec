@@ -772,8 +772,9 @@ file per transaction, in the date-based subdirectory layout defined in `10-loggi
 writes one file per transaction under `SecAuditLogStorageDir` and appends an index line
 to `SecAuditLog`.
 
-**Divergence notes.** libmodsecurity v3 accepts `Parallel` as an alias of `Concurrent`
-and `https` for remote logging; Coraza accepts `HTTPS` and `Syslog`. Those values are
+**Divergence notes.** libmodsecurity v3 also accepts `Parallel` for `Concurrent`; it is
+not an alias and is not specified (ADR-0004). libmodsecurity v3 accepts `https` for
+remote logging and Coraza accepts `HTTPS` and `Syslog`; those values are
 Engine-specific (ADR-0004).
 
 **Tests.** `tests/engine/directives/logging-directives-load.yaml`

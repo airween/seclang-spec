@@ -37,8 +37,9 @@ Canonical names and the aliases every engine MUST accept:
 
 Spellings that differ only in case are not aliases; they are the same name (ADR-0002).
 v2's `sanitise*` spellings are not aliases: only `sanitize*` is specified (ADR-0033).
-`Parallel`, `https` and
-`Syslog`/`HTTPS` for `SecAuditLogType` are Engine-specific values. No new alias may be
+v3's `Parallel` is not an alias either: only `Concurrent` is specified for
+`SecAuditLogType`. `https` and `Syslog`/`HTTPS` for `SecAuditLogType` are
+Engine-specific values. No new alias may be
 introduced without amending this ADR; engines SHOULD log the canonical spelling.
 
 ## Options considered
@@ -51,10 +52,11 @@ introduced without amending this ADR; engines SHOULD log the canonical spelling.
 
 ## Consequences
 
-- For ModSecurity: no change.
+- For ModSecurity: no change, except that libmodsecurity v3's `Parallel` is outside the
+  specification.
 - For Coraza: no change today; future aliases need an ADR here, not a local one.
 - For rule authors: the four aliases are safe; prefer the canonical spelling in new
-  rules.
+  rules. Write `SecAuditLogType Concurrent`, not `Parallel`.
 
 ## Tests
 
