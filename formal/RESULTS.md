@@ -10,10 +10,11 @@ engine: a mismatch is a defect to fix before merge, never a known gap.
 |---|---|---|
 | `seclang-check` | `tests/unit/transformations` | 39 files: 362 cases passed, 0 failed |
 | `seclang-check` | `tests/unit/operators` | 25 files: 3907 cases passed, 0 failed, 2 skipped (regex outside the Core subset, ADR-0018); not formalized: `detectSQLi.json`, `detectXSS.json` |
-| `seclang-parse` | `tests/engine` | 123 profiles, 0 mismatches |
-| `seclang-eval` | `tests/engine` | 204 stages, 0 mismatches, 8 unsupported profiles |
+| `seclang-parse` | `tests/engine` | 124 profiles, 0 mismatches |
+| `seclang-eval` | `tests/engine` | 205 stages, 0 mismatches, 8 unsupported profiles |
 | `seclang-parse` | OWASP CRS (`crs_setup_version` 4252) | 29 profiles, 0 mismatches |
-| `seclang-eval` | generated requests, what Coraza did (`adapters/coraza/cmd/differential`, seed 1, 30 per profile) | 2550 stages, 0 mismatches |
+| `seclang-eval` | generated requests, what Coraza did (`adapters/coraza/cmd/differential`, seed 1, 30 per profile) | 2580 stages, 0 mismatches |
+| `seclang-eval` | OWASP CRS with generated requests, what Coraza did (`tools/crs_profile.py`, seed 1) | 20 stages, 0 mismatches |
 
 ## Profiles outside the model
 

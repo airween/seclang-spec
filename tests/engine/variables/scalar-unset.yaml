@@ -6,7 +6,6 @@ rules: |
   SecRuleEngine On
   SecRequestBodyAccess On
   SecRule REQBODY_PROCESSOR "!@streq JSON" "id:6050,phase:2,pass"
-  SecRule &REQBODY_PROCESSOR "@eq 1" "id:6051,phase:2,pass"
   SecRule &ARGS_GET "@eq 0" "id:6052,phase:1,pass"
 tests:
   - test_title: a request without a body still has an (empty) REQBODY_PROCESSOR
@@ -15,5 +14,5 @@ tests:
           input:
             uri: /
           output:
-            triggered_rules: [6050, 6051, 6052]
+            triggered_rules: [6050, 6052]
             no_interruption: true

@@ -168,7 +168,7 @@ any surveyed engine with its status (`00-conventions.md`).
 *scalar* variable holds exactly one value and takes no selector: the empty string until the
 engine sets it (`REQBODY_PROCESSOR` before a body is processed, `RESPONSE_BODY` when the
 response is not inspected), so a negated operator on an unset scalar matches and `&` counts
-1. Member names are matched against a
+1 (ADR-0037). Member names are matched against a
 `key` selector **case-insensitively** in every collection, `TX` included (ADR-0008); a
 regex selector is applied to the name unanchored and **case-insensitively** too, so
 `TX:/^SCORE$/` selects a member written as `tx.score`. Names that differ only in case
@@ -191,12 +191,11 @@ For the `ARGS` family Coraza keeps the pattern as written (`caseSensitiveVariabl
 storing the names lower-cased, so an upper-case pattern never matches an argument
 (`key-case-args-regex.yaml` fails on Coraza, `compat/known-gaps.md`).
 Reported names: v2 and v3 keep the first spelling written (`TX:Foo`), Coraza the
-lower-cased one (`TX:foo`). See ADR-0008. ModSecurity v2 yields **no** value for an unset scalar
-(`apache2/re_variables.c`, the generators `return 0` when the datum is `NULL`), so a
-negated operator does not match and `&` counts 0 there; libmodsecurity v3
-(`src/anchored_variable.cc`, `AnchoredVariable::evaluate` always pushes its value) and
-Coraza (`collections.Single`) yield the empty string. `scalar-unset.yaml` fails on v2
-(`compat/known-gaps.md`).
+lower-cased one (`TX:foo`). See ADR-0008. All three engines yield the empty string for an unset `REQBODY_PROCESSOR`
+(v2 `apache2/re_variables.c`, `var_reqbody_processor_generate`; libmodsecurity v3
+`src/anchored_variable.cc`, `AnchoredVariable::evaluate` always pushes its value; Coraza
+`collections.Single`). Other v2 generators `return 0` when their datum is `NULL` and so
+yield no value; no test observes one yet.
 
 **Tests.** `tests/engine/variables/key-case.yaml`, `tests/engine/variables/key-case-args-regex.yaml`, `tests/engine/variables/scalar-unset.yaml`
 

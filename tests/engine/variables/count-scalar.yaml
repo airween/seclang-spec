@@ -1,0 +1,19 @@
+meta:
+  name: count-scalar
+  description: "& on a scalar loads and counts 1, set or not (ADR-0037)"
+spec: 02-grammar.md#variable-list
+rules: |
+  SecRuleEngine On
+  SecRequestBodyAccess On
+  SecRule &REQUEST_URI "@eq 1" "id:6056,phase:1,pass"
+  SecRule &REQUEST_METHOD "@eq 1" "id:6057,phase:1,pass"
+  SecRule &REQBODY_PROCESSOR "@eq 1" "id:6058,phase:2,pass"
+tests:
+  - test_title: set and unset scalars both count 1
+    stages:
+      - stage:
+          input:
+            uri: /
+          output:
+            triggered_rules: [6056, 6057, 6058]
+            no_interruption: true

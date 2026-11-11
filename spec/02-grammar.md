@@ -91,16 +91,20 @@ all three reject duplicate ids. See ADR-0015.
 **Semantics.** Each `variable` names a collection or a member of one. The list is the
 union of the values selected by each entry, evaluated in list order. A leading `!`
 removes the named member(s) from the values selected so far by the same collection; a
-leading `&` replaces the values by a single value, the count of members selected. `&`
-and `!` are mutually exclusive on one entry. Collection names are matched
+leading `&` replaces the values by a single value, the count of members selected; on a
+scalar, which always holds one value, it counts 1 and MUST NOT be a configuration error
+(ADR-0037). `&` and `!` are mutually exclusive on one entry. Collection names are matched
 case-insensitively; the case rules for keys are defined in `05-variables.md`. A
 collection name that this specification does not define MUST be a configuration error;
 Engine-specific names are reserved, not defined (ADR-0005).
 
-**Divergence notes.** None known.
+**Divergence notes.** ModSecurity v2 rejects `&` on variables registered as `VAR_SIMPLE`
+(`apache2/re.c`, "The & modificator does not apply to non-collection variables."); see
+ADR-0037.
 
 **Tests.** `tests/engine/grammar/variable-list.yaml`,
 `tests/engine/grammar/variable-count-and-exclusion.yaml`,
+`tests/engine/variables/count-scalar.yaml`,
 `tests/engine/grammar/unknown-variable.yaml`
 
 ### Variable selectors

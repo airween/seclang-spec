@@ -58,3 +58,4 @@ promoted into the spec (Extension).
 | [0034](0034-ruleengine-off-is-final.md) | `ctl:ruleEngine=Off` is final for the transaction | Divergence | proposed |
 | [0035](0035-noauditlog-relevance-only.md) | `noauditlog` affects relevance only; the audit record lists every logged match | Divergence | proposed |
 | [0036](0036-parameterised-transformations.md) | Parameterised transformations, defined by name | Extension | proposed |
+| [0037](0037-count-applies-to-scalars.md) | `&` applies to every variable and counts a scalar as 1 | Divergence | proposed |
