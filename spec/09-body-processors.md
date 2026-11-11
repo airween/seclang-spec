@@ -110,11 +110,13 @@ target `ARGS`/`ARGS_POST` as a whole or match `ARGS_NAMES` with an expression an
 the end of the name.
 
 **Divergence notes.** The three engines name the same leaf differently: ModSecurity v2
-uses the bare key path (`b.c`; top-level arrays under `array`; `apache2/msc_json.c`),
-libmodsecurity v3 builds a path from container names with `array_N` for array elements
-(`src/request_body_processor/json.cc`), Coraza prefixes every name with `json.` and
-numbers array elements (`internal/bodyprocessors/json.go`, `readItems`). Coraza also adds
-one member per array holding the array's length (`json.d` = `2`), so its member count
+uses the bare key path and repeats an array's key for its elements (`b.c`, `d.d`;
+top-level arrays under `array.array`; `apache2/msc_json.c`); libmodsecurity v3 prefixes
+every name with `json.` and names array elements `array_N` (`json.b.c`,
+`json.d.array_0`; `src/request_body_processor/json.h`, `getCurrentKey`, and `json.cc`);
+Coraza prefixes every name with `json.` and numbers array elements (`json.d.0`;
+`internal/bodyprocessors/json.go`, `readItems`). See the table in ADR-0020. Coraza also
+adds one member per array holding the array's length (`json.d` = `2`), so its member count
 exceeds the leaf count; the Core test asserts a lower bound.
 
 **Tests.** `tests/engine/body/json-args.yaml`,
