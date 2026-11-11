@@ -58,6 +58,14 @@ text: `spec/03-processing-model.md#default-actions`.
   fails on Coraza; the other negative tests pass only because a rule follows the directive.
 - For rule authors: `SecDefaultAction "phase:N,log,auditlog,pass"` as CRS ships it is
   valid everywhere.
+- Where it lives: with the ruleset whose rules depend on it, not in the engines'
+  recommended configuration. CRS rules use `block` and leave logging to the default, so
+  `crs-setup.conf.example` sets one per phase; `modsecurity.conf-recommended` (v2.9.15,
+  v3.0.17) and `coraza.conf-recommended` (v3.8.1) set none, and their own rules state
+  their actions in full. Since a second `SecDefaultAction` for a phase is an error, an
+  engine's recommended configuration that added one would stop CRS from loading after it.
+  The commented redirect example in `crs-setup.conf.example` carried a `tag`; CRS
+  pull request 4959 removes it.
 
 ## Tests
 
