@@ -40,7 +40,7 @@ promoted into the spec (Extension).
 | [0016](0016-skipafter-scope.md) | `skipAfter` scope ends with the phase | Divergence | accepted |
 | [0017](0017-default-phase.md) | The default phase is 2 and is never inherited | Divergence | accepted |
 | [0018](0018-regex-dialect.md) | Core regular-expression syntax is the RE2-compatible subset | Divergence | accepted |
-| [0019](0019-duration-units.md) | `DURATION` is wall-clock microseconds since the engine created the transaction | Divergence | proposed |
+| [0019](0019-duration-units.md) | `DURATION` is wall-clock microseconds since the engine created the transaction | Divergence | accepted |
 | [0020](0020-json-argument-names.md) | JSON argument names are unspecified | Clarification | proposed |
 | [0021](0021-logging-contract.md) | The portable logging contract is rule ids, messages and logdata | Clarification | accepted |
 | [0022](0022-request-body-without-processor.md) | `REQUEST_BODY` without a body processor | Divergence | accepted |
@@ -55,7 +55,7 @@ promoted into the spec (Extension).
 | [0031](0031-htmlentitydecode-named-entities.md) | `htmlEntityDecode` decodes the ASCII named entities of the WHATWG table | Divergence | accepted |
 | [0032](0032-status-transitions.md) | When a feature changes status | Clarification | accepted |
 | [0033](0033-sanitize-actions-extended.md) | The `sanitize*` actions are Extended and mask with a fixed string | Divergence | proposed |
-| [0034](0034-ruleengine-off-is-final.md) | `ctl:ruleEngine=Off` is final for the transaction | Divergence | proposed |
-| [0035](0035-noauditlog-relevance-only.md) | `noauditlog` affects relevance only; the audit record lists every logged match | Divergence | proposed |
+| [0034](0034-ruleengine-off-is-final.md) | `ctl:ruleEngine=Off` is final for the transaction | Divergence | accepted |
+| [0035](0035-noauditlog-relevance-only.md) | `noauditlog` affects relevance only; the audit record lists every logged match | Divergence | accepted |
 | [0036](0036-parameterised-transformations.md) | Parameterised transformations, defined by name | Extension | proposed |
 | [0037](0037-count-applies-to-scalars.md) | `&` applies to every variable and counts a scalar as 1 | Divergence | proposed |

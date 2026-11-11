@@ -1,8 +1,9 @@
 # ADR-0034: `ctl:ruleEngine=Off` is final for the transaction
 
-- **Status:** proposed
+- **Status:** accepted
 - **Date:** 2026-11-09
-- **Deciders:** @fzipi
+- **Accepted:** 2026-11-11
+- **Deciders:** @fzipi, @xanadu, @M4tteoP, @airween, @franbuehler, @theseion
 - **Category:** Divergence
 
 ## Context

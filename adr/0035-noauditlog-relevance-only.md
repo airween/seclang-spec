@@ -1,8 +1,9 @@
 # ADR-0035: `noauditlog` affects relevance only; the audit record lists every logged match
 
-- **Status:** proposed
+- **Status:** accepted
 - **Date:** 2026-11-09
-- **Deciders:** @fzipi
+- **Accepted:** 2026-11-11
+- **Deciders:** @fzipi, @xanadu, @M4tteoP, @airween, @franbuehler, @theseion
 - **Category:** Divergence
 
 ## Context

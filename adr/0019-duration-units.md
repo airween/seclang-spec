@@ -1,8 +1,9 @@
 # ADR-0019: `DURATION` is wall-clock microseconds since the engine created the transaction
 
-- **Status:** proposed
+- **Status:** accepted
 - **Date:** 2026-10-06
-- **Deciders:** @fzipi
+- **Accepted:** 2026-11-11
+- **Deciders:** @fzipi, @xanadu, @M4tteoP, @airween, @franbuehler, @theseion
 - **Category:** Divergence
 
 ## Context
