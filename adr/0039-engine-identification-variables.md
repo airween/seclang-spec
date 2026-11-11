@@ -33,24 +33,33 @@ transition periods.
 
 ## Decision
 
-The following Extended variables are defined. Each is set before phase 1 and is the same
-for every transaction of a loaded configuration.
+Two Extended collections are defined. Both are set before phase 1, are the same for every
+transaction of a loaded configuration, and are read-only: `setvar` and the other actions
+that write collections MUST NOT change them. Keys are matched case-insensitively, as in
+every collection (`05-variables.md#collection-keys`), and are written here in lower case.
 
-1. `ENGINE_NAME`: scalar, a lower-case token naming the implementation: `modsecurity` for
-   ModSecurity v2, `libmodsecurity` for libmodsecurity v3, `coraza` for Coraza. Other
-   implementations choose their own token, which MUST NOT be one of these.
-2. `ENGINE_VERSION_MAJOR`, `ENGINE_VERSION_MINOR`, `ENGINE_VERSION_PATCH`: scalars, each a
-   base-10 integer without leading zeros, so `@eq`, `@lt` and `@ge` compare them.
-3. `ENGINE_BUILD`: scalar, free-form build information (pre-release tag, commit, build
-   type). Rules SHOULD NOT parse it.
-4. `ENGINE_FLAGS`: collection. Each member is a behaviour defined by an ADR, named in
-   lower case with underscores, with the value `1` when the engine behaves as that ADR
-   decides and `0` when it does not yet. A flag the engine does not know is absent, so
-   `&ENGINE_FLAGS:NAME` is 0. The ADR that introduces a behaviour change names its flag.
-   This ADR defines one:
+1. `ENGINE`: what the engine is. It has exactly these members:
+   - `ENGINE:name`: a lower-case token naming the implementation: `modsecurity` for
+     ModSecurity v2, `libmodsecurity` for libmodsecurity v3, `coraza` for Coraza. Other
+     implementations choose their own token, which MUST NOT be one of these.
+   - `ENGINE:version_major`, `ENGINE:version_minor`, `ENGINE:version_patch`: each a
+     base-10 integer without leading zeros, so `@eq`, `@lt` and `@ge` compare them.
+   - `ENGINE:build`: free-form build information (pre-release tag, commit, build type).
+     Rules SHOULD NOT parse it.
+
+   A later ADR may add members. A rule that names a member the engine does not have
+   selects nothing, as for any collection, so adding one needs no ADR-0040 `?`.
+2. `ENGINE_FLAGS`: how the engine behaves. Each member is a behaviour defined by an ADR,
+   named in lower case with underscores, with the value `1` when the engine behaves as
+   that ADR decides and `0` when it does not yet. A flag the engine does not know is
+   absent, so `&ENGINE_FLAGS:NAME` is 0. The ADR that introduces a behaviour change names
+   its flag. This ADR defines one:
    - `uri_decoding`: `1` when `REQUEST_URI`, `REQUEST_FILENAME` and `REQUEST_BASENAME`
      are percent-decoded as ADR-0038 decides.
-5. `MODSEC_BUILD` is unchanged.
+3. `MODSEC_BUILD` is unchanged.
+
+Macros read them as any collection: `%{ENGINE.name}/%{ENGINE.version_major}` in
+`logdata`, for example.
 
 A ruleset branches on a flag, not on a version. Here the decoding rule runs only where the
 engine does not decode, including engines that define `ENGINE_FLAGS` but not this flag.
@@ -68,9 +77,20 @@ SecMarker URI_DECODED
 - **Flags plus split version numbers (chosen).** A flag tracks a behaviour, so backports,
   distribution patches and forks are covered without a version table. The numbers are
   for the cases no flag covers.
+- **An `ENGINE` collection (chosen) rather than the round table's scalars
+  `ENGINE_NAME`, `ENGINE_VERSION_MAJOR` and so on.** Every new variable name is a load
+  error on engines that predate it, so five scalars cost five names to guard with
+  ADR-0040's `?`, and each later addition one more. A collection costs one name, and a
+  member it lacks selects nothing rather than failing to load. `GEO` is the precedent
+  for a collection with a fixed set of keys.
+- **Flags as members of `ENGINE` (`ENGINE:flag_uri_decoding`).** Rejected: flags are an
+  open set and identity members a fixed one; sharing a collection needs a prefix on every
+  flag to keep a flag from being named `name` or `build`, and `ENGINE_FLAGS` as a whole
+  (to log or count the flags) would also return the identity members. It costs one more
+  reserved name.
 - **Version checks only.** Rejected: every ruleset would carry a table of which version
   of which engine changed what, wrong as soon as a distribution backports a fix.
-- **One `ENGINE_VERSION` string.** Rejected: operators can't compare `3.0.17` against
+- **One `ENGINE:version` string.** Rejected: operators can't compare `3.0.17` against
   `3.0.9` as numbers.
 - **Reuse `MODSEC_BUILD`.** Rejected: two formats already, no engine name, and the name
   belongs to ModSecurity.
@@ -83,17 +103,18 @@ SecMarker URI_DECODED
 
 ## Consequences
 
-- For ModSecurity v2, libmodsecurity v3 and Coraza: five new variables; `ENGINE_FLAGS`
-  grows with each ADR that changes behaviour.
+- For ModSecurity v2, libmodsecurity v3 and Coraza: two new read-only collections;
+  `ENGINE_FLAGS` grows with each ADR that changes behaviour.
 - For rule authors: one ruleset can load on both sides of a breaking change. Until every
-  engine in use defines these variables, a rule naming them is a configuration error on
-  the others (`02-grammar.md#variable-list`); ADR-0040 proposes a way to name a variable
-  the engine may not know.
+  engine in use defines `ENGINE` and `ENGINE_FLAGS`, a rule naming them is a configuration
+  error on the others (`02-grammar.md#variable-list`); ADR-0040 proposes a way to name a
+  variable the engine may not know.
 
 ## Tests
 
-None until an engine implements the variables; then an engine profile, with `requires:`
-naming them, that checks each value's form and `&ENGINE_FLAGS:NAME` for an unknown flag.
+None until an engine implements the collections; then an engine profile, with `requires:`
+naming them, that checks each `ENGINE` member's form, that `setvar` cannot change them,
+and `&ENGINE_FLAGS:NAME` for an unknown flag.
 
 ## References
 
