@@ -24,6 +24,38 @@
   "spec": "07-transformations.md#removecomments"
  },
  {
+  "ret": 1,
+  "input": "/* TestCase */",
+  "name": "removeComments",
+  "type": "tfn",
+  "output": "",
+  "spec": "07-transformations.md#removecomments"
+ },
+ {
+  "output": "",
+  "ret": 1,
+  "type": "tfn",
+  "input": "/*TestCase*/",
+  "name": "removeComments",
+  "spec": "07-transformations.md#removecomments"
+ },
+ {
+  "input": "/* TestCase*/",
+  "type": "tfn",
+  "name": "removeComments",
+  "ret": 1,
+  "output": "",
+  "spec": "07-transformations.md#removecomments"
+ },
+ {
+  "output": "",
+  "ret": 1,
+  "name": "removeComments",
+  "input": "/*TestCase */",
+  "type": "tfn",
+  "spec": "07-transformations.md#removecomments"
+ },
+ {
   "output": "BeforeAfter",
   "ret": 1,
   "type": "tfn",
@@ -37,6 +69,38 @@
   "input": "Before TestCase */ After",
   "type": "tfn",
   "ret": 0,
+  "spec": "07-transformations.md#removecomments"
+ },
+ {
+  "type": "tfn",
+  "input": "/* Test\\nCase */",
+  "name": "removeComments",
+  "ret": 1,
+  "output": "",
+  "spec": "07-transformations.md#removecomments"
+ },
+ {
+  "name": "removeComments",
+  "input": "/* Test\r\nCase */",
+  "type": "tfn",
+  "ret": 1,
+  "output": "",
+  "spec": "07-transformations.md#removecomments"
+ },
+ {
+  "ret": 1,
+  "input": "/* Test\nCase */",
+  "type": "tfn",
+  "name": "removeComments",
+  "output": "",
+  "spec": "07-transformations.md#removecomments"
+ },
+ {
+  "ret": 1,
+  "name": "removeComments",
+  "input": "/* Test\rCase */",
+  "type": "tfn",
+  "output": "",
   "spec": "07-transformations.md#removecomments"
  },
  {
@@ -101,6 +165,22 @@
   "type": "tfn",
   "ret": 1,
   "output": "Test After",
+  "spec": "07-transformations.md#removecomments"
+ },
+ {
+  "input": "SELECT/**//**/UNION",
+  "name": "removeComments",
+  "type": "tfn",
+  "ret": 1,
+  "output": "SELECTUNION",
+  "spec": "07-transformations.md#removecomments"
+ },
+ {
+  "input": "foo<!-- comment 1 --><!-- comment 2 -->bar",
+  "name": "removeComments",
+  "type": "tfn",
+  "ret": 1,
+  "output": "foobar",
   "spec": "07-transformations.md#removecomments"
  }
 ]

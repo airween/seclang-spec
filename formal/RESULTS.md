@@ -8,7 +8,7 @@ engine: a mismatch is a defect to fix before merge, never a known gap.
 
 | Run | Input | Result |
 |---|---|---|
-| `seclang-check` | `tests/unit/transformations` | 39 files: 362 cases passed, 0 failed |
+| `seclang-check` | `tests/unit/transformations` | 39 files: 372 cases passed, 0 failed |
 | `seclang-check` | `tests/unit/operators` | 25 files: 3907 cases passed, 0 failed, 2 skipped (regex outside the Core subset, ADR-0018); not formalized: `detectSQLi.json`, `detectXSS.json` |
 | `seclang-parse` | `tests/engine` | 129 profiles, 0 mismatches |
 | `seclang-eval` | `tests/engine` | 209 stages, 0 mismatches, 9 unsupported profiles |
