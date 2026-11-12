@@ -1,0 +1,38 @@
+meta:
+  name: logdata-every-match
+  description: A rule matching two targets logs the logdata of each match in the error log and in part H (ADR-0041)
+spec: 10-logging.md#error-log
+rules: |
+  SecRuleEngine On
+  SecRule ARGS_GET "@beginsWith attack" "id:8131,phase:1,pass,log,auditlog,msg:'seclang every match',logdata:'seclang-match-%{MATCHED_VAR}'"
+tests:
+  - test_title: error log carries the logdata of the first match
+    stages:
+      - stage:
+          input: {uri: '/?a=attackone&b=attacktwo'}
+          output:
+            triggered_rules: [8131]
+            log_contains: seclang-match-attackone
+            no_interruption: true
+  - test_title: error log carries the logdata of the second match
+    stages:
+      - stage:
+          input: {uri: '/?a=attackone&b=attacktwo'}
+          output:
+            triggered_rules: [8131]
+            log_contains: seclang-match-attacktwo
+            no_interruption: true
+  - test_title: part H carries the logdata of the first match
+    stages:
+      - stage:
+          input: {uri: '/?a=attackone&b=attacktwo'}
+          output:
+            triggered_rules: [8131]
+            audit_log_contains: seclang-match-attackone
+  - test_title: part H carries the logdata of the second match
+    stages:
+      - stage:
+          input: {uri: '/?a=attackone&b=attacktwo'}
+          output:
+            triggered_rules: [8131]
+            audit_log_contains: seclang-match-attacktwo

@@ -23,6 +23,13 @@ the `logdata` after macro expansion (`08-actions.md#logdata`). When a disruptive
 interrupts the transaction the line MUST say so. A rule carrying `nolog` MUST NOT produce
 this line.
 
+When a rule that is not part of a chain matches several targets and its non-disruptive
+actions run for each of them, the `logdata` expanded for every one of those matches MUST
+appear in the error log (ADR-0041). Whether they share one line or get one line each, and
+which field carries the second and later ones, is engine-specific. A target whose match did
+not run the rule's actions, because the disruptive action of an earlier match intercepted,
+need not appear. Chains and `multiMatch` are not covered.
+
 Everything else about the line is engine-specific: the prefix (`ModSecurity: Warning.`,
 `ModSecurity: Access denied with code N`, `Coraza: Warning.`, `Coraza: Access denied
 (phase N).`), the order of fields, the presence of `[data]` when the rule has no
@@ -40,9 +47,14 @@ message. All three write `[id "…"]` and `[msg "…"]`, and `[data "…"]` for 
 ModSecurity v2 truncates `[data]` at 512 bytes with an ellipsis (`apache2/re.c`,
 `msre_format_metadata`), libmodsecurity v3 at 200 bytes, hex-escaping bytes that are not
 printable (`src/rule_message.cc`, `toHexIfNeeded`), and Coraza writes `[data ""]` on every
-line and escapes with Go's `%q` (`internal/corazarules/rule_match.go`).
+line and escapes with Go's `%q` (`internal/corazarules/rule_match.go`). For a rule matching
+several targets, ModSecurity v2 writes one line per target, Coraza one line with
+`[msg_match_N "…"] [data_match_N "…"]` for the second and later targets, and
+libmodsecurity v3 one line with the `logdata` of the last target only
+(`compat/known-gaps.md`).
 
-**Tests.** `tests/engine/logging/error-log-fields.yaml`, `tests/engine/logging/logdata.yaml`
+**Tests.** `tests/engine/logging/error-log-fields.yaml`, `tests/engine/logging/logdata.yaml`,
+`tests/engine/logging/logdata-every-match.yaml`
 
 ### Audit log relevance
 
@@ -83,7 +95,7 @@ of an entry. The parts and what they MUST contain when requested and available:
 | E | Intermediary response body (when buffered) |
 | F | Response status line and headers |
 | G | Reserved |
-| H | Trailer: one message line per matched rule (the error-log line or its equivalent), the engine's producer string and `SecComponentSignature` values, the rule engine mode, and the response action |
+| H | Trailer: the message lines of every matched rule (the error-log lines or their equivalent), the engine's producer string and `SecComponentSignature` values, the rule engine mode, and the response action |
 | I | Request body with file contents replaced by their metadata (multipart) |
 | J | Information about uploaded files |
 | K | The full text of every matched rule |
@@ -93,7 +105,9 @@ of an entry. The parts and what they MUST contain when requested and available:
 implement it (Coraza: `D`, `E`, `G`), but MUST still emit the part markers for `A`, `B`,
 `F`, `H` and `Z`. Part `H` MUST list every matched rule that carries `log` or `auditlog`,
 explicitly or through `SecDefaultAction`, whether or not it carries `noauditlog`; a rule
-with `nolog` and no explicit `auditlog` is not listed (ADR-0035).
+with `nolog` and no explicit `auditlog` is not listed (ADR-0035). For a listed rule that
+matched several targets, part `H` MUST carry the `logdata` of every match that the error log
+must carry (ADR-0041).
 
 **Divergence notes.** The wording inside every part is engine-specific; ModSecurity's
 stopwatch and producer lines in `H` have no exact Coraza equivalent. libmodsecurity v3
@@ -101,7 +115,7 @@ and Coraza leave a `log,noauditlog` rule out of `H` (`compat/known-gaps.md`).
 
 **Tests.** `tests/engine/logging/audit-relevance-load.yaml`,
 `tests/engine/logging/audit-record-listing.yaml`,
-`tests/engine/logging/audit-noauditlog-listed.yaml`
+`tests/engine/logging/audit-noauditlog-listed.yaml`, `tests/engine/logging/logdata-every-match.yaml`
 
 ### Native format
 

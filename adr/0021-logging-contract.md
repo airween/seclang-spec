@@ -69,4 +69,5 @@ escaping of longer or other text stay engine-specific.
 
 ## References
 
+- ADR-0041 decides what a rule that matches several targets logs.
 - `spec/10-logging.md`, `spec/08-actions.md#logdata`, `tests/README.md`
