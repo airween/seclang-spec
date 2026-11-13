@@ -20,6 +20,7 @@ whenever a Divergence ADR or a divergence note picks against an engine.
 | `tests/engine/directives/secresponsebodylimit-uninspected.yaml` | Coraza | `SecResponseBodyLimit` enforced on a response whose type is not inspected (`transaction.go`, `WriteResponseBody` checks the limit before `IsResponseBodyProcessable`) | `04-directives.md#secresponsebodylimit` |
 | `tests/engine/lexical/case-insensitive-names.yaml` | Coraza | operator names matched case-sensitively | ADR-0002 |
 | `tests/engine/lexical/comment-with-trailing-backslash.yaml` | Coraza | continued comment parsed as a directive | ADR-0013 |
+| `tests/engine/grammar/macro-unset-variable.yaml` | Coraza | a macro naming an unset member expands to the macro body without `%{` and `}` (`%{tx.unset}` gives `tx.unset`; `experimental/plugins/macro/macro.go` `expandToken` returns `token.text`) | `02-grammar.md#macro-expansion` |
 | `tests/engine/grammar/directive-line-whitespace.yaml` | Coraza | tab between arguments is a load error | `02-grammar.md#directive-line` |
 | `tests/engine/grammar/secrule-requires-id.yaml` | Coraza | rule without `id` loads (default build) | ADR-0015 |
 | `tests/engine/processing/default-phase.yaml` | libmodsecurity v3 | phase-less rule runs in phase 1 | ADR-0017 |
