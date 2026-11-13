@@ -707,7 +707,8 @@ agree.
 **Syntax.** `SecAuditLogParts LETTERS`
 
 **Default.** `ABCFHZ` (ModSecurity v2 `apache2_config.c`, libmodsecurity v3
-`audit_log.h` `m_defaultParts`, Coraza `waf.go`). Normative default: `ABCFHZ`.
+`audit_log.h` `m_defaultParts`). Coraza v3.8.1 defaults to `BCFH`
+(`internal/corazawaf/waf.go` `NewWAF`). Normative default: `ABCFHZ`.
 
 **Semantics.** Which parts an audit entry contains, as a string of part letters: `A`
 header, `B` request headers, `C` request body, `D` reserved, `E` intermediary response
@@ -723,7 +724,9 @@ v3 scanner character class `[ABCDEFGHJKIZ]`, Coraza `ParseAuditLogParts`). libmo
 v3 accepts only the relative form of `ctl:auditLogParts` (`seclang-scanner.ll`,
 `=[+|-]{AUDIT_PARTS}`); v2 and Coraza accept both. Which parts
 each engine actually fills is a `10-logging.md` matter; Coraza does not implement `D`,
-`E` or `G`.
+`E` or `G`. Coraza's `BCFH` default leaves out the mandatory `A` and `Z`, so a Native
+record written without `SecAuditLogParts` has no header and no terminator
+(corazawaf/coraza#1838; fix proposed in corazawaf/coraza#1859).
 
 **Tests.** `tests/engine/directives/logging-directives-load.yaml`,
 `tests/engine/directives/secauditlogparts-invalid.yaml`

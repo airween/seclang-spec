@@ -70,6 +70,7 @@ whenever a Divergence ADR or a divergence note picks against an engine.
 | `tests/unit/operators/containsWord.json` | libmodsecurity v3 | an empty parameter is a parser syntax error (one case) | `06-operators.md#containsword` |
 | `tests/engine/processing/ctl-ruleengine-off-final.yaml` | libmodsecurity v3, Coraza | after `ctl:ruleEngine=Off` the rest of the phase is still evaluated and a later `ctl:ruleEngine` overwrites `Off`; the mode is read only when a phase starts (v3 `src/transaction.cc` "Rule engine disabled, returning...", Coraza `internal/corazawaf/transaction.go` `IsRuleEngineOff` at the start of each `Process*`) | ADR-0034 |
 | `tests/engine/logging/audit-noauditlog-listed.yaml` | libmodsecurity v3, Coraza | a `log,noauditlog` rule is left out of part H (v3: `noauditlog` clears `RuleMessage::m_saveMessage`, `src/actions/no_audit_log.cc`; Coraza: part H lists only rules with the audit flag, `internal/corazawaf/transaction.go` `AuditLog`) | ADR-0035 |
+| `tests/engine/logging/logdata-every-match.yaml` | libmodsecurity v3 | a rule matching several targets is logged once, with the `logdata` of the last target only (`src/rule_with_operator.cc`, `RuleWithOperator::evaluate` overwrites the match for each target; `src/rule_with_actions.cc`, `performLogging` stores the message once) | ADR-0041 |
 | `tests/engine/operators/ipmatch-invalid-entry.yaml` | Coraza | an unparsable `@ipMatch` entry is skipped instead of rejecting the configuration (`internal/operators/ip_match.go`) | ADR-0024 |
 
 ## Divergences no test can observe
@@ -80,6 +81,10 @@ otherwise report them as obsolete.
 - Coraza marks a transaction audit-relevant only when a rule carried `auditlog`
   explicitly, and when `SecAuditLogRelevantStatus` is set it also requires the status to
   match (`10-logging.md#audit-log-relevance`).
+- Coraza defaults `SecAuditLogParts` to `BCFH` instead of `ABCFHZ`, so without the
+  directive its Native records lack parts `A` and `Z` (`internal/corazawaf/waf.go`
+  `NewWAF`; `04-directives.md#secauditlogparts`). The adapters force
+  `SecAuditLogParts ABCFHZ` for every profile that asserts on the audit log.
 - Coraza built with `coraza.rule.case_sensitive_args_keys` compares `ARGS` keys exactly
   (ADR-0008); the default build conforms.
 - Coraza calls its error-log callback only for rules carrying `log` explicitly; ModSecurity

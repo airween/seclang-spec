@@ -62,3 +62,4 @@ promoted into the spec (Extension).
 | [0038](0038-uri-variables-percent-decoded.md) | The URI variables are percent-decoded once, from phase 1 | Divergence | proposed |
 | [0039](0039-engine-identification-variables.md) | Engine identification variables and behaviour flags | Extension | proposed |
 | [0040](0040-optional-variables.md) | A `?` prefix names a variable the engine may not know | Extension | proposed |
+| [0041](0041-every-matched-target-logged.md) | Every matched target of a rule is logged with its own `logdata` | Divergence | proposed |
