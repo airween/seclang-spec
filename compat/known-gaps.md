@@ -79,6 +79,10 @@ otherwise report them as obsolete.
 - Coraza marks a transaction audit-relevant only when a rule carried `auditlog`
   explicitly, and when `SecAuditLogRelevantStatus` is set it also requires the status to
   match (`10-logging.md#audit-log-relevance`).
+- Coraza defaults `SecAuditLogParts` to `BCFH` instead of `ABCFHZ`, so without the
+  directive its Native records lack parts `A` and `Z` (`internal/corazawaf/waf.go`
+  `NewWAF`; `04-directives.md#secauditlogparts`). The adapters force
+  `SecAuditLogParts ABCFHZ` for every profile that asserts on the audit log.
 - Coraza built with `coraza.rule.case_sensitive_args_keys` compares `ARGS` keys exactly
   (ADR-0008); the default build conforms.
 - Coraza calls its error-log callback only for rules carrying `log` explicitly; ModSecurity
