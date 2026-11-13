@@ -1,0 +1,19 @@
+meta:
+  name: macro-unset-variable
+  description: "%{collection.key} naming an unset member expands to the empty string"
+spec: 02-grammar.md#macro-expansion
+rules: |
+  SecRuleEngine On
+  SecAction "id:3040,phase:1,pass,nolog,setvar:'tx.joined=a%{tx.unset}b'"
+  SecRule TX:joined "@streq ab" "id:3041,phase:1,pass"
+  SecRule TX:joined "@contains unset" "id:3042,phase:1,pass"
+tests:
+  - test_title: unset member expands to nothing
+    stages:
+      - stage:
+          input:
+            uri: /
+          output:
+            triggered_rules: [3040, 3041]
+            non_triggered_rules: [3042]
+            no_interruption: true
