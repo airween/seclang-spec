@@ -10,8 +10,8 @@ engine: a mismatch is a defect to fix before merge, never a known gap.
 |---|---|---|
 | `seclang-check` | `tests/unit/transformations` | 39 files: 372 cases passed, 0 failed |
 | `seclang-check` | `tests/unit/operators` | 25 files: 3907 cases passed, 0 failed, 2 skipped (regex outside the Core subset, ADR-0018); not formalized: `detectSQLi.json`, `detectXSS.json` |
-| `seclang-parse` | `tests/engine` | 129 profiles, 0 mismatches |
-| `seclang-eval` | `tests/engine` | 209 stages, 0 mismatches, 9 unsupported profiles |
+| `seclang-parse` | `tests/engine` | 130 profiles, 0 mismatches |
+| `seclang-eval` | `tests/engine` | 209 stages, 0 mismatches, 10 unsupported profiles |
 | `seclang-parse` | OWASP CRS (`crs_setup_version` 4252) | 29 profiles, 0 mismatches |
 | `seclang-eval` | generated requests, what Coraza did (`adapters/coraza/cmd/differential`, seed 1, 30 per profile) | 2640 stages, 0 mismatches |
 | `seclang-eval` | OWASP CRS with generated requests, what Coraza did (`tools/crs_profile.py`, seed 1) | 20 stages, 0 mismatches |
@@ -28,6 +28,7 @@ Reported as unsupported with the reason; the list is the model's boundary, not a
 | `tests/engine/logging/audit-noauditlog-listed.yaml` | log assertions |
 | `tests/engine/logging/audit-record-listing.yaml` | log assertions |
 | `tests/engine/logging/error-log-fields.yaml` | log assertions |
+| `tests/engine/logging/logdata-every-match.yaml` | log assertions |
 | `tests/engine/logging/logdata.yaml` | log assertions |
 | `tests/engine/operators/detect-sqli-xss.yaml` | operator @detectSQLi |
 | `tests/engine/variables/xml.yaml` | variable XML |
@@ -84,5 +85,5 @@ Proved over the model: `formal/SecLang/Regex.lean` (ADR-0027) and
 | `formal/SecLang/Request.lean` | 51 |
 | `formal/SecLang/Semantics.lean` | 49 |
 | `formal/SecLang/Syntax.lean` | 81 |
-| `formal/SecLang/Transformations.lean` | 79 |
-| **Total** | **356** |
+| `formal/SecLang/Transformations.lean` | 81 |
+| **Total** | **358** |

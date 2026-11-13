@@ -44,7 +44,9 @@ for the transaction (or its matched-rule messages, which is what the log is buil
 Profiles use them only with a rule's `msg` text or its `logdata` field written as
 `[data "TEXT"]` (`spec/10-logging.md#error-log`, ADR-0021), keeping that text short,
 printable and free of quotes and backslashes; never with the engine prefix, file, line or
-any other field. The one exception
+any other field. A profile checking that every match of a rule is logged (ADR-0041) may
+use the rule's expanded `logdata` text alone, because the second and later matches are
+not written as `[data "…"]` in every engine. The other exception
 is `no_log_contains` with a value a `sanitize*` action masks (ADR-0033), which must not
 appear anywhere in the log.
 
@@ -53,8 +55,9 @@ transaction's audit log entry, whatever its format. A profile that uses either g
 `SecAuditEngine On`, `SecAuditLogParts ABCFHZ` and a serial audit log in the adapter's
 work directory, appended after its `rules` so they override the profile's own audit
 directives. Profiles use them only with a request or response value, with the mask
-`**sanitized**` (`spec/08-actions.md#sanitizearg`), and with a rule's `msg` text to check
-which rules part H lists (ADR-0035), never with the audit layout.
+`**sanitized**` (`spec/08-actions.md#sanitizearg`), with a rule's `msg` text to check
+which rules part H lists (ADR-0035), and with a rule's expanded `logdata` text to check that
+part H carries every match (ADR-0041), never with the audit layout.
 
 ## What "triggered" means
 
