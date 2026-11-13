@@ -63,3 +63,5 @@ promoted into the spec (Extension).
 | [0039](0039-engine-identification-variables.md) | Engine identification variables and behaviour flags | Extension | proposed |
 | [0040](0040-optional-variables.md) | A `?` prefix names a variable the engine may not know | Extension | proposed |
 | [0041](0041-every-matched-target-logged.md) | Every matched target of a rule is logged with its own `logdata` | Divergence | proposed |
+| [0042](0042-unicode-normalize-nfkc.md) | `unicodeNormalizeNFKC` applies Unicode NFKC normalisation | Extension | proposed |
+| [0043](0043-evaldepth-chain-action.md) | `evalDepth` evaluates a chain once per match of its starter | Extension | proposed |
