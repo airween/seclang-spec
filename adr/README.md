@@ -65,3 +65,4 @@ promoted into the spec (Extension).
 | [0041](0041-every-matched-target-logged.md) | Every matched target of a rule is logged with its own `logdata` | Divergence | proposed |
 | [0042](0042-unicode-normalize-nfkc.md) | `unicodeNormalizeNFKC` applies Unicode NFKC normalisation | Extension | proposed |
 | [0043](0043-evaldepth-chain-action.md) | `evalDepth` evaluates a chain once per match of its starter | Extension | proposed |
+| [0044](0044-json-collection.md) | `JSON` and `JSON_NAMES` hold a JSON body, selected with JSONPath | Extension | proposed |
