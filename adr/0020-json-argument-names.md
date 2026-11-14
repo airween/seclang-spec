@@ -1,8 +1,9 @@
 # ADR-0020: JSON argument names are unspecified
 
-- **Status:** proposed
+- **Status:** accepted
 - **Date:** 2026-10-07
-- **Deciders:** @fzipi
+- **Accepted:** 2026-11-14
+- **Deciders:** @fzipi, @airween, @franbuehler, @xanadu, @theseion
 - **Category:** Clarification
 
 ## Context
@@ -54,27 +55,44 @@ today works on one engine only.
 The set of leaf values and their count are normative; the member names are not. A rule
 that needs a specific JSON leaf MUST match `ARGS_NAMES` with an expression anchored at the
 end of the name (for example `(?:^|\.)role$`) or inspect `ARGS` as a whole. Engines
-SHOULD document their scheme. A future Divergence ADR may standardise a scheme once an
-engine is prepared to change; until then no test asserts a name.
+SHOULD document their scheme, and no test asserts a name.
+
+The names in `ARGS` are not expected to converge. Structured access to JSON is to come
+from a separate collection, as XML already has `XML` with XPath selectors: a future
+Extension ADR is to add `JSON`, selected with a subset of RFC 9535 JSONPath, and
+`JSON_NAMES`, whose values are the object keys as the client sent them. Taking JSON out
+of `ARGS` would be a later Divergence ADR, written once OWASP CRS targets the new
+collection.
 
 ## Options considered
 
-- Pick the `json.` prefix with dotted object paths, which v3 and Coraza already share:
-  self-describing and collision-free with form fields. It leaves array element names and
-  Coraza's length members to settle, and it breaks v2 exclusions written against bare
-  paths; deferred to the Divergence ADR below, but the closest scheme to agreement.
-- Pick v2's bare paths: the oldest scheme, but collides with form field names and
-  neither v3 nor Coraza implements it; deferred.
-- Leave unspecified (chosen).
-
-Whatever scheme the later Divergence ADR picks, it has to account for the 930120 case
-above: a separator or prefix that a pattern list can match turns a harmless key into a
-detection.
+- Pick the `json.` prefix with dotted object paths, which v3 and Coraza already share.
+  The prefix is text the client never sent (the 930120 case above), and it tells a rule
+  nothing that `ARGS_POST` and `REQBODY_PROCESSOR` do not; rejected.
+- Pick v2's bare paths, dropping the prefix. One exclusion would then cover form and JSON
+  bodies, and flat keys would stop gaining a `.`. Nested keys still do
+  (`{"data":{"forward":"x"}}` is `data.forward`), `{"a.b":1}` and `{"a":{"b":1}}` still
+  share a name, and v3 and Coraza must change; rejected.
+- Escape `.` and `\` inside keys with a backslash. Names become unambiguous, but a rule
+  for a key at any depth then needs a regular expression that parses the whole name,
+  because a `.` preceded by an odd number of backslashes is not a separator and RE2,
+  which Coraza uses, has no lookbehind. Portable rules cannot write `\\`
+  (`01-lexical.md#quoted-arguments`), and `t:normalizePathWin` turns the added `\` into
+  `/`; rejected.
+- RFC 9535 Normalized Paths (`$['user']['name']`) as `ARGS` names: unambiguous, but every
+  name then carries `'` and `[`, which the SQL injection rules that inspect `ARGS_NAMES`
+  count; rejected.
+- A separate `JSON` collection with JSONPath selectors and raw-key names: no added text
+  reaches an operator, `$..role` finds a key at any depth without a regular expression,
+  and form fields and JSON keys never share a collection. Deferred to its own Extension
+  ADR (see the Decision).
+- Leave the `ARGS` names unspecified (chosen).
 
 ## Consequences
 
 - For rule authors: never write `ARGS:json.x` or `ARGS:x` for JSON leaves in portable
-  rules.
+  rules. The anchored expression `(?:^|\.)role$` also matches a single key named
+  `x.role`, because a name cannot tell a dot in a key from a separator.
 - For rule authors: a pattern applied to `ARGS_NAMES` that starts with `.` or contains
   `json` can match text the engine added, not text the client sent; such a rule behaves
   differently on each engine for JSON bodies.
