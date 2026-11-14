@@ -36,8 +36,17 @@ v3 and Coraza therefore agree on the `json.` prefix and on dotted object paths; 
 differ on array elements (`array_0` against `0`) and on Coraza's length members. v2 differs
 on all three.
 
-OWASP CRS targets `ARGS` and `ARGS_NAMES` as a whole and never names a JSON path, so no
-published ruleset depends on the scheme. A rule author writing `ARGS:json.user.role`
+OWASP CRS targets `ARGS` and `ARGS_NAMES` as a whole and never names a JSON path, but its
+results still depend on the scheme, because the separator and the prefix are text the
+client never sent. CRS rule 930120 matches `ARGS_NAMES` against `lfi-os-files.data`, whose
+entries include dotfiles (`.forward`, `.boto`, `.credentials`, `.secrets`). With v3 and
+Coraza the body `{"forward":"x"}` yields the name `json.forward` and the rule matches; with
+v2 the name is `forward` and it does not. With v2 the same false positive appears only for
+a nested key, such as `{"data":{"forward":"x"}}` (`data.forward`). The same request is
+therefore a false positive on one engine and clean on another (OWASP CRS issues 4810 and
+4871). The CRS fix for the original report, pull request 4812, is itself scheme-specific:
+it excludes `ARGS_NAMES:/^json\.profile[.\w\-]*$/` from 930120, which names nothing under
+v2 (list entries checked against CRS `main` at bd624a82d). A rule author writing `ARGS:json.user.role`
 today works on one engine only.
 
 ## Decision
@@ -58,10 +67,17 @@ engine is prepared to change; until then no test asserts a name.
   neither v3 nor Coraza implements it; deferred.
 - Leave unspecified (chosen).
 
+Whatever scheme the later Divergence ADR picks, it has to account for the 930120 case
+above: a separator or prefix that a pattern list can match turns a harmless key into a
+detection.
+
 ## Consequences
 
 - For rule authors: never write `ARGS:json.x` or `ARGS:x` for JSON leaves in portable
   rules.
+- For rule authors: a pattern applied to `ARGS_NAMES` that starts with `.` or contains
+  `json` can match text the engine added, not text the client sent; such a rule behaves
+  differently on each engine for JSON bodies.
 - For engines: no change now.
 
 ## Tests
@@ -71,3 +87,5 @@ engine is prepared to change; until then no test asserts a name.
 ## References
 
 - `spec/09-body-processors.md#json`
+- OWASP CRS issues 4810 and 4871, pull request 4812 (coreruleset/coreruleset): rule 930120
+  false positives on JSON argument names
