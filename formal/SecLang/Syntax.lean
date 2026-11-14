@@ -52,7 +52,7 @@ where
 
 /-- The directive name and its arguments (`01#quoting-and-escapes`, `02` `directive`):
 bare tokens end at whitespace; a `"`-delimited argument keeps whitespace, `\"` yields `"`,
-any other backslash pair is passed through unchanged. -/
+`\\` yields `\` (ADR-0045), any other backslash pair is passed through unchanged. -/
 def splitArgs (l : Line) : Parse (List String) := go l.text [] []
 where
   err (m : String) : Parse (List String) := .error { line := l.num, msg := m }
@@ -67,6 +67,7 @@ where
   quoted : List Char → List Char → List String → Parse (List String)
     | [], _, _ => err "unterminated quoted argument"
     | '\\' :: '"' :: rest, cur, acc => quoted rest ('"' :: cur) acc
+    | '\\' :: '\\' :: rest, cur, acc => quoted rest ('\\' :: cur) acc
     | '\\' :: c :: rest, cur, acc => quoted rest (c :: '\\' :: cur) acc
     | '"' :: rest, cur, acc =>
       match rest with
@@ -82,7 +83,10 @@ where
   == some ["SecRule", "ARGS_GET:a", "@streq 1", "id:1,phase:1"]
 #guard (splitArgs ⟨1, "SecRule ARGS \"@streq say \\\"hi\\\" now\" \"x\"".toList⟩).toOption
   == some ["SecRule", "ARGS", "@streq say \"hi\" now", "x"]
-#guard (splitArgs ⟨1, "SecRule ARGS \"a\\\\b\"".toList⟩).toOption == some ["SecRule", "ARGS", "a\\\\b"]
+#guard (splitArgs ⟨1, "SecRule ARGS \"a\\\\b\"".toList⟩).toOption == some ["SecRule", "ARGS", "a\\b"]
+#guard (splitArgs ⟨1, "SecRule ARGS \"a\\\\\\\"b\"".toList⟩).toOption == some ["SecRule", "ARGS", "a\\\"b"]
+#guard (splitArgs ⟨1, "SecRule ARGS \"a\\x5cb\"".toList⟩).toOption == some ["SecRule", "ARGS", "a\\x5cb"]
+#guard (splitArgs ⟨1, "SecRule ARGS a\\\\b".toList⟩).toOption == some ["SecRule", "ARGS", "a\\\\b"]
 #guard (splitArgs ⟨3, "SecRule ARGS \"unterminated".toList⟩) matches .error ⟨3, _, _⟩
 #guard (splitArgs ⟨4, "SecRule \"abc\"def".toList⟩) matches .error ⟨4, _, _⟩
 #guard (splitArgs ⟨1, "SecArgumentSeparator ;".toList⟩).toOption == some ["SecArgumentSeparator", ";"]

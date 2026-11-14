@@ -1,0 +1,27 @@
+meta:
+  name: quoted-argument-backslash
+  description: Inside a double-quoted argument, a doubled backslash yields one backslash
+spec: 01-lexical.md#quoting-and-escapes
+rules: |
+  SecRuleEngine On
+  SecAction "id:2013,phase:1,pass,nolog,setvar:tx.slash=a\\b"
+  SecRule TX:slash "@rx ^a\x5cb$" "id:2014,phase:1,pass,nolog"
+  SecRule ARGS_GET:a "@streq a\\b" "id:2009,phase:1,deny,status:403"
+tests:
+  - test_title: doubled backslash in operator and action list arguments stands for one backslash
+    stages:
+      - stage:
+          input:
+            uri: '/?a=a%5Cb'
+          output:
+            triggered_rules: [2013, 2014, 2009]
+            interruption: {rule_id: 2009, action: deny, status: 403}
+  - test_title: the doubled backslash is not compared as two backslashes
+    stages:
+      - stage:
+          input:
+            uri: '/?a=a%5C%5Cb'
+          output:
+            triggered_rules: [2013, 2014]
+            non_triggered_rules: [2009]
+            no_interruption: true
