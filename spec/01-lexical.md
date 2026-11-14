@@ -67,29 +67,42 @@ the most exercised lexical feature in practice.
 
 **Syntax.** A directive argument is either a bare token, which extends to the next
 whitespace, or a string delimited by double quotes `"`. Inside double quotes, `\"` yields
-a literal double quote without ending the argument. A backslash before any other
-character is passed through to the directive unchanged, with one exception that is
-**not specified**: the pair `\\`, which Apache collapses to a single backslash before
-ModSecurity v2 sees it while libmodsecurity v3 and Coraza keep both characters. Portable
-rules therefore never write `\\`; OWASP CRS writes a literal backslash in regular
-expressions as `\x5c` for exactly this reason (its `CONTRIBUTING.md`).
+a literal double quote without ending the argument, and `\\` yields a single backslash
+(ADR-0045). A backslash before any other character is passed through to the directive
+unchanged, so `\x5c`, `\d` or `\'` reach the directive as written. A quote preceded by an
+odd number of backslashes is escaped; after an even number it ends the argument.
 
 **Semantics.** The quotes are delimiters, not part of the argument. An argument that
-contains whitespace, `"` or begins with `@` or `!` SHOULD be quoted. Single quotes are
-not argument delimiters at this level; they delimit values *inside* an action list and
-are defined in `02-grammar.md#action-list`.
+contains whitespace, `"` or begins with `@` or `!` SHOULD be quoted. The two escapes are
+removed from **every** double-quoted argument of **every** directive (the variables, the
+operator and the action list of `SecRule`, the action list of `SecAction` and
+`SecDefaultAction`, the arguments of `SecRuleUpdateActionById` and the like) before the
+directive interprets it. They are removed once, at this level only: escapes inside a
+single-quoted action value are a separate layer, defined in `02-grammar.md#action-list`.
+Single quotes are not argument delimiters at this level. Whether `\\` collapses in a
+**bare** token is **not specified**: Apache collapses it there too for ModSecurity v2,
+libmodsecurity v3 and Coraza keep both characters. Until every engine implements
+ADR-0045, portable rules write a literal backslash in a regular expression as `\x5c`, as
+OWASP CRS does (its `CONTRIBUTING.md`).
 
-**Divergence notes.** Coraza turns `\"` into `"` and keeps `\\` (verified by
-`adapters/coraza`). ModSecurity v2 receives its arguments from Apache's configuration
-reader (`server/util.c`, `substring_conf`), which collapses both `\"` and `\\`.
-libmodsecurity v3 lexes operator arguments verbatim (`src/parser/seclang-scanner.ll`,
-`FREE_TEXT_DOUBLE_QUOTE_MACRO_EXPANSION`, appended with `appendText`) and never removes
-the backslash of `\"`, so `@streq say \"hi\" now` compares against the backslashes too;
-`quoted-arguments.yaml` is predicted to fail there (`compat/known-gaps.md`). Engines also
-differ in how they parse `\"` inside the action list after macro expansion; a libmodsecurity v3 fix for an escaped quote
-following a macro landed in 2026 and that case is tested in `02-grammar.md`.
+**Divergence notes.** ModSecurity v2 receives every argument from Apache's
+configuration reader (`server/util.c`, `ap_getword_conf` and `substring_conf`; the
+standalone build carries a copy in `standalone/config.c`), which collapses both `\"` and
+`\\`; this is the behaviour specified here. libmodsecurity v3 passes operator arguments
+on verbatim (`src/parser/seclang-scanner.ll`, `FREE_TEXT_DOUBLE_QUOTE_MACRO_EXPANSION`,
+appended with `appendText`), so `@streq say \"hi\" now` compares against the backslashes
+too, keeps `\\` everywhere, and rejects `\"` inside a single-quoted `setvar` value of a
+quoted action list. Coraza turns `\"` into `"` in the operator only
+(`internal/seclang/rule_parser.go`, `parseActionOperator`, through
+`UnescapeQuotedString`), keeps `\\`, and leaves the action list as written. Engines also
+differ in how they parse `\"` inside the action list after macro expansion; a
+libmodsecurity v3 fix for an escaped quote following a macro landed in 2026 and that case
+is tested in `02-grammar.md`. The libmodsecurity v3 and Coraza gaps are listed in
+`compat/known-gaps.md`.
 
-**Tests.** `tests/engine/lexical/quoted-arguments.yaml`
+**Tests.** `tests/engine/lexical/quoted-arguments.yaml`,
+`tests/engine/lexical/quoted-argument-backslash.yaml`,
+`tests/engine/lexical/quoted-argument-escapes-in-actions.yaml`
 
 ### Include
 

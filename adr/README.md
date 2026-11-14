@@ -66,3 +66,4 @@ promoted into the spec (Extension).
 | [0042](0042-unicode-normalize-nfkc.md) | `unicodeNormalizeNFKC` applies Unicode NFKC normalisation | Extension | proposed |
 | [0043](0043-evaldepth-chain-action.md) | `evalDepth` evaluates a chain once per match of its starter | Extension | proposed |
 | [0044](0044-json-collection.md) | `JSON` and `JSON_NAMES` hold a JSON body, selected with JSONPath | Extension | proposed |
+| [0045](0045-quoted-argument-escapes.md) | `\"` and `\\` are unescaped in every double-quoted argument | Divergence | proposed |

@@ -1,0 +1,17 @@
+meta:
+  name: quoted-argument-escapes-in-actions
+  description: An escaped double quote is also unescaped in a double-quoted action list
+spec: 01-lexical.md#quoting-and-escapes
+rules: |
+  SecRuleEngine On
+  SecAction "id:2010,phase:1,pass,nolog,setvar:'tx.quote=say \"hi\"'"
+  SecRule TX:quote "@rx ^say \x22hi\x22$" "id:2011,phase:1,pass,nolog"
+tests:
+  - test_title: escaped quote in a setvar value reaches the variable as a plain quote
+    stages:
+      - stage:
+          input:
+            uri: /
+          output:
+            triggered_rules: [2010, 2011]
+            no_interruption: true
