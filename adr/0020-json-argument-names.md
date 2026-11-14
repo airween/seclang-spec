@@ -1,8 +1,9 @@
 # ADR-0020: JSON argument names are unspecified
 
-- **Status:** proposed
+- **Status:** accepted
 - **Date:** 2026-10-07
-- **Deciders:** @fzipi
+- **Accepted:** 2026-11-14
+- **Deciders:** @fzipi, @airween, @franbuehler, @xanadu, @theseion
 - **Category:** Clarification
 
 ## Context
