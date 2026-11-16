@@ -53,7 +53,8 @@ begins with a listed name, is not specified. Normative text and the table:
 ## Consequences
 
 - For ModSecurity: v2.9.15 and v3.0.17 conform; earlier releases do not.
-- For Coraza: `&shy;` yields `C2 AD` instead of `AD` (`compat/known-gaps.md`).
+- For Coraza: `&nbsp;` yields `C2 A0` instead of `A0` and `&shy;` yields `C2 AD` instead of
+  `AD` (`compat/known-gaps.md`).
 - For rule authors: `t:htmlEntityDecode` now normalises punctuation written as entities
   (`&colon;`, `&lpar;`), so a rule matching `javascript:` also sees `javascript&colon;`.
 

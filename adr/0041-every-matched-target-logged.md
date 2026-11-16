@@ -39,9 +39,11 @@ For a denying rule, ModSecurity v2 stops at the first matching target
 (`msre_rule_process_normal`, `rule_was_intercepted`), so its actions run once and
 `TX:score` is 3. libmodsecurity v3 and Coraza evaluate every target and reach 6.
 
-These results come from the three engines driven directly: ModSecurity v2.9.15 under
-Apache 2.4, libmodsecurity `v3/master` through its C API, and Coraza v3.7.0. The test
-below runs them through the reference adapters.
+These results were first observed with the three engines driven directly: ModSecurity
+v2.9.15 under Apache 2.4, libmodsecurity `v3/master` through its C API, and Coraza v3.7.0.
+The test below runs the pinned versions (v2.9.15, v3.0.17, Coraza v3.8.1) through the
+reference adapters, which confirm the error-log behaviour: only libmodsecurity v3 fails it
+(`compat/known-gaps.md`).
 
 ## Decision
 

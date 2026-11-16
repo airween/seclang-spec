@@ -115,7 +115,7 @@ None yet. Engine-tier tests would be added with the spec text and would `require
 
 - RFC 9535 (JSONPath), §2.7 Normalized Paths; RFC 8259 (JSON)
 - ADR-0020, ADR-0040
-- `spec/05-variables.md#xml`, `spec/05-variables.md#args-names`,
+- `spec/05-variables.md#xml`, `spec/05-variables.md#args_names`,
   `spec/09-body-processors.md#json`
 - OWASP CRS issues 4810 and 4871 (coreruleset/coreruleset): rule 930120 false positives
   on JSON argument names

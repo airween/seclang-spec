@@ -23,7 +23,7 @@ the reference one exists so the specification can be checked without waiting. A
 reference adapter MUST treat `compat/known-gaps.md` as its expected-failure list and MUST
 fail when a listed file passes, so that the table cannot go stale. The first reference
 adapters are `adapters/coraza` (Go, Coraza v3.8.1 pinned) and `adapters/libmodsecurity` (Python over
-the C API, libmodsecurity v3.0.16 built by CI).
+the C API, libmodsecurity built from source by CI: v3.0.16 at first, v3.0.17 now).
 
 ## Options considered
 
@@ -55,7 +55,9 @@ the C API, libmodsecurity v3.0.16 built by CI).
 
 - `adapters/coraza/conformance_test.go` (`TestEngine`, `TestUnit`)
 - `adapters/libmodsecurity/test_conformance.py` (`TestEngine`, `TestUnit`)
+- `adapters/modsecurity2/test_conformance.py` (`TestEngine`, `TestUnit`)
 
 ## References
 
-- `adapters/coraza/README.md`, `adapters/libmodsecurity/README.md`, `compat/known-gaps.md`, ADR-0003
+- `adapters/coraza/README.md`, `adapters/libmodsecurity/README.md`,
+  `adapters/modsecurity2/README.md`, `compat/known-gaps.md`, ADR-0003

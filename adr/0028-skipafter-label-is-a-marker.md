@@ -54,8 +54,8 @@ v2). Normative text: `spec/03-processing-model.md#flow-control`,
 - For libmodsecurity v3 and Coraza: none.
 - For rule authors: never reuse a rule id as a `skipAfter` label; add a `SecMarker`.
 - For this repository: the Lean model (`formal/SecLang/Semantics.lean`) stops matching
-  chain ids against the pending label; `compat/known-gaps.md` predicts the v2 behaviour
-  for the new test.
+  chain ids against the pending label; `compat/known-gaps.md` records the v2 behaviour
+  for the new test, verified by `adapters/modsecurity2`.
 
 ## Tests
 

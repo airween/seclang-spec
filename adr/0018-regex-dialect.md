@@ -18,8 +18,10 @@
 The SecRules Test Set contains two `rx` cases using lookahead (`<\?(?!xml)`); Coraza's copy
 of the corpus omits them. OWASP CRS v4 restricts itself to RE2-compatible syntax and
 verifies this with `crs-toolchain`, so the largest ruleset in use already lives in the
-intersection. `SecAuditLogRelevantStatus` in the two recommended configurations differs
-for the same reason (Phase 2 review).
+intersection. The recommended configurations show the same split (Phase 2 review):
+libmodsecurity's `modsecurity.conf-recommended` sets `SecAuditLogRelevantStatus
+"^(?:5|4(?!04))"` with a lookahead, while Coraza's `coraza.conf-recommended` writes the
+lookahead-free `"^(?:(5|4)(0|1)[0-9])$"`.
 
 ## Decision
 

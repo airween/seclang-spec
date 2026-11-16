@@ -28,7 +28,7 @@ OWASP CRS v4 core rules do not use them; the DoS-protection and IP-reputation pl
 Persistent collections are one Extended feature, `05-variables.md#persistent-collections`.
 Engine-tier profiles that need them list that anchor in `requires:`. Their semantics
 follow the ModSecurity reference manual until two engines implement them, at which point
-a Phase 4 task specifies them fully. `initcol`, `setsid`, `setuid` and `setrsc` are
+a later change specifies them fully. `initcol`, `setsid`, `setuid` and `setrsc` are
 Extended actions for the same reason.
 
 ## Options considered
