@@ -20,8 +20,8 @@
   `SecIgnoreRuleCompilationErrors On` makes rule compilation errors non-fatal; it does
   not affect unknown directives.
 
-Two of the silently ignored names, `SecArgumentSeparator` and `SecRequestBodyNoFilesLimit`
-(the latter parsed into a field with a `TODO`), are Core in this specification and change
+Two directives Coraza accepts without effect, `SecArgumentSeparator` (one of the seven) and
+`SecRequestBodyNoFilesLimit` (parsed into a field with a `TODO`), are Core in this specification and change
 what rules see. A user who sets them and gets no warning has a false sense of coverage.
 
 ## Decision

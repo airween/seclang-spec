@@ -34,8 +34,8 @@ Phase 1 survey and added to the matrix in Phase 3.
 | Engine-specific | `responseBodyProcessor`, `forceResponseBodyVariable` (Coraza) |
 
 Option names match case-insensitively (ADR-0002). The timing rules are in
-`spec/03-processing-model.md#ctl-timing`; the full per-option specification lands with
-the actions in Phase 3.
+`spec/03-processing-model.md#ctl-timing`; each option is specified under its own
+`### ctl:name` entry in `spec/08-actions.md`.
 
 ## Options considered
 

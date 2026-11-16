@@ -77,7 +77,7 @@ collection.
   for a key at any depth then needs a regular expression that parses the whole name,
   because a `.` preceded by an odd number of backslashes is not a separator and RE2,
   which Coraza uses, has no lookbehind. Portable rules cannot write `\\`
-  (`01-lexical.md#quoted-arguments`), and `t:normalizePathWin` turns the added `\` into
+  (`01-lexical.md#quoting-and-escapes`), and `t:normalizePathWin` turns the added `\` into
   `/`; rejected.
 - RFC 9535 Normalized Paths (`$['user']['name']`) as `ARGS` names: unambiguous, but every
   name then carries `'` and `[`, which the SQL injection rules that inspect `ARGS_NAMES`

@@ -62,7 +62,8 @@ or regular-expression matching. Normative text: `spec/03-processing-model.md#rul
 - For rule authors: write full tags; a tag that is a prefix of other tags (`OWASP_CRS` of
   `OWASP_CRS/ATTACK-SQLI`) selects only the rules carrying exactly that tag, on every engine.
 - For this repository: the Lean model compares tags and messages exactly;
-  `compat/known-gaps.md` predicts the v2 behaviour for the new test.
+  `compat/known-gaps.md` records the v2 behaviour for the new test, verified by
+  `adapters/modsecurity2`.
 
 ## Tests
 
@@ -73,5 +74,5 @@ or regular-expression matching. Normative text: `spec/03-processing-model.md#rul
 
 ## References
 
-- `spec/03-processing-model.md#rule-exceptions`, ADR-0005 (`ByMsg` status)
+- `spec/03-processing-model.md#rule-exceptions`, ADR-0006 (`ctl:` `ByMsg` status)
 - ModSecurity reference manual, `SecRuleRemoveByTag`, `SecRuleUpdateTargetByTag`, `ctl`

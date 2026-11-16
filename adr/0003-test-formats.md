@@ -63,7 +63,8 @@ are available in every CI image.
   adapter over the existing regression harness (`test/regression`).
 - For Coraza: `testing/profile` already loads the engine tier minus `response`,
   `requires`, `spec` and `no_interruption`; add those fields and a skip on `requires`.
-- For contributors: write YAML/JSON, run `python3 tools/validate.py`, no toolchain.
+- For contributors: write YAML/JSON, run `uv run python tools/validate.py`, no engine
+  toolchain.
 
 ## Tests
 

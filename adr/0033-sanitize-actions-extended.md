@@ -85,7 +85,8 @@ four entries after it), spelled `sanitize*` only: v2's `sanitise*` spellings are
   profiles are skipped everywhere until one does; `00-conventions.md#status-transitions`
   gains a row for restoring a Deprecated feature. The test schema gains
   `audit_log_contains`/`no_audit_log_contains` (`tests/README.md`), and the rule of
-  ADR-0021 that log assertions use only `msg` text gains one exception: `no_log_contains`
+  ADR-0021 that log assertions use only `msg` text or a short `[data "…"]` field gains one
+  exception: `no_log_contains`
   and `no_audit_log_contains` with a marked value, and `audit_log_contains` with the mask.
 - For rule authors: `sanitizeArg:password` and its siblings are portable once two engines
   ship them; until then they load only in v2, and v2 output still shows the length. A rule
