@@ -1,0 +1,20 @@
+meta:
+  name: default-action-later-rules
+  description: SecDefaultAction applies only to the rules of its phase defined after it
+spec: 03-processing-model.md#default-actions
+rules: |
+  SecRuleEngine On
+  SecAction "id:4074,phase:1,pass,nolog,setvar:tx.a=1"
+  SecRule ARGS_GET:a "@streq 1" "id:4075,phase:1,block"
+  SecDefaultAction "phase:1,log,deny,status:418,setvar:tx.d=+1"
+  SecDefaultAction "phase:2,log,pass"
+  SecRule &TX:d "@eq 0" "id:4076,phase:2,pass"
+tests:
+  - test_title: rules defined before the default take neither its setvar nor its disruptive action
+    stages:
+      - stage:
+          input:
+            uri: /?a=1
+          output:
+            triggered_rules: [4074, 4075, 4076]
+            no_interruption: true
