@@ -67,6 +67,11 @@ loaded with `modsecurity_rules_file`. That is a connector matter and out of scop
    interprets the argument; the single-quoted action-value layer of
    `02-grammar.md#action-list` then applies to the result.
 3. Whether `\\` collapses in a **bare** token stays not specified.
+4. An engine that implements ADR-0039 MUST define the flag
+   `ENGINE_FLAGS:quoted_argument_escapes`, with the value `1` when it unescapes quoted
+   arguments as decided here and `0` when it does not yet. ModSecurity v2 always has `1`.
+   Whether an engine ships the change in a major version, behind an opt-in or by default
+   is its own choice; the flag tells a ruleset which reading the loaded rules got.
 
 This is the ModSecurity v2 behaviour, which is fixed by the web server.
 
@@ -80,6 +85,9 @@ This is the ModSecurity v2 behaviour, which is fixed by the web server.
 - **Leave `\\` not specified and limit `\"` to the operator.** Rejected: the same text
   would mean `"` in the operator and `\"` in the action list of the same rule, and rule
   authors would keep needing `\x5c` and `\x22` workarounds.
+- **No flag; leave the transition to the engines' release notes.** Rejected: the change
+  is silent for `\\` in `@rx`, and ADR-0039 asks every behaviour-changing ADR to name its
+  flag so that rulesets branch on behaviour rather than on versions.
 - **Also collapse `\\` in bare tokens (full Apache parity).** Not chosen for now: an
   unquoted `@rx` pattern is rare in practice but would change meaning in v3 and Coraza,
   and nothing portable depends on it. Left open for a later ADR.
@@ -92,13 +100,28 @@ This is the ModSecurity v2 behaviour, which is fixed by the web server.
   action values. Rules that today rely on `\"` matching a backslash and a quote (for
   example `@contains \"` to spot escaped JSON) match a bare quote afterwards; negated
   rules flip. The meaning of `\"` inside `\Q…\E` in `@rx` changes the same way. An open
-  pull request fixes the operator part for `\"` only (owasp-modsecurity/ModSecurity#3753,
-  for #3750).
+  pull request starts with the operator (owasp-modsecurity/ModSecurity#3753, for #3750);
+  libmodsecurity plans the change for its next minor release, 3.1.0.
 - For Coraza: unescape the action list too, and collapse `\\` in `UnescapeQuotedString`.
+- For libmodsecurity v3 and Coraza alike: `\\` changes meaning in every operator, and in
+  `@rx` silently. Today `\\` reaches PCRE as two characters, a literal backslash; after
+  the change one backslash is left and escapes the next character. `@rx C:\\Windows`
+  goes from `C:\` followed by `Windows` to `C:`, `\W` (any non-word character),
+  `indows`; `@rx \\d` from a backslash and `d` to any digit; `@rx \\\\` from two
+  backslashes to one. These rules still load and match different input, so nothing
+  reports the change. ModSecurity v2 has always read them the new way, so a rule shared
+  between v2 and v3 or Coraza already means two different things today; this ADR ends
+  that divergence rather than creating one. Engines name the change through
+  `ENGINE_FLAGS:quoted_argument_escapes` (Decision 4).
 - For rule authors: `\"` and `\\` mean the same in every engine and in every argument.
   Writing `\x22` and `\x5c` in regular expressions keeps working and stays the safe
   choice until the engines have shipped the change. A literal backslash immediately
-  before a quote is written `\\\"`.
+  before a quote is written `\\\"`. To migrate a ruleset written for libmodsecurity v3 or
+  Coraza only: replace each `\\` with `\x5c`, which means a backslash both before and after
+  the change; doubling it to `\\\\` is correct only once the engine has shipped this ADR.
+  A ruleset that has to keep `\\` during the transition can branch on
+  `ENGINE_FLAGS:quoted_argument_escapes` with `skipAfter`, as in the example of ADR-0039,
+  with one variant of the rule for each reading; both variants load on every engine.
 - For OWASP CRS v4.30: no rule contains `\\`; rule 955350 starts matching in v3; the
   `msg` of rule 942220 is logged without backslashes in v3 and Coraza.
 

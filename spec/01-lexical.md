@@ -81,9 +81,12 @@ directive interprets it. They are removed once, at this level only: escapes insi
 single-quoted action value are a separate layer, defined in `02-grammar.md#action-list`.
 Single quotes are not argument delimiters at this level. Whether `\\` collapses in a
 **bare** token is **not specified**: Apache collapses it there too for ModSecurity v2,
-libmodsecurity v3 and Coraza keep both characters. Until every engine implements
-ADR-0045, portable rules write a literal backslash in a regular expression as `\x5c`, as
-OWASP CRS does (its `CONTRIBUTING.md`).
+libmodsecurity v3 and Coraza keep both characters. Because `\\` collapses, it changes
+what an operator parameter means, not only how it is written: `@rx C:\\Windows` reaches
+the regular expression as `C:\Windows`, where `\W` is any non-word character. Until every
+engine implements ADR-0045, portable rules write a literal backslash in a regular
+expression as `\x5c`, as OWASP CRS does (its `CONTRIBUTING.md`); an engine that
+implements ADR-0039 reports the behaviour as `ENGINE_FLAGS:quoted_argument_escapes`.
 
 **Divergence notes.** ModSecurity v2 receives every argument from Apache's
 configuration reader (`server/util.c`, `ap_getword_conf` and `substring_conf`; the
