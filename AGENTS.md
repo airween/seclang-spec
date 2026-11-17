@@ -53,8 +53,9 @@ docker run --rm -v "$PWD":/repo seclang-modsecurity2 uv run python -m unittest d
 hugo -s site --gc --minify --cleanDestinationDir && site/smoke.sh                 # when site/ or any published markdown changed
 (cd formal && lake build && lake exe seclang-check && lake exe seclang-check ../tests/unit/operators)   # when formal/, spec/06-07 or tests/unit changed
 uv run python tools/engine_rules.py > formal/.lake/engine-rules.json && (cd formal && lake exe seclang-parse .lake/engine-rules.json && lake exe seclang-eval .lake/engine-rules.json)   # when formal/, spec/01-09 or tests/engine changed
-uv run python tools/formal_results.py --crs /path/to/coreruleset --differential formal/.lake/differential.json   # same: regenerates formal/RESULTS.md (CRS v4.25.2 checkout, seed-1 differential file from the line below); CI fails when it is stale
 (cd adapters/coraza && go run ./cmd/differential -n 30 -seed 1 > ../../formal/.lake/differential.json) && (cd formal && lake exe seclang-eval .lake/differential.json)   # model vs Coraza on generated requests
+uv run python tools/crs_profile.py /path/to/coreruleset > formal/.lake/crs-profile.yaml && (cd adapters/coraza && go run ./cmd/differential -profile ../../formal/.lake/crs-profile.yaml -n 20 -seed 1 > ../../formal/.lake/crs-diff.json) && (cd formal && lake exe seclang-eval .lake/crs-diff.json)   # same for OWASP CRS as one profile
+uv run python tools/formal_results.py --crs /path/to/coreruleset --differential formal/.lake/differential.json --crs-differential formal/.lake/crs-diff.json   # same: regenerates formal/RESULTS.md (CRS v4.25.2 checkout, the two seed-1 differential files from the lines above, exactly as CI runs it); CI fails when it is stale
 MODSECURITY_LIB=… uv run python adapters/libmodsecurity/differential.py formal/.lake/differential.json --out formal/.lake/v3.json && (cd formal && lake exe seclang-eval .lake/v3.json)   # same requests through v3; engines compared too
 ```
 
